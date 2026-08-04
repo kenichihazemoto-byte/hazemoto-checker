@@ -22,7 +22,6 @@ input,select,textarea,button{font-family:inherit}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{animation:fadeUp .35s ease}
 
-/* Layout */
 .header{position:sticky;top:0;z-index:100;background:rgba(15,23,42,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 16px}
 .header-inner{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:10px}
 .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
@@ -30,13 +29,11 @@ input,select,textarea,button{font-family:inherit}
 .header p{font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase}
 .main{max-width:880px;margin:0 auto;padding:14px 14px 120px}
 
-/* Cards */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;backdrop-filter:blur(10px)}
 .card-accent{border-color:rgba(99,102,241,.2);background:rgba(99,102,241,.04)}
 .card-chouki{border-color:rgba(234,179,8,.2);background:rgba(234,179,8,.04)}
 .card-ng{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.03)}
 
-/* Buttons */
 .btn{padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:rgba(30,41,59,.5);color:var(--text2);font-size:12px;cursor:pointer;font-weight:400;transition:all .15s}
 .btn:hover{border-color:var(--border-h);background:rgba(30,41,59,.8)}
 .btn-active{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.12);color:#a5b4fc;font-weight:600}
@@ -46,22 +43,17 @@ input,select,textarea,button{font-family:inherit}
 .btn-sm{padding:4px 8px;font-size:10px}
 .btn-icon{padding:4px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:16px}
 
-/* Inputs */
 .input{width:100%;padding:7px 10px;background:rgba(15,23,42,.6);border:1px solid var(--border-h);border-radius:var(--radius-sm);color:var(--text);font-size:12px;outline:none}
 .input:focus{border-color:rgba(99,102,241,.4)}
 select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
 
-/* Tabs */
 .tabs{display:flex;gap:3px;margin-bottom:12px}
 .tab{flex:1;padding:9px 4px;text-align:center;border-radius:8px;font-size:11px;position:relative}
 .tab .badge{position:absolute;top:-3px;right:-1px;font-size:7px;background:var(--ng);color:#fff;padding:1px 5px;border-radius:8px;font-weight:700}
 
-/* Upload zone */
 .upload-zone{border:2px dashed rgba(99,102,241,.3);border-radius:var(--radius);padding:36px 16px;text-align:center;cursor:pointer;transition:all .2s}
 .upload-zone:hover,.upload-zone.drag{border-color:rgba(99,102,241,.6);background:rgba(99,102,241,.06)}
-.upload-zone .icon{font-size:42px;margin-bottom:6px}
 
-/* Drawing item */
 .dw-item{display:flex;gap:10px;align-items:center;padding:10px}
 .dw-thumb{width:56px;height:56px;border-radius:8px;overflow:hidden;background:rgba(30,41,59,.8);flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .dw-thumb img{width:100%;height:100%;object-fit:cover}
@@ -69,7 +61,6 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .dw-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px}
 .dw-actions{display:flex;gap:4px;flex-shrink:0;align-items:center}
 
-/* Result item */
 .result-item{padding:7px 10px;margin-bottom:2px;border-radius:var(--radius-sm);display:flex;gap:8px;align-items:flex-start}
 .result-item.ok{background:rgba(16,185,129,.06)}
 .result-item.ng{background:rgba(239,68,68,.06)}
@@ -79,17 +70,14 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .status-icon.ng{border-color:var(--ng);color:var(--ng);background:rgba(239,68,68,.08)}
 .status-icon.warn{border-color:var(--warn);color:var(--warn);background:rgba(245,158,11,.08)}
 .status-icon.na{border-color:var(--text3);color:var(--text3)}
-.result-detail{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5}
 .conf-bar{display:flex;align-items:center;gap:4px;margin-top:3px}
 .conf-bar span{font-size:8px;color:var(--text3)}
 .conf-track{width:50px;height:2px;background:rgba(148,163,184,.1);border-radius:1px;overflow:hidden}
 
-/* Progress */
 .progress-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(148,163,184,.05)}
 .progress-bar{height:3px;background:rgba(15,23,42,.5);border-radius:2px;overflow:hidden;margin-top:4px}
 .progress-fill{height:100%;border-radius:2px;transition:width .5s}
 
-/* Chat */
 .chat-panel{position:fixed;bottom:14px;right:14px;width:min(360px,calc(100vw - 28px));max-height:62vh;background:rgba(12,15,26,.98);border:1px solid rgba(99,102,241,.3);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;z-index:200;overflow:hidden}
 .chat-header{padding:10px 14px;background:linear-gradient(90deg,rgba(99,102,241,.12),rgba(139,92,246,.08));display:flex;align-items:center;gap:8px}
 .chat-body{flex:1;overflow-y:auto;padding:10px;min-height:160px}
@@ -98,17 +86,11 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .chat-msg.ai{background:rgba(30,41,59,.8);color:#cbd5e1}
 .chat-input{padding:8px 12px;border-top:1px solid rgba(148,163,184,.06);display:flex;gap:6px}
 .fab{position:fixed;bottom:18px;right:18px;width:50px;height:50px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(99,102,241,.4);z-index:200;display:flex;align-items:center;justify-content:center}
-
-/* Spinner */
 .spinner{width:18px;height:18px;border:2px solid rgba(99,102,241,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 
-/* API Key dialog */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
-.dialog{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:420px;width:100%}
-.dialog h2{font-size:16px;margin-bottom:12px}
-.dialog p{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7}
+.welcome{text-align:center;padding:20px 16px}
+.welcome h2{font-size:18px;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,#a5b4fc,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 
-/* Mobile */
 @media(max-width:600px){
   html{font-size:13px}
   .header h1{font-size:14px}
@@ -126,9 +108,16 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
 
 <script type="text/babel">
-const {useState,useRef,useEffect,useCallback}=React;
+const {useState,useRef,useEffect}=React;
 
-/* ═══ チェック定義 ═══ */
+/* ═══════════════════════════════════════════════════════════
+   ★★★ ここにAPIキーを貼り付けてください ★★★
+   Anthropic Console → APIキー で取得したキーを設定
+   月額上限（$10程度）を必ず設定してください
+   ═══════════════════════════════════════════════════════════ */
+const API_KEY = "YOUR_API_KEY_HERE";
+/* ═══════════════════════════════════════════════════════════ */
+
 const DW_TYPES=[
   {id:"haichi",label:"配置図",icon:"🗺️",color:"#0ea5e9",checks:[
     {id:"h01",tx:"方位（真北）の表示",cr:true,law:"施行規則1条の3"},
@@ -193,7 +182,7 @@ const DW_TYPES=[
     {id:"b01",tx:"基礎の形状・配筋仕様",cr:true,law:"令38条"},
     {id:"b02",tx:"アンカーボルトの位置",cr:true,law:"告示1460号"},
     {id:"b03",tx:"換気口・基礎パッキンの位置",cr:true,law:"令22条"},
-    {id:"b04",tx:"人通口の位置・補強",cr:false,law:""},
+    {id:"b04",tx:"人通口の位置・補強",cr:false},
   ]},
   {id:"hekiwall",label:"壁量計算書",icon:"📋",color:"#dc2626",checks:[
     {id:"w01",tx:"各階床面積",cr:true,law:"令46条"},
@@ -211,20 +200,18 @@ const DW_TYPES=[
   ]},
 ];
 
-const CHOUKI_CHECKS=[
+const CHOUKI=[
   {id:"ch01",tx:"耐震等級2以上",cr:true,cat:"構造"},
-  {id:"ch02",tx:"劣化対策等級3（構造躯体）",cr:true,cat:"劣化"},
+  {id:"ch02",tx:"劣化対策等級3",cr:true,cat:"劣化"},
   {id:"ch03",tx:"床下空間330mm以上",cr:true,cat:"劣化"},
-  {id:"ch04",tx:"維持管理対策等級3（配管）",cr:true,cat:"維持管理"},
+  {id:"ch04",tx:"維持管理対策等級3",cr:true,cat:"維持管理"},
   {id:"ch05",tx:"省エネルギー対策等級4以上",cr:true,cat:"温熱"},
-  {id:"ch06",tx:"居住面積基準（75㎡以上/1の階40㎡以上）",cr:true,cat:"面積"},
+  {id:"ch06",tx:"居住面積75㎡以上/1の階40㎡以上",cr:true,cat:"面積"},
   {id:"ch07",tx:"維持保全計画の作成",cr:true,cat:"維持"},
 ];
 
-/* ═══ MAIN APP ═══ */
 function App(){
-  const [apiKey,setApiKey]=useState(()=>localStorage.getItem("checker_api_key")||"");
-  const [showKeyDialog,setShowKeyDialog]=useState(false);
+  const ready=API_KEY&&API_KEY!=="YOUR_API_KEY_HERE";
   const [mode,setMode]=useState("kakunin");
   const [drawings,setDrawings]=useState([]);
   const [activeDw,setActiveDw]=useState(null);
@@ -240,11 +227,7 @@ function App(){
   const [dragOver,setDragOver]=useState(false);
 
   useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:"smooth"});},[chatMsgs]);
-  useEffect(()=>{if(!apiKey)setShowKeyDialog(true);},[]);
 
-  const saveKey=(k)=>{setApiKey(k);localStorage.setItem("checker_api_key",k);setShowKeyDialog(false);};
-
-  /* Upload */
   const addFiles=(files)=>{
     Array.from(files).forEach(file=>{
       const reader=new FileReader();
@@ -255,93 +238,52 @@ function App(){
       reader.readAsDataURL(file);
     });
   };
-  const handleUpload=(e)=>{addFiles(e.target.files);e.target.value="";};
-  const handleDrop=(e)=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);};
 
-  /* Analyze */
   const analyze=async(dw)=>{
-    if(!apiKey){setShowKeyDialog(true);return;}
+    if(!ready)return;
     const dwType=DW_TYPES.find(t=>t.id===dw.type);
     if(!dwType)return;
     setDrawings(p=>p.map(d=>d.id===dw.id?{...d,loading:true}:d));
-
-    const checksP=dwType.checks.map(c=>`- [${c.id}] ${c.tx}（${c.cr?"必須":"推奨"}）根拠:${c.law}`).join("\n");
-    const choukiP=mode==="chouki"?`\n\n【長期優良住宅 追加チェック】\n${CHOUKI_CHECKS.map(c=>`- [${c.id}] ${c.tx}（${c.cat}）`).join("\n")}`:"";
-
-    const sysP=`あなたは一級建築士で建築確認申請の審査員です。2025年4月改正版の建築基準法に精通。
-添付図面を分析し、以下のチェック項目を判定。
-
-【${dwType.label}のチェック項目】
-${checksP}${choukiP}
-
-回答はJSON形式のみ。バッククォート不要。
-{"drawing_type":"${dwType.label}","summary":"全体所見(50字以内)","items":[{"id":"チェックID","status":"ok/ng/warn/na","detail":"具体的所見（数値含む）","confidence":0.0-1.0}]}`;
-
+    const checksP=dwType.checks.map(c=>`- [${c.id}] ${c.tx}（${c.cr?"必須":"推奨"}）根拠:${c.law||""}`).join("\n");
+    const choukiP=mode==="chouki"?`\n\n【長期優良住宅 追加チェック】\n${CHOUKI.map(c=>`- [${c.id}] ${c.tx}（${c.cat}）`).join("\n")}`:"";
+    const sysP=`あなたは一級建築士で建築確認申請の審査員です。2025年4月改正版の建築基準法に精通。添付図面を分析し判定。\n\n【${dwType.label}のチェック項目】\n${checksP}${choukiP}\n\n回答はJSON形式のみ。バッククォート不要。\n{"drawing_type":"${dwType.label}","summary":"全体所見(50字以内)","items":[{"id":"チェックID","status":"ok/ng/warn/na","detail":"具体的所見","confidence":0.0-1.0}]}`;
     try{
       const base64=dw.dataUrl.split(",")[1];
       const mt=dw.dataUrl.includes("pdf")?"application/pdf":dw.dataUrl.includes("png")?"image/png":"image/jpeg";
-      const content=[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:base64}},{type:"text",text:sysP}];
-      const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,messages:[{role:"user",content}]})});
-      if(!resp.ok){const err=await resp.text();throw new Error(`API Error ${resp.status}: ${err.slice(0,200)}`);}
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,messages:[{role:"user",content:[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:base64}},{type:"text",text:sysP}]}]})});
+      if(!resp.ok)throw new Error(`API Error ${resp.status}`);
       const data=await resp.json();
       const raw=data.content?.map(c=>c.text||"").join("")||"";
-      let parsed;
-      try{parsed=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch{parsed={summary:"解析失敗",items:[]};}
-
+      let parsed;try{parsed=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch{parsed={summary:"解析失敗",items:[]};}
       if(parsed.items){
-        const nr={...results};
-        parsed.items.forEach(i=>{nr[i.id]={...i,dwId:dw.id,dwName:dw.name};});
-        setResults(nr);
-        if(mode==="chouki"){const nc={...choukiRes};parsed.items.filter(i=>i.id.startsWith("ch")).forEach(i=>{nc[i.id]={...i,dwId:dw.id};});setChoukiRes(nc);}
+        const nr={...results};parsed.items.forEach(i=>{nr[i.id]={...i,dwId:dw.id,dwName:dw.name};});setResults(nr);
+        if(mode==="chouki"){const nc={...choukiRes};parsed.items.filter(i=>i.id.startsWith("ch")).forEach(i=>{nc[i.id]={...i};});setChoukiRes(nc);}
       }
       setDrawings(p=>p.map(d=>d.id===dw.id?{...d,loading:false,results:parsed}:d));
       setTab("results");setActiveDw(dw.id);
-    }catch(err){
-      setDrawings(p=>p.map(d=>d.id===dw.id?{...d,loading:false,results:{summary:`エラー: ${err.message}`,items:[]}}:d));
-    }
+    }catch(err){setDrawings(p=>p.map(d=>d.id===dw.id?{...d,loading:false,results:{summary:`エラー: ${err.message}`,items:[]}}:d));}
   };
 
-  /* Chat */
   const sendChat=async()=>{
-    if(!chatIn.trim()||chatLoading||!apiKey)return;
+    if(!chatIn.trim()||chatLoading||!ready)return;
     const msg=chatIn.trim();setChatIn("");setChatMsgs(p=>[...p,{r:"user",t:msg}]);setChatLoading(true);
     const ctx=activeDw?drawings.find(d=>d.id===activeDw):null;
     const ctxInfo=ctx?.results?`\n分析中の図面: ${ctx.name}\n結果: ${JSON.stringify(ctx.results.items?.slice(0,8))}`:"";
     try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[...chatMsgs.slice(-6).map(m=>({role:m.r==="user"?"user":"assistant",content:m.t})),{role:"user",content:`あなたは建築基準法(2025年改正版)の専門家。具体的数値で回答。${ctxInfo}\n\n${msg}`}]})});
-      const d=await r.json();
-      setChatMsgs(p=>[...p,{r:"ai",t:d.content?.map(c=>c.text||"").join("\n")||"回答取得失敗"}]);
+      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[...chatMsgs.slice(-6).map(m=>({role:m.r==="user"?"user":"assistant",content:m.t})),{role:"user",content:`あなたは建築基準法(2025年改正版)の専門家。具体的数値で回答。${ctxInfo}\n\n${msg}`}]})});
+      const d=await r.json();setChatMsgs(p=>[...p,{r:"ai",t:d.content?.map(c=>c.text||"").join("\n")||"回答取得失敗"}]);
     }catch(e){setChatMsgs(p=>[...p,{r:"ai",t:`エラー: ${e.message}`}]);}
     setChatLoading(false);
   };
 
-  /* Stats */
-  const totalChecked=Object.keys(results).filter(k=>!k.startsWith("ch")).length;
   const totalOk=Object.values(results).filter(r=>r.status==="ok"&&!r.id?.startsWith("ch")).length;
   const totalNg=Object.values(results).filter(r=>r.status==="ng"&&!r.id?.startsWith("ch")).length;
   const totalWarn=Object.values(results).filter(r=>r.status==="warn"&&!r.id?.startsWith("ch")).length;
-
+  const totalChecked=Object.keys(results).filter(k=>!k.startsWith("ch")).length;
   const sI=s=>s==="ok"?"✓":s==="ng"?"✗":s==="warn"?"⚠":"—";
 
   return(
   <div>
-    {/* API Key Dialog */}
-    {showKeyDialog&&(
-      <div className="overlay" onClick={()=>apiKey&&setShowKeyDialog(false)}>
-        <div className="dialog fade-up" onClick={e=>e.stopPropagation()}>
-          <h2>🔑 APIキーの設定</h2>
-          <p>図面のAI分析にはAnthropic APIキーが必要です。<br/>キーはブラウザのlocalStorageにのみ保存され、外部サーバーには送信されません。</p>
-          <input className="input" type="password" placeholder="sk-ant-..." value={apiKey} onChange={e=>setApiKey(e.target.value)} style={{marginBottom:12}} onKeyDown={e=>{if(e.key==="Enter"&&apiKey)saveKey(apiKey);}}/>
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-            {apiKey&&<button className="btn" onClick={()=>setShowKeyDialog(false)}>キャンセル</button>}
-            <button className="btn btn-primary" disabled={!apiKey} onClick={()=>saveKey(apiKey)}>保存</button>
-          </div>
-          <p style={{fontSize:10,color:"var(--text3)",marginTop:10}}>APIキーは <a href="https://console.anthropic.com/" target="_blank" rel="noopener" style={{color:"var(--accent)"}}>console.anthropic.com</a> で取得できます</p>
-        </div>
-      </div>
-    )}
-
-    {/* Header */}
     <header className="header">
       <div className="header-inner">
         <div className="logo">📐</div>
@@ -352,225 +294,210 @@ ${checksP}${choukiP}
         <div style={{display:"flex",gap:4}}>
           <button className={`btn btn-sm ${mode==="kakunin"?"btn-active":""}`} onClick={()=>setMode("kakunin")}>確認申請</button>
           <button className={`btn btn-sm ${mode==="chouki"?"btn-active":""}`} onClick={()=>setMode("chouki")} style={mode==="chouki"?{borderColor:"rgba(234,179,8,.4)",color:"var(--chouki)",background:"rgba(234,179,8,.1)"}:{}}>長期優良</button>
-          <button className="btn btn-sm" onClick={()=>setShowKeyDialog(true)} title="APIキー設定">⚙️</button>
         </div>
       </div>
     </header>
 
     <main className="main">
-      {/* Mode indicator */}
-      <div className={`card ${mode==="chouki"?"card-chouki":"card-accent"}`} style={{padding:"10px 14px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:20}}>{mode==="chouki"?"🏅":"📋"}</span>
-          <div>
-            <div style={{fontSize:13,fontWeight:600,color:mode==="chouki"?"var(--chouki)":"#a5b4fc"}}>{mode==="chouki"?"長期優良住宅認定申請チェック":"建築確認申請チェック"}</div>
-            <div style={{fontSize:10,color:"var(--text3)"}}>{mode==="chouki"?"確認申請 + 耐震・劣化対策・維持管理・省エネ等級の追加審査":"建築基準法 2025年4月改正版に基づく図面審査"}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress */}
-      {totalChecked>0&&(
-        <div className="card fade-up" style={{padding:10}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-            <span style={{fontSize:11,fontWeight:600,color:"var(--text2)"}}>分析進捗</span>
-            <span style={{fontSize:10,color:"var(--text3)"}}>{drawings.filter(d=>d.results).length}/{drawings.length} 図面完了</span>
-          </div>
-          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            {[{l:"適合",c:totalOk,cl:"var(--ok)"},{l:"不適合",c:totalNg,cl:"var(--ng)"},{l:"要確認",c:totalWarn,cl:"var(--warn)"}].map(s=>(
-              <div key={s.l} style={{display:"flex",alignItems:"center",gap:4}}>
-                <div style={{width:8,height:8,borderRadius:2,background:s.cl}}/>
-                <span style={{fontSize:11,color:"var(--text2)"}}>{s.l}</span>
-                <span style={{fontSize:13,fontWeight:700,color:s.cl}}>{s.c}</span>
-              </div>
-            ))}
-          </div>
+      {/* API Key not set warning */}
+      {!ready&&(
+        <div className="card" style={{borderColor:"rgba(239,68,68,.3)",background:"rgba(239,68,68,.06)",textAlign:"center",padding:24}}>
+          <div style={{fontSize:24,marginBottom:8}}>⚠️</div>
+          <div style={{fontSize:14,fontWeight:600,color:"#f87171",marginBottom:6}}>APIキーが未設定です</div>
+          <div style={{fontSize:12,color:"var(--text2)",lineHeight:1.7}}>管理者が index.html 内の <code style={{background:"rgba(239,68,68,.1)",padding:"1px 4px",borderRadius:3}}>API_KEY</code> を設定する必要があります。</div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="tabs">
-        {[{k:"upload",l:`📁 図面 (${drawings.length})`},{k:"results",l:`🔍 分析結果`,ng:totalNg},{k:"summary",l:"📊 総合判定"}].map(t=>(
-          <button key={t.k} className={`btn tab ${tab===t.k?"btn-active":""}`} onClick={()=>setTab(t.k)}>
-            {t.l}{t.ng>0&&<span className="badge">NG:{t.ng}</span>}
-          </button>
-        ))}
-      </div>
-
-      {/* TAB: UPLOAD */}
-      {tab==="upload"&&(<>
-        <div className={`upload-zone${dragOver?" drag":""}`} onClick={()=>fileRef.current?.click()}
-          onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDrop={handleDrop}>
-          <div className="icon">📄</div>
-          <div style={{fontSize:14,fontWeight:600,color:"#a5b4fc",marginBottom:4}}>図面をアップロード</div>
-          <div style={{fontSize:11,color:"var(--text3)"}}>PNG / JPG / PDF — ドラッグ＆ドロップ対応</div>
-          <input ref={fileRef} type="file" accept="image/*,.pdf" multiple onChange={handleUpload} style={{display:"none"}}/>
+      {ready&&(<>
+        {/* Mode */}
+        <div className={`card ${mode==="chouki"?"card-chouki":"card-accent"}`} style={{padding:"10px 14px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:20}}>{mode==="chouki"?"🏅":"📋"}</span>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:mode==="chouki"?"var(--chouki)":"#a5b4fc"}}>{mode==="chouki"?"長期優良住宅認定申請チェック":"建築確認申請チェック"}</div>
+              <div style={{fontSize:10,color:"var(--text3)"}}>{mode==="chouki"?"確認申請 + 耐震・劣化対策・維持管理・省エネ等級":"建築基準法 2025年4月改正版に基づく図面審査"}</div>
+            </div>
+          </div>
         </div>
 
-        {drawings.length>0&&(
-          <div style={{marginTop:10}}>
-            {drawings.map(dw=>(
-              <div key={dw.id} className="card dw-item fade-up">
-                <div className="dw-thumb">
-                  {dw.dataUrl.includes("data:image")?<img src={dw.dataUrl} alt=""/>:<span style={{fontSize:22}}>📄</span>}
-                </div>
-                <div className="dw-info">
-                  <div className="dw-name">{dw.name}</div>
-                  <select className="input" value={dw.type} onChange={e=>setDrawings(p=>p.map(d=>d.id===dw.id?{...d,type:e.target.value}:d))} style={{maxWidth:200,fontSize:11,padding:"3px 8px"}}>
-                    <option value="">図面種別を選択...</option>
-                    {DW_TYPES.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}
-                  </select>
-                </div>
-                <div className="dw-actions">
-                  {dw.results&&<span style={{fontSize:9,color:"var(--ok)",background:"rgba(16,185,129,.1)",padding:"2px 6px",borderRadius:4}}>済</span>}
-                  {dw.loading?<div className="spinner"/>:
-                    <button className={`btn btn-sm${dw.type?" btn-primary":""}`} disabled={!dw.type} onClick={()=>analyze(dw)}>🔍 分析</button>}
-                  <button className="btn-icon" onClick={()=>setDrawings(p=>p.filter(d=>d.id!==dw.id))}>✕</button>
-                </div>
-              </div>
-            ))}
-            {drawings.some(d=>d.type&&!d.results&&!d.loading)&&(
-              <button className="btn btn-primary" style={{width:"100%",padding:10,marginTop:6}} onClick={()=>drawings.filter(d=>d.type&&!d.results&&!d.loading).forEach(d=>analyze(d))}>
-                🚀 未分析の図面を一括分析
-              </button>
-            )}
-          </div>
-        )}
-      </>)}
-
-      {/* TAB: RESULTS */}
-      {tab==="results"&&(<>
-        {drawings.filter(d=>d.results).length>1&&(
-          <div style={{display:"flex",gap:4,marginBottom:10,overflowX:"auto",paddingBottom:4}}>
-            {drawings.filter(d=>d.results).map(d=>{
-              const t=DW_TYPES.find(x=>x.id===d.type);
-              const ng=d.results?.items?.filter(i=>i.status==="ng").length||0;
-              return(<button key={d.id} className={`btn btn-sm ${activeDw===d.id?"btn-active":""}`} onClick={()=>setActiveDw(d.id)} style={{whiteSpace:"nowrap",position:"relative"}}>
-                {t?.icon} {t?.label}{ng>0&&<span className="badge">{ng}</span>}
-              </button>);
-            })}
-          </div>
-        )}
-        {(()=>{
-          const dw=drawings.find(d=>d.id===activeDw);
-          if(!dw?.results)return<div style={{textAlign:"center",padding:40,color:"var(--text3)"}}>図面を分析してください</div>;
-          const dwT=DW_TYPES.find(t=>t.id===dw.type);
-          return(
-            <div className="card fade-up" style={{borderColor:`${dwT?.color}33`}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                <span style={{fontSize:22}}>{dwT?.icon}</span>
-                <div><div style={{fontSize:14,fontWeight:700,color:dwT?.color}}>{dwT?.label}</div><div style={{fontSize:10,color:"var(--text3)"}}>{dw.name}</div></div>
-                <div style={{marginLeft:"auto",fontSize:11,color:"var(--text2)",background:"rgba(15,23,42,.5)",padding:"4px 8px",borderRadius:6,maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dw.results.summary}</div>
-              </div>
-              {dw.results.items?.map(item=>{
-                const check=dwT?.checks?.find(c=>c.id===item.id)||CHOUKI_CHECKS.find(c=>c.id===item.id);
-                return(
-                <div key={item.id} className={`result-item ${item.status}`}>
-                  <div className={`status-icon ${item.status}`}>{sI(item.status)}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:12,fontWeight:500,lineHeight:1.5}}>
-                      {check?.cr&&<span style={{fontSize:8,background:"rgba(239,68,68,.15)",color:"var(--ng)",padding:"1px 4px",borderRadius:2,marginRight:4}}>必須</span>}
-                      {check?.tx||item.id}
-                    </div>
-                    {item.detail&&<div className="result-detail">{item.detail}</div>}
-                    {item.confidence!=null&&(
-                      <div className="conf-bar"><span>確信度</span><div className="conf-track"><div style={{width:`${(item.confidence||0)*100}%`,height:2,background:item.confidence>.7?"var(--ok)":item.confidence>.4?"var(--warn)":"var(--ng)",borderRadius:1}}/></div><span>{Math.round((item.confidence||0)*100)}%</span></div>
-                    )}
-                  </div>
-                  <button className="btn-icon" style={{fontSize:12}} onClick={()=>{setChatMsgs([{r:"ai",t:`「${check?.tx||item.id}」について質問をどうぞ。\n判定: ${item.status==="ok"?"適合":item.status==="ng"?"不適合":"要確認"}\n所見: ${item.detail||"なし"}`}]);setChatOpen(true);}}>💬</button>
-                </div>);
-              })}
+        {/* Progress */}
+        {totalChecked>0&&(
+          <div className="card fade-up" style={{padding:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+              <span style={{fontSize:11,fontWeight:600,color:"var(--text2)"}}>分析進捗</span>
+              <span style={{fontSize:10,color:"var(--text3)"}}>{drawings.filter(d=>d.results).length}/{drawings.length} 図面完了</span>
             </div>
-          );
-        })()}
-      </>)}
+            <div style={{display:"flex",gap:12}}>
+              {[{l:"適合",c:totalOk,cl:"var(--ok)"},{l:"不適合",c:totalNg,cl:"var(--ng)"},{l:"要確認",c:totalWarn,cl:"var(--warn)"}].map(s=>(
+                <div key={s.l} style={{display:"flex",alignItems:"center",gap:4}}>
+                  <div style={{width:8,height:8,borderRadius:2,background:s.cl}}/>
+                  <span style={{fontSize:11,color:"var(--text2)"}}>{s.l}</span>
+                  <span style={{fontSize:13,fontWeight:700,color:s.cl}}>{s.c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* TAB: SUMMARY */}
-      {tab==="summary"&&(
-        <div className="fade-up">
-          <div className="card">
-            <h3 style={{fontSize:14,fontWeight:700,marginBottom:10}}>図面別チェック結果</h3>
-            {DW_TYPES.map(dwT=>{
-              const dws=drawings.filter(d=>d.type===dwT.id&&d.results);
-              if(!dws.length)return null;
-              const items=dws.flatMap(d=>d.results?.items||[]);
-              const ok=items.filter(i=>i.status==="ok").length,ng=items.filter(i=>i.status==="ng").length;
-              const pct=items.length>0?Math.round(ok/items.length*100):0;
-              return(
-                <div key={dwT.id} className="progress-row">
-                  <span style={{fontSize:18}}>{dwT.icon}</span>
-                  <div style={{flex:1}}><div style={{fontSize:12,fontWeight:500}}>{dwT.label}</div>
-                    <div className="progress-bar"><div className="progress-fill" style={{width:`${pct}%`,background:ng>0?"var(--ng)":pct===100?"var(--ok)":"var(--accent)"}}/></div>
+        {/* Tabs */}
+        <div className="tabs">
+          {[{k:"upload",l:`📁 図面 (${drawings.length})`},{k:"results",l:`🔍 分析結果`,ng:totalNg},{k:"summary",l:"📊 総合判定"}].map(t=>(
+            <button key={t.k} className={`btn tab ${tab===t.k?"btn-active":""}`} onClick={()=>setTab(t.k)}>
+              {t.l}{t.ng>0&&<span className="badge">NG:{t.ng}</span>}
+            </button>
+          ))}
+        </div>
+
+        {/* UPLOAD */}
+        {tab==="upload"&&(<>
+          {drawings.length===0&&(
+            <div className="welcome fade-up">
+              <h2>図面をアップロードして分析開始</h2>
+              <p style={{fontSize:12,color:"var(--text2)",marginBottom:12,lineHeight:1.7}}>配置図・平面図・立面図・断面図・矩計図・基礎伏図・壁量計算書・省エネ計算書に対応<br/>AIが自動で建築基準法適合性をチェックします</p>
+            </div>
+          )}
+          <div className={`upload-zone${dragOver?" drag":""}`} onClick={()=>fileRef.current?.click()}
+            onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}>
+            <div style={{fontSize:42,marginBottom:6}}>📄</div>
+            <div style={{fontSize:14,fontWeight:600,color:"#a5b4fc",marginBottom:4}}>図面をアップロード</div>
+            <div style={{fontSize:11,color:"var(--text3)"}}>PNG / JPG / PDF — ドラッグ＆ドロップ対応</div>
+            <input ref={fileRef} type="file" accept="image/*,.pdf" multiple onChange={e=>{addFiles(e.target.files);e.target.value="";}} style={{display:"none"}}/>
+          </div>
+          {drawings.length>0&&(
+            <div style={{marginTop:10}}>
+              {drawings.map(dw=>(
+                <div key={dw.id} className="card dw-item fade-up">
+                  <div className="dw-thumb">{dw.dataUrl.includes("data:image")?<img src={dw.dataUrl} alt=""/>:<span style={{fontSize:22}}>📄</span>}</div>
+                  <div className="dw-info">
+                    <div className="dw-name">{dw.name}</div>
+                    <select className="input" value={dw.type} onChange={e=>setDrawings(p=>p.map(d=>d.id===dw.id?{...d,type:e.target.value}:d))} style={{maxWidth:200,fontSize:11,padding:"3px 8px"}}>
+                      <option value="">図面種別を選択...</option>
+                      {DW_TYPES.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}
+                    </select>
                   </div>
-                  <div style={{textAlign:"right",flexShrink:0}}>
-                    <div style={{fontSize:13,fontWeight:700}}>{pct}%</div>
-                    <div style={{fontSize:9,color:"var(--text3)"}}>{ng>0&&<span style={{color:"#f87171"}}>NG:{ng} </span>}{ok}/{items.length}</div>
+                  <div className="dw-actions">
+                    {dw.results&&<span style={{fontSize:9,color:"var(--ok)",background:"rgba(16,185,129,.1)",padding:"2px 6px",borderRadius:4}}>済</span>}
+                    {dw.loading?<div className="spinner"/>:
+                      <button className={`btn btn-sm${dw.type?" btn-primary":""}`} disabled={!dw.type} onClick={()=>analyze(dw)}>🔍 分析</button>}
+                    <button className="btn-icon" onClick={()=>setDrawings(p=>p.filter(d=>d.id!==dw.id))}>✕</button>
                   </div>
                 </div>
-              );
-            })}
-            {!drawings.some(d=>d.results)&&<div style={{textAlign:"center",padding:20,color:"var(--text3)"}}>まだ分析結果がありません</div>}
-          </div>
+              ))}
+              {drawings.some(d=>d.type&&!d.results&&!d.loading)&&(
+                <button className="btn btn-primary" style={{width:"100%",padding:10,marginTop:6}} onClick={()=>drawings.filter(d=>d.type&&!d.results&&!d.loading).forEach(d=>analyze(d))}>🚀 未分析の図面を一括分析</button>
+              )}
+            </div>
+          )}
+        </>)}
 
-          {mode==="chouki"&&(
-            <div className="card card-chouki">
-              <h3 style={{fontSize:14,fontWeight:700,marginBottom:10,color:"var(--chouki)"}}>🏅 長期優良住宅 追加チェック</h3>
-              {CHOUKI_CHECKS.map(ch=>{
-                const r=choukiRes[ch.id];
-                return(<div key={ch.id} style={{padding:"6px 0",borderBottom:"1px solid rgba(234,179,8,.06)",display:"flex",alignItems:"center",gap:8}}>
-                  <div className={`status-icon ${r?.status||""}`} style={{width:18,height:18,fontSize:9}}>{r?sI(r.status):""}</div>
-                  <div style={{flex:1}}>
-                    <span style={{fontSize:9,color:"var(--chouki)",background:"rgba(234,179,8,.08)",padding:"1px 4px",borderRadius:3,marginRight:4}}>{ch.cat}</span>
-                    <span style={{fontSize:11}}>{ch.tx}</span>
-                    {r?.detail&&<div style={{fontSize:10,color:"var(--text2)",marginTop:2}}>{r.detail}</div>}
-                  </div>
-                  <span style={{fontSize:9,color:"var(--text3)"}}>{r?(r.status==="ok"?"適合":r.status==="ng"?"不適合":"要確認"):"未チェック"}</span>
-                </div>);
+        {/* RESULTS */}
+        {tab==="results"&&(<>
+          {drawings.filter(d=>d.results).length>1&&(
+            <div style={{display:"flex",gap:4,marginBottom:10,overflowX:"auto",paddingBottom:4}}>
+              {drawings.filter(d=>d.results).map(d=>{
+                const t=DW_TYPES.find(x=>x.id===d.type);const ng=d.results?.items?.filter(i=>i.status==="ng").length||0;
+                return(<button key={d.id} className={`btn btn-sm ${activeDw===d.id?"btn-active":""}`} onClick={()=>setActiveDw(d.id)} style={{whiteSpace:"nowrap",position:"relative"}}>{t?.icon} {t?.label}{ng>0&&<span className="badge">{ng}</span>}</button>);
               })}
             </div>
           )}
-
-          {totalNg>0&&(
-            <div className="card card-ng">
-              <h3 style={{fontSize:13,fontWeight:700,marginBottom:8,color:"#f87171"}}>⚠ 不適合項目 ({totalNg}件)</h3>
-              {Object.values(results).filter(r=>r.status==="ng").map((item,i)=>{
-                const check=DW_TYPES.flatMap(t=>t.checks).find(c=>c.id===item.id)||CHOUKI_CHECKS.find(c=>c.id===item.id);
-                return(<div key={i} style={{padding:"5px 0",borderBottom:"1px solid rgba(239,68,68,.06)",fontSize:11,lineHeight:1.6}}>
-                  <span style={{color:"#f87171",fontWeight:700}}>✗ </span>{check?.tx||item.id}
-                  {item.detail&&<div style={{fontSize:10,color:"#fb923c",paddingLeft:14}}>→ {item.detail}</div>}
-                </div>);
-              })}
-            </div>
-          )}
-
           {(()=>{
-            const checked=new Set(drawings.filter(d=>d.results).map(d=>d.type));
-            const unc=DW_TYPES.filter(t=>!checked.has(t.id));
-            return unc.length>0?(
-              <div className="card"><h3 style={{fontSize:12,fontWeight:600,marginBottom:6,color:"var(--text2)"}}>📎 未提出の図面</h3>
-                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>{unc.map(t=><span key={t.id} style={{fontSize:10,color:"var(--text3)",background:"rgba(30,41,59,.5)",padding:"3px 8px",borderRadius:4}}>{t.icon} {t.label}</span>)}</div>
+            const dw=drawings.find(d=>d.id===activeDw);
+            if(!dw?.results)return<div style={{textAlign:"center",padding:40,color:"var(--text3)"}}>図面を分析してください</div>;
+            const dwT=DW_TYPES.find(t=>t.id===dw.type);
+            return(
+              <div className="card fade-up" style={{borderColor:`${dwT?.color}33`}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                  <span style={{fontSize:22}}>{dwT?.icon}</span>
+                  <div><div style={{fontSize:14,fontWeight:700,color:dwT?.color}}>{dwT?.label}</div><div style={{fontSize:10,color:"var(--text3)"}}>{dw.name}</div></div>
+                  <div style={{marginLeft:"auto",fontSize:11,color:"var(--text2)",background:"rgba(15,23,42,.5)",padding:"4px 8px",borderRadius:6,maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dw.results.summary}</div>
+                </div>
+                {dw.results.items?.map(item=>{
+                  const check=dwT?.checks?.find(c=>c.id===item.id)||CHOUKI.find(c=>c.id===item.id);
+                  return(
+                  <div key={item.id} className={`result-item ${item.status}`}>
+                    <div className={`status-icon ${item.status}`}>{sI(item.status)}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:500,lineHeight:1.5}}>
+                        {check?.cr&&<span style={{fontSize:8,background:"rgba(239,68,68,.15)",color:"var(--ng)",padding:"1px 4px",borderRadius:2,marginRight:4}}>必須</span>}
+                        {check?.tx||item.id}
+                      </div>
+                      {item.detail&&<div style={{fontSize:11,color:"var(--text2)",marginTop:2,lineHeight:1.5}}>{item.detail}</div>}
+                      {item.confidence!=null&&(
+                        <div className="conf-bar"><span>確信度</span><div className="conf-track"><div style={{width:`${(item.confidence||0)*100}%`,height:2,background:item.confidence>.7?"var(--ok)":item.confidence>.4?"var(--warn)":"var(--ng)",borderRadius:1}}/></div><span>{Math.round((item.confidence||0)*100)}%</span></div>
+                      )}
+                    </div>
+                    <button className="btn-icon" style={{fontSize:12}} onClick={()=>{setChatMsgs([{r:"ai",t:`「${check?.tx||item.id}」について質問をどうぞ。\n判定: ${item.status==="ok"?"適合":item.status==="ng"?"不適合":"要確認"}\n所見: ${item.detail||"なし"}`}]);setChatOpen(true);}}>💬</button>
+                  </div>);
+                })}
               </div>
-            ):null;
+            );
           })()}
+        </>)}
 
-          <div className="card card-accent" style={{padding:"10px 14px"}}>
-            <div style={{fontSize:11,color:"var(--text2)",lineHeight:1.8}}>
-              <strong style={{color:"#a5b4fc"}}>使い方：</strong><br/>
-              ① 📁図面タブで画像/PDFをアップロード → ② 図面種別を選択 → ③ 🔍分析 → ④ AIが自動判定 → ⑤ 📊総合判定<br/>
-              <span style={{fontSize:10,color:"var(--text3)"}}>※ AIの判定は参考値です。最終判断は有資格者が行ってください。</span>
+        {/* SUMMARY */}
+        {tab==="summary"&&(
+          <div className="fade-up">
+            <div className="card">
+              <h3 style={{fontSize:14,fontWeight:700,marginBottom:10}}>図面別チェック結果</h3>
+              {DW_TYPES.map(dwT=>{
+                const dws=drawings.filter(d=>d.type===dwT.id&&d.results);if(!dws.length)return null;
+                const items=dws.flatMap(d=>d.results?.items||[]);const ok=items.filter(i=>i.status==="ok").length,ng=items.filter(i=>i.status==="ng").length;
+                const pct=items.length>0?Math.round(ok/items.length*100):0;
+                return(
+                  <div key={dwT.id} className="progress-row">
+                    <span style={{fontSize:18}}>{dwT.icon}</span>
+                    <div style={{flex:1}}><div style={{fontSize:12,fontWeight:500}}>{dwT.label}</div><div className="progress-bar"><div className="progress-fill" style={{width:`${pct}%`,background:ng>0?"var(--ng)":pct===100?"var(--ok)":"var(--accent)"}}/></div></div>
+                    <div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:13,fontWeight:700}}>{pct}%</div><div style={{fontSize:9,color:"var(--text3)"}}>{ng>0&&<span style={{color:"#f87171"}}>NG:{ng} </span>}{ok}/{items.length}</div></div>
+                  </div>
+                );
+              })}
+              {!drawings.some(d=>d.results)&&<div style={{textAlign:"center",padding:20,color:"var(--text3)"}}>まだ分析結果がありません</div>}
+            </div>
+            {mode==="chouki"&&(
+              <div className="card card-chouki">
+                <h3 style={{fontSize:14,fontWeight:700,marginBottom:10,color:"var(--chouki)"}}>🏅 長期優良住宅 追加チェック</h3>
+                {CHOUKI.map(ch=>{const r=choukiRes[ch.id];return(
+                  <div key={ch.id} style={{padding:"6px 0",borderBottom:"1px solid rgba(234,179,8,.06)",display:"flex",alignItems:"center",gap:8}}>
+                    <div className={`status-icon ${r?.status||""}`} style={{width:18,height:18,fontSize:9}}>{r?sI(r.status):""}</div>
+                    <div style={{flex:1}}><span style={{fontSize:9,color:"var(--chouki)",background:"rgba(234,179,8,.08)",padding:"1px 4px",borderRadius:3,marginRight:4}}>{ch.cat}</span><span style={{fontSize:11}}>{ch.tx}</span>{r?.detail&&<div style={{fontSize:10,color:"var(--text2)",marginTop:2}}>{r.detail}</div>}</div>
+                    <span style={{fontSize:9,color:"var(--text3)"}}>{r?(r.status==="ok"?"適合":r.status==="ng"?"不適合":"要確認"):"未チェック"}</span>
+                  </div>);})}
+              </div>
+            )}
+            {totalNg>0&&(
+              <div className="card card-ng">
+                <h3 style={{fontSize:13,fontWeight:700,marginBottom:8,color:"#f87171"}}>⚠ 不適合項目 ({totalNg}件)</h3>
+                {Object.values(results).filter(r=>r.status==="ng").map((item,i)=>{
+                  const check=DW_TYPES.flatMap(t=>t.checks).find(c=>c.id===item.id)||CHOUKI.find(c=>c.id===item.id);
+                  return(<div key={i} style={{padding:"5px 0",borderBottom:"1px solid rgba(239,68,68,.06)",fontSize:11,lineHeight:1.6}}>
+                    <span style={{color:"#f87171",fontWeight:700}}>✗ </span>{check?.tx||item.id}
+                    {item.detail&&<div style={{fontSize:10,color:"#fb923c",paddingLeft:14}}>→ {item.detail}</div>}
+                  </div>);
+                })}
+              </div>
+            )}
+            {(()=>{const checked=new Set(drawings.filter(d=>d.results).map(d=>d.type));const unc=DW_TYPES.filter(t=>!checked.has(t.id));return unc.length>0?(
+              <div className="card"><h3 style={{fontSize:12,fontWeight:600,marginBottom:6,color:"var(--text2)"}}>📎 未提出の図面</h3><div style={{display:"flex",flexWrap:"wrap",gap:5}}>{unc.map(t=><span key={t.id} style={{fontSize:10,color:"var(--text3)",background:"rgba(30,41,59,.5)",padding:"3px 8px",borderRadius:4}}>{t.icon} {t.label}</span>)}</div></div>
+            ):null;})()}
+            <div className="card card-accent" style={{padding:"10px 14px"}}>
+              <div style={{fontSize:11,color:"var(--text2)",lineHeight:1.8}}>
+                <strong style={{color:"#a5b4fc"}}>使い方：</strong> 📁図面アップロード → 図面種別を選択 → 🔍分析 → AIが自動判定 → 📊総合判定<br/>
+                <span style={{fontSize:10,color:"var(--text3)"}}>※ AIの判定は参考値です。最終判断は有資格者が行ってください。</span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </>)}
+
+      <div style={{textAlign:"center",padding:"20px 0",fontSize:10,color:"var(--text3)"}}>
+        Powered by ハゼモト建設株式会社 — hazemoto-k.co.jp
+      </div>
     </main>
 
     {/* Chat */}
-    {chatOpen&&(
+    {ready&&chatOpen&&(
       <div className="chat-panel">
-        <div className="chat-header">
-          <span style={{fontSize:18}}>💬</span><div style={{flex:1,fontSize:13,fontWeight:600,color:"#a5b4fc"}}>AI相談</div>
-          <button className="btn-icon" onClick={()=>setChatOpen(false)}>✕</button>
-        </div>
+        <div className="chat-header"><span style={{fontSize:18}}>💬</span><div style={{flex:1,fontSize:13,fontWeight:600,color:"#a5b4fc"}}>AI相談</div><button className="btn-icon" onClick={()=>setChatOpen(false)}>✕</button></div>
         <div className="chat-body">
           {chatMsgs.map((m,i)=><div key={i} style={{display:"flex",justifyContent:m.r==="user"?"flex-end":"flex-start"}}><div className={`chat-msg ${m.r==="user"?"user":"ai"}`}>{m.t}</div></div>)}
           {chatLoading&&<div style={{textAlign:"center",fontSize:11,color:"var(--accent)"}}>分析中...</div>}
@@ -582,7 +509,7 @@ ${checksP}${choukiP}
         </div>
       </div>
     )}
-    {!chatOpen&&<button className="fab" onClick={()=>{setChatMsgs([{r:"ai",t:"建築基準法（2025年改正版）について質問をどうぞ。図面の分析結果についても相談できます。"}]);setChatOpen(true);}}>💬</button>}
+    {ready&&!chatOpen&&<button className="fab" onClick={()=>{setChatMsgs([{r:"ai",t:"建築基準法（2025年改正版）について質問をどうぞ。"}]);setChatOpen(true);}}>💬</button>}
   </div>);
 }
 
