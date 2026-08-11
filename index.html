@@ -337,11 +337,8 @@ return(<div>
 <div className="cd ca" style={{padding:"10px 14px"}}><div style={{fontSize:11,color:"var(--t2)",lineHeight:1.8}}><strong style={{color:"#a5b4fc"}}>使い方：</strong> 全図面を一括アップロード → AI自動判別 → 🚀一括分析 → 📊総合判定<br/><span style={{fontSize:10,color:"var(--t3)"}}>※ AIの判定は参考値です。最終判断は有資格者が行ってください。</span></div></div>
 {done>0&&<div className="cd" style={{padding:"10px 14px"}}>
 <h3 style={{fontSize:13,fontWeight:700,marginBottom:8}}>📤 Chatworkへ投稿（設計TM）</h3>
-{!cwUrl?<>
-<p style={{fontSize:11,color:"var(--t2)",marginBottom:8,lineHeight:1.7}}>投稿には中継用Google Apps ScriptのURLが必要です（Chatwork APIはブラウザから直接呼べないため）。設定済みのURLをここに貼り付けてください。</p>
-<div style={{display:"flex",gap:6}}><input className="ip" placeholder="https://script.google.com/macros/s/.../exec" value={cwUrlIn} onChange={e=>setCwUrlIn(e.target.value)}/><button className="bt bp" style={{flexShrink:0}} disabled={!cwUrlIn.trim()} onClick={()=>{const u=cwUrlIn.trim();localStorage.setItem("ck_cw_url",u);setCwUrl(u);}}>保存</button></div>
-</>:
-<button className="bt bp" disabled={cwSending} style={{width:"100%",padding:10}} onClick={postChatwork}>{cwSending?"投稿中...":"📤 設計TMへ投稿する（不適合"+tNg+"件を含む）"}</button>}
+<p style={{fontSize:11,color:"var(--t2)",marginBottom:8,lineHeight:1.7}}>ボタンで投稿内容をコピーし、Claudeとのチャットに貼り付けて「Chatworkに投稿して」と伝えてください。</p>
+<button className="bt bp" style={{width:"100%",padding:10}} onClick={copyChatwork}>{cwCopied?"✅ コピーしました":"📋 投稿用テキストをコピー（不適合"+tNg+"件を含む）"}</button>
 </div>}
 </div>}
 
