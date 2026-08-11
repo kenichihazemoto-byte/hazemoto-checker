@@ -84,7 +84,7 @@ const callAPI=async(msgs,mt=4000)=>{const r=await fetch("https://api.anthropic.c
 const guessType=n=>{const l=n.toLowerCase();if(/配置/.test(l))return"haichi";if(/平面/.test(l)&&!/詳細/.test(l))return"heimen";if(/立面/.test(l))return"ritsumen";if(/断面/.test(l))return"danmen";if(/矩計/.test(l))return"kanazuchi";if(/基礎伏|基礎/.test(l))return"kiso";if(/壁量|耐力壁/.test(l))return"hekiwall";if(/省エネ|外皮|ua/.test(l))return"energy";return"";};
 
 function App(){
-const ok=API_KEY&&API_KEY!=="YOUR_API_KEY_HERE";
+const ok=API_KEY&&API_KEY!=="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";
 const[mode,setMode]=useState("kakunin");const[dws,setDws]=useState([]);const[act,setAct]=useState(null);const[res,setRes]=useState({});const[chRes,setChRes]=useState({});const[tab,setTab]=useState("upload");const[chatOn,setChatOn]=useState(false);const[chatM,setChatM]=useState([]);const[chatI,setChatI]=useState("");const[chatL,setChatL]=useState(false);const[batch,setBatch]=useState("");const[batchR,setBatchR]=useState(false);const fRef=useRef(null);const cEnd=useRef(null);const[drag,setDrag]=useState(false);
 useEffect(()=>{cEnd.current?.scrollIntoView({behavior:"smooth"});},[chatM]);
 
