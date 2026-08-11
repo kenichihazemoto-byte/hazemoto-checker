@@ -2,6 +2,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useRef,useEffect}=React;
@@ -157,7 +159,41 @@ prevLevelRef.current=lvl;
 },[progress.xp]);
 useEffect(()=>{if(!levelUp)return;const t=setTimeout(()=>setLevelUp(null),4500);return()=>clearTimeout(t);},[levelUp]);
 const saveKey=()=>{if(keyIn.startsWith("sk-")){localStorage.setItem("ck_key",keyIn);setKey(keyIn);setShowDlg(false);}};
-const addF=f=>{Array.from(f).forEach(file=>{const r=new FileReader();r.onload=ev=>{const id="d"+Date.now()+Math.random().toString(36).slice(2,4);setDws(p=>[...p,{id,name:file.name,type:guessT(file.name),data:ev.target.result,res:null,ld:false,auto:!!guessT(file.name)}]);};r.readAsDataURL(file);});};
+// PDFの各ページを個別の画像（1ページ=1図面データ）に分解する。
+// 1つのPDFに複数枚の図面（配置図・平面図・立面図…）が含まれるケースに対応するため、
+// ページ単位で切り出してそれぞれAI自動判別・分析の対象にする。
+const pdfToPages=async file=>{
+const buf=await file.arrayBuffer();
+const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+const pages=[];
+for(let i=1;i<=pdf.numPages;i++){
+const page=await pdf.getPage(i);
+const base=page.getViewport({scale:1});
+const scale=Math.min(2.5,2200/Math.max(base.width,base.height));
+const vp=page.getViewport({scale});
+const canvas=document.createElement("canvas");
+canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
+const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+await page.render({canvasContext:ctx,viewport:vp}).promise;
+pages.push(canvas.toDataURL("image/png"));
+}
+return pages;
+};
+const addF=f=>{Array.from(f).forEach(async file=>{
+const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+if(!isPdf){const r=new FileReader();r.onload=ev=>{const id="d"+Date.now()+Math.random().toString(36).slice(2,4);setDws(p=>[...p,{id,name:file.name,type:guessT(file.name),data:ev.target.result,res:null,ld:false,auto:!!guessT(file.name)}]);};r.readAsDataURL(file);return;}
+try{
+setBp("📄 "+file.name+" を読み込み中...");
+const pages=await pdfToPages(file);
+const base=file.name.replace(/\.pdf$/i,"");
+pages.forEach((data,idx)=>{
+const id="d"+Date.now()+Math.random().toString(36).slice(2,4)+idx;
+const nm=pages.length>1?base+"（"+(idx+1)+"/"+pages.length+"枚目）":file.name;
+setDws(p=>[...p,{id,name:nm,type:guessT(nm),data,res:null,ld:false,auto:!!guessT(nm)}]);
+});
+setBp(pages.length>1?"✅ "+file.name+" を"+pages.length+"枚の図面に分割しました":"");
+}catch(e){setBp("❌ PDF読込エラー（"+file.name+"）: "+e.message);}
+});};
 
 // --- 使用者選択・ゲーミフィケーション ---
 const chooseStaff=async name=>{
