@@ -142,6 +142,10 @@ const[projLd,setProjLd]=useState(false);
 const[projName,setProjName]=useState("");
 const[projFilter,setProjFilter]=useState("");
 const[savingProj,setSavingProj]=useState(false);
+// --- Chatwork連携（GAS中継） ---
+const[cwUrl,setCwUrl]=useState(()=>localStorage.getItem("ck_cw_url")||"");
+const[cwUrlIn,setCwUrlIn]=useState("");
+const[cwSending,setCwSending]=useState(false);
 useEffect(()=>{if(!ok)setShowDlg(true);},[]);
 useEffect(()=>{cE.current?.scrollIntoView({behavior:"smooth"});},[cM]);
 useEffect(()=>{if(staff)chooseStaff(staff);},[]);
@@ -250,6 +254,26 @@ const saveProject=async()=>{if(!projName.trim()||!sb||savingProj||done===0)retur
 const loadProject=row=>{const nd=(row.drawings||[]).map((d,i)=>({id:"h"+i+"_"+row.id,name:d.name,type:d.type,data:"",res:d.res,ld:false,auto:true}));setDws(nd);const nr={};nd.forEach(d=>{(d.res?.items||[]).forEach(it=>{nr[it.id]={...it,dwId:d.id,dwN:d.name};});});setRes(nr);setChR(row.ch_results||{});setMode(row.mode||"kakunin");setAct(nd[0]?.id||null);setTab("summary");setBp("📂 「"+row.name+"」を読み込みました（"+new Date(row.created_at).toLocaleString("ja-JP")+" 保存分）");};
 const deleteProject=async id=>{if(!window.confirm("この履歴を削除しますか？"))return;try{const{error}=await sb.from("drawing_checker_projects").delete().eq("id",id);if(error)throw error;fetchProjects();}catch(e){setBp("❌ 削除に失敗: "+e.message);}};
 
+// --- Chatwork投稿（GAS中継URL経由。ブラウザから直接Chatwork APIはCORSで呼べないため） ---
+const postChatwork=async()=>{
+if(!cwUrl||cwSending||done===0)return;
+setCwSending(true);
+try{
+const ngItems=Object.values(res).filter(r=>r.status==="ng"&&!r.id?.startsWith("ch")).map(item=>{const ck=DW.flatMap(t=>t.checks).find(c=>c.id===item.id);return "・"+(ck?.tx||item.id)+(item.detail?"\n  → "+item.detail:"");});
+const lines=["【図面チェック結果】"+(mode==="chouki"?"長期優良住宅認定申請チェック":"建築確認申請チェック"),
+"担当:"+staff+"　日時:"+new Date().toLocaleString("ja-JP"),
+"適合:"+tOk+"件 / 不適合:"+tNg+"件 / 要確認:"+tWn+"件（"+done+"/"+dws.length+"図面完了）",
+""];
+if(ngItems.length){lines.push("[不適合項目]");lines.push(...ngItems);}
+const body=lines.join("\n");
+const r=await fetch(cwUrl,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({roomId:"439475031",body})});
+const d=await r.json();
+if(d.ok)setBp("✅ Chatwork（設計TM）へ投稿しました");
+else setBp("❌ Chatwork投稿に失敗: "+(d.error||d.body||("status "+r.status)));
+}catch(e){setBp("❌ Chatwork投稿に失敗: "+e.message);}
+setCwSending(false);
+};
+
 const detect=async dw=>{const b=dw.data.split(",")[1];const mt=dw.data.slice(0,30).includes("pdf")?"application/pdf":dw.data.slice(0,30).includes("png")?"image/png":"image/jpeg";const r=await api(key,[{role:"user",content:[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b}},{type:"text",text:"この図面の種別を判定。以下からIDのみ返して:\n"+DW.map(t=>t.id+":"+t.label).join(", ")+"\n判定不能ならunknown"}]}],100);return DW.find(t=>r.trim().includes(t.id))?.id||"";};
 const analyze=async dw=>{if(!ok)return;let tid=dw.type;setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:true}:d));
 if(!tid){setBp("🔍 "+dw.name+" の種別を判別中...");try{tid=await detect(dw);if(tid)setDws(p=>p.map(d=>d.id===dw.id?{...d,type:tid,auto:true}:d));else{setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("⚠️ "+dw.name+" 種別不明。手動選択してください");return;}}catch(e){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("❌ "+e.message);return;}}
@@ -316,6 +340,14 @@ return(<div>
 {tNg>0&&<div className="cd cn"><h3 style={{fontSize:13,fontWeight:700,marginBottom:8,color:"#f87171"}}>⚠ 不適合項目({tNg}件)</h3>{Object.values(res).filter(r=>r.status==="ng").map((item,i)=>{const ck=DW.flatMap(t=>t.checks).find(c=>c.id===item.id)||CH.find(c=>c.id===item.id);return <div key={i} style={{padding:"5px 0",borderBottom:"1px solid rgba(239,68,68,.06)",fontSize:11,lineHeight:1.6}}><span style={{color:"#f87171",fontWeight:700}}>✗ </span>{ck?.tx||item.id}{item.detail&&<div style={{fontSize:10,color:"#fb923c",paddingLeft:14}}>→ {item.detail}</div>}</div>})}</div>}
 {(()=>{const ck=new Set(dws.filter(d=>d.res).map(d=>d.type));const uc=DW.filter(t=>!ck.has(t.id));return uc.length?<div className="cd"><h3 style={{fontSize:12,fontWeight:600,marginBottom:6,color:"var(--t2)"}}>📎 未提出の図面</h3><div style={{display:"flex",flexWrap:"wrap",gap:5}}>{uc.map(t=><span key={t.id} style={{fontSize:10,color:"var(--t3)",background:"rgba(30,41,59,.5)",padding:"3px 8px",borderRadius:4}}>{t.icon} {t.label}</span>)}</div></div>:null})()}
 <div className="cd ca" style={{padding:"10px 14px"}}><div style={{fontSize:11,color:"var(--t2)",lineHeight:1.8}}><strong style={{color:"#a5b4fc"}}>使い方：</strong> 全図面を一括アップロード → AI自動判別 → 🚀一括分析 → 📊総合判定<br/><span style={{fontSize:10,color:"var(--t3)"}}>※ AIの判定は参考値です。最終判断は有資格者が行ってください。</span></div></div>
+{done>0&&<div className="cd" style={{padding:"10px 14px"}}>
+<h3 style={{fontSize:13,fontWeight:700,marginBottom:8}}>📤 Chatworkへ投稿（設計TM）</h3>
+{!cwUrl?<>
+<p style={{fontSize:11,color:"var(--t2)",marginBottom:8,lineHeight:1.7}}>投稿には中継用Google Apps ScriptのURLが必要です（Chatwork APIはブラウザから直接呼べないため）。設定済みのURLをここに貼り付けてください。</p>
+<div style={{display:"flex",gap:6}}><input className="ip" placeholder="https://script.google.com/macros/s/.../exec" value={cwUrlIn} onChange={e=>setCwUrlIn(e.target.value)}/><button className="bt bp" style={{flexShrink:0}} disabled={!cwUrlIn.trim()} onClick={()=>{const u=cwUrlIn.trim();localStorage.setItem("ck_cw_url",u);setCwUrl(u);}}>保存</button></div>
+</>:
+<button className="bt bp" disabled={cwSending} style={{width:"100%",padding:10}} onClick={postChatwork}>{cwSending?"投稿中...":"📤 設計TMへ投稿する（不適合"+tNg+"件を含む）"}</button>}
+</div>}
 </div>}
 
 {tab==="projects"&&<div className="fu">
