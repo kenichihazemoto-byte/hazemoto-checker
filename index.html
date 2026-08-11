@@ -142,10 +142,8 @@ const[projLd,setProjLd]=useState(false);
 const[projName,setProjName]=useState("");
 const[projFilter,setProjFilter]=useState("");
 const[savingProj,setSavingProj]=useState(false);
-// --- Chatwork連携（GAS中継） ---
-const[cwUrl,setCwUrl]=useState(()=>localStorage.getItem("ck_cw_url")||"");
-const[cwUrlIn,setCwUrlIn]=useState("");
-const[cwSending,setCwSending]=useState(false);
+// --- Chatwork連携（Claudeに投稿依頼する方式） ---
+const[cwCopied,setCwCopied]=useState(false);
 useEffect(()=>{if(!ok)setShowDlg(true);},[]);
 useEffect(()=>{cE.current?.scrollIntoView({behavior:"smooth"});},[cM]);
 useEffect(()=>{if(staff)chooseStaff(staff);},[]);
