@@ -395,7 +395,7 @@ return(<div>
 <div style={{textAlign:"center",padding:"20px 0",fontSize:10,color:"var(--t3)"}}>Powered by ハゼモト建設株式会社</div>
 </main>
 {ok&&cOn&&<div className="cp"><div className="ch"><span style={{fontSize:18}}>💬</span><div style={{flex:1,fontSize:13,fontWeight:600,color:"#a5b4fc"}}>AI相談</div><button className="bi" onClick={()=>setCOn(false)}>✕</button></div><div className="cb">{cM.map((m,i)=><div key={i} style={{display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}><div className={"cm "+(m.r==="u"?"u":"a")}>{m.t}</div></div>)}{cL&&<div style={{textAlign:"center",fontSize:11,color:"var(--ac)"}}>分析中...</div>}<div ref={cE}/></div><div className="ci"><input className="ip" value={cI} onChange={e=>setCI(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendC()}}} placeholder="質問を入力..." style={{fontSize:12}}/><button className="bt bp" disabled={cL} onClick={sendC} style={{flexShrink:0}}>送信</button></div></div>}
-{ok&&!cOn&&<button className="fab" onClick={()=>{setCM([{r:"a",t:"建築基準法（2025年4月改正版）について質問をどうぞ。"}]);setCOn(true)}}>💬</button>}
+{ok&&!cOn&&<button className="fab" onClick={()=>{setCM([{r:"a",t:"建築基準法（2025年改正版）について質問をどうぞ。"}]);setCOn(true)}}>💬</button>}
 </div>)}
 ReactDOM.createRoot(document.getElementById("app")).render(<App/>);
 </script></body></html>
