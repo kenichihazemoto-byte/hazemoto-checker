@@ -1,0 +1,499 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>図面チェッカー｜建築基準法2025年改正対応</title><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>"><style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}:root{--bg:#0c0f1a;--surface:#111827;--card:rgba(15,23,42,.72);--border:rgba(148,163,184,.1);--bh:rgba(148,163,184,.2);--text:#e2e8f0;--t2:#94a3b8;--t3:#64748b;--ac:#6366f1;--ac2:#8b5cf6;--ok:#10b981;--ng:#ef4444;--warn:#f59e0b;--ch:#fbbf24;--r:10px;--rs:6px}[data-theme="light"]{--bg:#eef1f6;--surface:#ffffff;--card:rgba(255,255,255,.92);--border:rgba(15,23,42,.1);--bh:rgba(15,23,42,.2);--text:#0f172a;--t2:#475569;--t3:#64748b}[data-theme="light"] body{background:linear-gradient(160deg,var(--bg),var(--surface),var(--bg))}html{font-size:14px}body{font-family:'Inter','Noto Sans JP','Hiragino Sans',system-ui,sans-serif;background:linear-gradient(160deg,var(--bg),var(--surface),var(--bg));color:var(--text);min-height:100vh}input,select,button{font-family:inherit}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fu{animation:fadeUp .35s ease}.hd{position:sticky;top:0;z-index:100;background:rgba(15,23,42,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 16px}.hi{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:10px}.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}.mn{max-width:880px;margin:0 auto;padding:14px 14px 120px}.cd{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;backdrop-filter:blur(10px)}.ca{border-color:rgba(99,102,241,.2);background:rgba(99,102,241,.04)}.ck{border-color:rgba(234,179,8,.2);background:rgba(234,179,8,.04)}.cn{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.03)}.co{border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.03)}.bt{padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border);background:rgba(30,41,59,.5);color:var(--t2);font-size:12px;cursor:pointer;transition:all .15s}.bt:hover{border-color:var(--bh)}.ba{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.12);color:#a5b4fc;font-weight:600}.bp{border:none;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-weight:600}.bp:disabled{opacity:.4;cursor:not-allowed}.bs{padding:4px 8px;font-size:10px}.bi{padding:4px;background:0;border:0;color:var(--t3);cursor:pointer;font-size:16px}.bg{border:none;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:600}.ip{width:100%;padding:7px 10px;background:rgba(15,23,42,.6);border:1px solid var(--bh);border-radius:var(--rs);color:var(--text);font-size:12px;outline:none}select.ip{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}.tabs{display:flex;gap:3px;margin-bottom:12px}.tab{flex:1;padding:9px 4px;text-align:center;border-radius:8px;font-size:11px;position:relative}.bdg{position:absolute;top:-3px;right:-1px;font-size:7px;background:var(--ng);color:#fff;padding:1px 5px;border-radius:8px;font-weight:700}.uz{border:2px dashed rgba(99,102,241,.3);border-radius:var(--r);padding:36px 16px;text-align:center;cursor:pointer;transition:all .2s}.uz:hover,.uz.dr{border-color:rgba(99,102,241,.6);background:rgba(99,102,241,.06)}.di{display:flex;gap:10px;align-items:center;padding:10px}.dt{width:56px;height:56px;border-radius:8px;overflow:hidden;background:rgba(30,41,59,.8);flex-shrink:0;display:flex;align-items:center;justify-content:center}.dt img{width:100%;height:100%;object-fit:cover}.ri{padding:7px 10px;margin-bottom:2px;border-radius:var(--rs);display:flex;gap:8px;align-items:flex-start}.ri.ok{background:rgba(16,185,129,.06)}.ri.ng{background:rgba(239,68,68,.06)}.ri.warn{background:rgba(245,158,11,.06)}.si{width:22px;height:22px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid}.si.ok{border-color:var(--ok);color:var(--ok)}.si.ng{border-color:var(--ng);color:var(--ng)}.si.warn{border-color:var(--warn);color:var(--warn)}.si.na{border-color:var(--t3);color:var(--t3)}.pr{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(148,163,184,.05)}.pb{height:3px;background:rgba(15,23,42,.5);border-radius:2px;overflow:hidden;margin-top:4px}.pf{height:100%;border-radius:2px;transition:width .5s}.cp{position:fixed;bottom:14px;right:14px;width:min(360px,calc(100vw - 28px));max-height:62vh;background:rgba(12,15,26,.98);border:1px solid rgba(99,102,241,.3);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;z-index:200;overflow:hidden}.ch{padding:10px 14px;background:linear-gradient(90deg,rgba(99,102,241,.12),rgba(139,92,246,.08));display:flex;align-items:center;gap:8px}.cb{flex:1;overflow-y:auto;padding:10px;min-height:160px}.cm{max-width:85%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.7;white-space:pre-wrap;margin-bottom:8px}.cm.u{background:rgba(99,102,241,.18);color:#c7d2fe;margin-left:auto}.cm.a{background:rgba(30,41,59,.8);color:#cbd5e1}.ci{padding:8px 12px;border-top:1px solid rgba(148,163,184,.06);display:flex;gap:6px}.fab{position:fixed;bottom:18px;right:18px;width:50px;height:50px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(99,102,241,.4);z-index:200;display:flex;align-items:center;justify-content:center}.sp{width:18px;height:18px;border:2px solid rgba(99,102,241,.25);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}.bb{font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:8px;display:flex;align-items:center;gap:8px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);color:#a5b4fc}.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}.dl{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:420px;width:100%}.qo{display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;border-radius:8px;border:1px solid var(--bh);background:rgba(15,23,42,.5);color:var(--text);font-size:12px;cursor:pointer;transition:all .15s;line-height:1.6}.qo:hover:not(:disabled){border-color:var(--ac)}.qo.qc{border-color:var(--ok);background:rgba(16,185,129,.12);color:var(--ok)}.qo.qw{border-color:var(--ng);background:rgba(239,68,68,.12);color:var(--ng)}.qo:disabled{cursor:default;opacity:.92}.gi{padding:9px 0;border-bottom:1px solid rgba(148,163,184,.06)}.gi:last-child{border-bottom:none}.stab{flex:1;padding:8px 4px;text-align:center;border-radius:8px;font-size:11px}.wk{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.06)}.wk:last-child{border-bottom:none}@media(max-width:600px){html{font-size:13px}.dt{width:48px;height:48px}.cp{width:calc(100vw - 16px);right:8px;bottom:8px;max-height:70vh}}</style></head><body><div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useRef,useEffect}=React;
+
+const DW=[
+{id:"haichi",label:"配置図",icon:"🗺️",color:"#0ea5e9",checks:[
+  {id:"h01",tx:"方位（真北）の表示",cr:true,law:"施行規則1条の3",hint:"日影・採光など方位が絡む規定を判定するための基準になる"},
+  {id:"h02",tx:"境界線名の記載",cr:true,law:"施行規則1条の3",hint:"隣地・道路との位置関係を明確にし、斜線制限等の判定に使う"},
+  {id:"h03",tx:"敷地内の建築物の位置",cr:true,law:"法52条",hint:"建蔽率・容積率や外壁後退の確認に必要な情報"},
+  {id:"h04",tx:"道路種別・道路幅員",cr:true,law:"法42条",hint:"接道義務や道路斜線制限の判定基準になる"},
+  {id:"h05",tx:"地盤レベル",cr:true,law:"施行令2条",hint:"高さ制限や床下換気などの基準となる地盤面を確定する"},
+  {id:"h06",tx:"建築物の高さ",cr:true,law:"法56条",hint:"高さ制限（絶対高さ・斜線制限）への適合を確認する"},
+  {id:"h07",tx:"排水経路",cr:true,law:"法36条",hint:"敷地内の排水が適切に処理されるかを確認する"},
+  {id:"h08",tx:"延焼のおそれのある部分",cr:true,law:"法2条六号",hint:"防火上の制限（開口部の防火設備等）の対象範囲を特定する"},
+  {id:"h09",tx:"用途地域・防火地域",cr:true,law:"法48条,61条",hint:"用途制限・防火規制の適用区分を確認する"},
+  {id:"h10",tx:"斜線検討距離",cr:true,law:"法56条",hint:"道路・隣地・北側斜線制限の検討に必要な離隔距離"},
+  {id:"h11",tx:"敷地面積・建蔽率・容積率",cr:true,law:"法52条,53条",hint:"建築可能な規模の上限を決める最重要数値"},
+  {id:"h12",tx:"擁壁・外壁後退",cr:false,law:"法19条,54条",hint:"造成地の安全性や外壁後退距離の規制確認"},
+]},
+{id:"heimen",label:"平面図",icon:"📐",color:"#10b981",checks:[
+  {id:"p01",tx:"方位（真北）",cr:true,law:"施行規則1条の3",hint:"採光・換気計算の方位基準として必要"},
+  {id:"p02",tx:"各室の用途・面積",cr:true,law:"施行規則1条の3",hint:"採光・換気に必要な面積の算定根拠になる"},
+  {id:"p03",tx:"壁厚・柱位置・通り芯",cr:true,law:"法20条",hint:"構造耐力・耐震性の確認に必要な基本情報"},
+  {id:"p04",tx:"開口部の位置・寸法",cr:true,law:"法28条",hint:"採光・換気規定（1/7など）への適合確認に使う"},
+  {id:"p05",tx:"耐力壁の位置・種類",cr:true,law:"令46条",hint:"壁量計算・耐震性能の基礎データになる"},
+  {id:"p06",tx:"階段の幅・蹴上・踏面",cr:true,law:"令23条",hint:"安全な昇降のための寸法基準"},
+  {id:"p07",tx:"給気口・換気設備",cr:true,law:"令20条の2",hint:"シックハウス対策の24時間換気設備の確認"},
+  {id:"p08",tx:"防火区画貫通部",cr:true,law:"令112条",hint:"火災拡大を防ぐための防火区画の確認"},
+  {id:"p09",tx:"内装制限の表示",cr:true,law:"法35条の2",hint:"火災時の内装材の安全性に関する規制"},
+  {id:"p10",tx:"住宅用火災警報器",cr:true,law:"法9条の2",hint:"就寝室等への設置義務の確認"},
+  {id:"p11",tx:"バリアフリー対応",cr:false,law:"住宅性能表示",hint:"高齢者等への配慮（任意項目）"},
+]},
+{id:"ritsumen",label:"立面図",icon:"🏢",color:"#8b5cf6",checks:[
+  {id:"r01",tx:"外壁の仕様",cr:true,law:"施行規則1条の3",hint:"防火性能・耐久性の確認資料"},
+  {id:"r02",tx:"屋根の仕様・勾配",cr:true,law:"施行規則1条の3",hint:"屋根ふき材の防火性能・雨仕舞の確認"},
+  {id:"r03",tx:"軒裏の仕様",cr:true,law:"施行規則1条の3",hint:"延焼のおそれのある部分の防火措置確認"},
+  {id:"r04",tx:"最高高さ・軒高",cr:true,law:"令2条",hint:"高さ制限適合の判定に必須の寸法"},
+  {id:"r05",tx:"地盤面の表示",cr:true,law:"令2条",hint:"高さの起点となる地盤面の明示"},
+  {id:"r06",tx:"斜線制限の検討線",cr:true,law:"法56条",hint:"道路・隣地・北側斜線への適合を図示で確認"},
+  {id:"r07",tx:"敷地境界線",cr:true,law:"施行規則1条の3",hint:"隣地との距離関係の確認基準"},
+  {id:"r08",tx:"採光検討距離",cr:true,law:"法28条",hint:"採光補正係数の算定に必要な水平距離"},
+  {id:"r09",tx:"軒の出・屋根勾配",cr:true,law:"令2条",hint:"高さ算定や採光計算に影響する寸法"},
+  {id:"r10",tx:"給排気口の位置",cr:true,law:"令20条の3",hint:"換気設備の給排気経路の確認"},
+]},
+{id:"danmen",label:"断面図",icon:"📏",color:"#f59e0b",checks:[
+  {id:"d01",tx:"地盤面",cr:true,law:"令2条",hint:"各種高さ制限の基準となる面"},
+  {id:"d02",tx:"天井高さ(≧2100mm)",cr:true,law:"令21条",hint:"居室として必要な最低天井高"},
+  {id:"d03",tx:"床高さ(≧450mm)",cr:true,law:"令22条",hint:"木造住宅の床下防湿・防蟻対策の基準"},
+  {id:"d04",tx:"横架材間内法長さ",cr:true,law:"令43条",hint:"柱の有効細長比等、構造安全性の確認"},
+  {id:"d05",tx:"軒の出寸法",cr:true,law:"施行規則1条の3",hint:"外壁・軒裏の防火措置範囲の確認"},
+  {id:"d06",tx:"屋根ふき材・外装材",cr:true,law:"施行規則1条の3",hint:"防火性能の確認資料"},
+  {id:"d07",tx:"階段の構造",cr:true,law:"令23条",hint:"安全な階段構造（手すり等含む）の確認"},
+  {id:"d08",tx:"断熱材の仕様",cr:false,law:"省エネ法",hint:"省エネ基準適合の確認資料（任意）"},
+  {id:"d09",tx:"防湿方法",cr:true,law:"令22条",hint:"床下の湿気対策（防湿コンクリート等）の確認"},
+]},
+{id:"kanazuchi",label:"矩計図",icon:"📊",color:"#ec4899",checks:[
+  {id:"k01",tx:"基礎の構造・配筋",cr:true,law:"令38条",hint:"基礎の構造安全性（配筋・かぶり厚等）確認"},
+  {id:"k02",tx:"土台・アンカーボルト",cr:true,law:"令42条",hint:"基礎と土台の緊結、耐震性の基本"},
+  {id:"k03",tx:"軸組の構造方法",cr:true,law:"令43条",hint:"柱・梁等の軸組構造の適合性確認"},
+  {id:"k04",tx:"屋根の断面構造",cr:true,law:"施行規則1条の3",hint:"屋根の下地から仕上げまでの構成確認"},
+  {id:"k05",tx:"外壁の通気構造",cr:false,law:"住宅性能表示",hint:"壁体内結露防止のための通気層確認（任意）"},
+  {id:"k06",tx:"断熱仕様",cr:false,law:"省エネ法",hint:"断熱材の種類・厚みの確認（任意）"},
+  {id:"k07",tx:"基礎高さ(≧400mm)",cr:false,law:"住宅性能表示",hint:"床下点検・維持管理のための基礎高さ（任意）"},
+]},
+{id:"kiso",label:"基礎伏図",icon:"🧱",color:"#64748b",checks:[
+  {id:"b01",tx:"基礎の形状・配筋",cr:true,law:"令38条",hint:"基礎全体の構造安全性の確認"},
+  {id:"b02",tx:"アンカーボルト位置",cr:true,law:"告示1460号",hint:"柱脚・耐力壁端部の緊結金物位置の確認"},
+  {id:"b03",tx:"換気口・基礎パッキン",cr:true,law:"令22条",hint:"床下換気経路の確保確認"},
+  {id:"b04",tx:"人通口の位置・補強",cr:false,law:"",hint:"床下点検口の位置と構造補強の確認（任意）"},
+]},
+{id:"hekiwall",label:"壁量計算書",icon:"📋",color:"#dc2626",checks:[
+  {id:"w01",tx:"各階床面積",cr:true,law:"令46条",hint:"必要壁量算定の基礎データ"},
+  {id:"w02",tx:"必要壁量の算定",cr:true,law:"令46条(2025改正)",hint:"2025年改正の新基準による必要壁量の算定確認"},
+  {id:"w03",tx:"存在壁量の算定",cr:true,law:"令46条",hint:"実際に配置された耐力壁の壁量計算"},
+  {id:"w04",tx:"壁量判定(充足率≧1.0)",cr:true,law:"令46条",hint:"必要壁量に対する充足の合否判定"},
+  {id:"w05",tx:"四分割法(壁率比≧0.5)",cr:true,law:"令46条",hint:"建物のねじれ防止のためのバランス確認"},
+  {id:"w06",tx:"N値計算・接合金物",cr:true,law:"告示1460号",hint:"柱頭柱脚の引き抜き対策・金物選定の確認"},
+]},
+{id:"energy",label:"省エネ計算書",icon:"🌱",color:"#22c55e",checks:[
+  {id:"e01",tx:"UA値",cr:true,law:"省エネ法",hint:"外皮平均熱貫流率。断熱性能を表す指標"},
+  {id:"e02",tx:"ηAC値",cr:true,law:"省エネ法",hint:"冷房期平均日射熱取得率。日射遮蔽性能の指標"},
+  {id:"e03",tx:"BEI(≦1.0)",cr:true,law:"省エネ法",hint:"一次エネルギー消費量の基準適合判定"},
+  {id:"e04",tx:"断熱仕様の整合性",cr:true,law:"省エネ法",hint:"計算書と矩計図等の断熱仕様が一致しているかの確認"},
+]},
+];
+
+const CH=[
+{id:"ch01",tx:"耐震等級2以上",cr:true,cat:"構造",hint:"大地震後も継続使用しやすい高い耐震性能"},
+{id:"ch02",tx:"劣化対策等級3",cr:true,cat:"劣化",hint:"構造躯体が75〜90年程度使用できる耐久性能"},
+{id:"ch03",tx:"床下空間330mm以上",cr:true,cat:"劣化",hint:"点検・メンテナンスのための床下有効高さ"},
+{id:"ch04",tx:"維持管理対策等級3",cr:true,cat:"維持管理",hint:"配管更新等がしやすい設計への配慮"},
+{id:"ch05",tx:"省エネ等級4以上",cr:true,cat:"温熱",hint:"長期優良住宅に求められる断熱性能水準"},
+{id:"ch06",tx:"居住面積75㎡以上",cr:true,cat:"面積",hint:"良好な居住性を確保する床面積基準（一戸建ての場合）"},
+{id:"ch07",tx:"維持保全計画",cr:true,cat:"維持",hint:"将来の点検・修繕計画の作成義務"},
+];
+
+const guessT=n=>{const l=n.toLowerCase();if(/配置/.test(l))return"haichi";if(/平面/.test(l)&&!/詳細/.test(l))return"heimen";if(/立面/.test(l))return"ritsumen";if(/断面/.test(l))return"danmen";if(/矩計/.test(l))return"kanazuchi";if(/基礎伏|基礎/.test(l))return"kiso";if(/壁量|耐力壁/.test(l))return"hekiwall";if(/省エネ|外皮|ua/.test(l))return"energy";return"";};
+
+const allChecks=()=>DW.flatMap(d=>d.checks.map(c=>({...c,dwLabel:d.label}))).concat(CH.map(c=>({...c,dwLabel:"長期優良住宅"})));
+const loadLS=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}};
+const saveLS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+
+// --- 使用者・ゲーミフィケーション・物件履歴（Supabase連携） ---
+const STAFF=["安元","粟戸","城","桑靏","櫨本"];
+const XP_PER_LEVEL=100;
+const levelOf=xp=>Math.max(1,Math.floor((xp||0)/XP_PER_LEVEL)+1);
+const levelTitle=lv=>lv>=15?"🏆 図面マスター":lv>=10?"🥇 エキスパート":lv>=6?"🥈 ベテランチェッカー":lv>=3?"🥉 一人前チェッカー":"🌱 見習いチェッカー";
+// AI分析・物件データの読み書きはすべてサーバー(Supabase Edge Function)経由で行う。
+// 個人のAPIキーやSupabaseへの直接アクセス権はブラウザに一切持たせない構成。
+const CHECKER_API_URL="https://rrfeqnzxhbxntyewgeyj.supabase.co/functions/v1/checker-api";
+const APP_GATE="pu3u1uBVJFkLXp-8WcuUm8LTGzcOVVF2A7a-LcTXWUU";
+const apiDb=async(op,payload={})=>{const r=await fetch(CHECKER_API_URL,{method:"POST",headers:{"Content-Type":"application/json","x-app-key":APP_GATE},body:JSON.stringify({op,...payload})});const d=await r.json();if(!r.ok||d.error)throw new Error(d.error||("status "+r.status));return d;};
+const defaultProgress=()=>({xp:0,quiz_correct:0,quiz_total:0,weak:{}});
+const loadProgressLocal=st=>loadLS("ck_progress_"+st,defaultProgress());
+const saveProgressLocal=(st,p)=>saveLS("ck_progress_"+st,p);
+
+function App(){
+const ok=true;
+const[mode,setMode]=useState("kakunin");const[dws,setDws]=useState([]);const[act,setAct]=useState(null);const[res,setRes]=useState({});const[chR,setChR]=useState({});const[tab,setTab]=useState("upload");const[cOn,setCOn]=useState(false);const[cM,setCM]=useState([]);const[cI,setCI]=useState("");const[cL,setCL]=useState(false);const[bp,setBp]=useState("");const[br,setBr]=useState(false);const fR=useRef(null);const cE=useRef(null);const[dg,setDg]=useState(false);
+// --- 教育機能: 状態 ---
+const[expl,setExpl]=useState({});const[explLd,setExplLd]=useState({});
+const[quiz,setQuiz]=useState(null);const[quizLd,setQuizLd]=useState(false);
+const[studySub,setStudySub]=useState("glossary");const[studyType,setStudyType]=useState("haichi");
+// --- 使用者・ゲーミフィケーション ---
+const[staff,setStaffState]=useState(()=>localStorage.getItem("ck_staff")||"");
+const[progress,setProgress]=useState(()=>staff?loadProgressLocal(staff):defaultProgress());
+const[levelUp,setLevelUp]=useState(null);
+const prevLevelRef=useRef(levelOf(progress.xp));
+const skipLevelRef=useRef(true);
+// --- 物件履歴（Supabase） ---
+const[projects,setProjects]=useState([]);
+const[projLd,setProjLd]=useState(false);
+const[projName,setProjName]=useState("");
+const[projFilter,setProjFilter]=useState("");
+const[savingProj,setSavingProj]=useState(false);
+// --- Chatwork連携（Claudeに投稿依頼する方式） ---
+const[cwCopied,setCwCopied]=useState(false);
+const[cwSel,setCwSel]=useState({});
+const[cwNote,setCwNote]=useState("");
+const[cwPosting,setCwPosting]=useState(false);
+// --- 有資格者による最終確認記録 ---
+const[finalConfirmed,setFinalConfirmed]=useState(false);
+const[finalNote,setFinalNote]=useState("");
+// --- コスト可視化（API呼出回数のセッションカウンタ） ---
+const[apiCallCount,setApiCallCount]=useState(0);
+const api=async(msgs,mt=4000)=>{setApiCallCount(c=>c+1);const r=await fetch(CHECKER_API_URL,{method:"POST",headers:{"Content-Type":"application/json","x-app-key":APP_GATE},body:JSON.stringify({op:"anthropic",messages:msgs,max_tokens:mt})});if(!r.ok){const e=await r.text();throw new Error(r.status+": "+e.slice(0,100));}const d=await r.json();return d.content?.map(c=>c.text||"").join("")||"";};
+// --- 表示テーマ（ダーク/ライト） ---
+const[theme,setTheme]=useState(()=>localStorage.getItem("ck_theme")||"dark");
+useEffect(()=>{document.documentElement.setAttribute("data-theme",theme);localStorage.setItem("ck_theme",theme);},[theme]);
+// --- オフライン耐性: 未保存の分析結果を下書きとして自動保存・復元 ---
+const[draftBanner,setDraftBanner]=useState(false);
+useEffect(()=>{
+if(!staff)return;
+try{const raw=localStorage.getItem("ck_draft_"+staff);if(raw){const d=JSON.parse(raw);if(d?.dws?.length)setDraftBanner(true);}}catch{}
+},[staff]);
+useEffect(()=>{
+if(!staff||!dws.length)return;
+const light=dws.map(d=>({id:d.id,name:d.name,type:d.type,res:d.res,auto:d.auto}));
+try{localStorage.setItem("ck_draft_"+staff,JSON.stringify({dws:light,res,chR,mode,savedAt:Date.now()}));}catch{}
+},[dws,res,chR,mode,staff]);
+const restoreDraft=()=>{try{const raw=localStorage.getItem("ck_draft_"+staff);const d=JSON.parse(raw);setDws((d.dws||[]).map(x=>({...x,data:"",ld:false})));setRes(d.res||{});setChR(d.chR||{});setMode(d.mode||"kakunin");setDraftBanner(false);setTab("summary");setBp("♻️ 前回の未保存の分析結果を復元しました（画像は再アップロードが必要です）");}catch(e){setBp("❌ 復元に失敗: "+e.message);}};
+const dismissDraft=()=>{localStorage.removeItem("ck_draft_"+staff);setDraftBanner(false);};
+useEffect(()=>{cE.current?.scrollIntoView({behavior:"smooth"});},[cM]);
+useEffect(()=>{if(staff)chooseStaff(staff);},[]);
+useEffect(()=>{if(tab==="projects"&&staff)fetchProjects();},[tab]);
+useEffect(()=>{
+if(!staff)return;
+saveProgressLocal(staff,progress);
+apiDb("progress_upsert",{row:{staff,xp:progress.xp,quiz_correct:progress.quiz_correct,quiz_total:progress.quiz_total,weak:progress.weak,updated_at:new Date().toISOString()}}).catch(e=>setBp("❌ 進捗の同期に失敗: "+e.message));
+},[progress]);
+useEffect(()=>{
+const lvl=levelOf(progress.xp);
+if(skipLevelRef.current){skipLevelRef.current=false;prevLevelRef.current=lvl;return;}
+if(lvl>prevLevelRef.current)setLevelUp({from:prevLevelRef.current,to:lvl});
+prevLevelRef.current=lvl;
+},[progress.xp]);
+useEffect(()=>{if(!levelUp)return;const t=setTimeout(()=>setLevelUp(null),4500);return()=>clearTimeout(t);},[levelUp]);
+// PDF.jsのworkerはCDN配信のため、ページのオリジン（GitHub Pages等）から見ると
+// クロスオリジンとなり、new Worker(url) がブラウザにブロックされて
+// pdfjsLib.getDocument() が永久に応答しなくなる（＝読み込み中のまま固まる）。
+// これを避けるため、workerスクリプトを一度fetchしてBlob URL化してから使う。
+let _pdfWorkerBlobUrl=null;
+const ensurePdfWorker=async()=>{
+if(_pdfWorkerBlobUrl)return _pdfWorkerBlobUrl;
+const src=pdfjsLib.GlobalWorkerOptions.workerSrc;
+try{
+const r=await fetch(src);
+if(!r.ok)throw new Error("worker fetch failed: "+r.status);
+const blob=await r.blob();
+_pdfWorkerBlobUrl=URL.createObjectURL(blob);
+pdfjsLib.GlobalWorkerOptions.workerSrc=_pdfWorkerBlobUrl;
+}catch(e){
+console.warn("PDF worker blob化に失敗、CDN直リンクのまま続行します",e);
+}
+return _pdfWorkerBlobUrl;
+};
+// PDFの各ページを個別の画像（1ページ=1図面データ）に分解する。
+// 1つのPDFに複数枚の図面（配置図・平面図・立面図…）が含まれるケースに対応するため、
+// ページ単位で切り出してそれぞれAI自動判別・分析の対象にする。
+const pdfToPages=async file=>{
+await ensurePdfWorker();
+const buf=await file.arrayBuffer();
+const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+const pages=[];
+for(let i=1;i<=pdf.numPages;i++){
+const page=await pdf.getPage(i);
+const base=page.getViewport({scale:1});
+const scale=Math.min(2.5,2200/Math.max(base.width,base.height));
+const vp=page.getViewport({scale});
+const canvas=document.createElement("canvas");
+canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
+const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+await page.render({canvasContext:ctx,viewport:vp}).promise;
+pages.push(canvas.toDataURL("image/png"));
+}
+return pages;
+};
+const addF=f=>{Array.from(f).forEach(async file=>{
+if(/\.(heic|heif)$/i.test(file.name)||file.type==="image/heic"||file.type==="image/heif"){setBp("❌ "+file.name+" はHEIC/HEIF形式のため非対応です。iPhoneの「設定 > カメラ > フォーマット」を「互換性優先」にするか、写真アプリで共有時に「JPEGとして書き出す」を選んでから再度アップロードしてください");return;}
+const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+if(!isPdf){const r=new FileReader();r.onload=ev=>{const id="d"+Date.now()+Math.random().toString(36).slice(2,4);setDws(p=>[...p,{id,name:file.name,type:guessT(file.name),data:ev.target.result,res:null,ld:false,auto:!!guessT(file.name)}]);};r.readAsDataURL(file);return;}
+try{
+setBp("📄 "+file.name+" を読み込み中...");
+const pages=await pdfToPages(file);
+const base=file.name.replace(/\.pdf$/i,"");
+pages.forEach((data,idx)=>{
+const id="d"+Date.now()+Math.random().toString(36).slice(2,4)+idx;
+const nm=pages.length>1?base+"（"+(idx+1)+"/"+pages.length+"枚目）":file.name;
+setDws(p=>[...p,{id,name:nm,type:guessT(nm),data,res:null,ld:false,auto:!!guessT(nm)}]);
+});
+setBp(pages.length>1?"✅ "+file.name+" を"+pages.length+"枚の図面に分割しました":"");
+}catch(e){setBp("❌ PDF読込エラー（"+file.name+"）: "+e.message);}
+});};
+// --- 既存の図面枠に画像データを再添付（下書き復元後に画像が消えた場合や再アップロード用） ---
+const reattachFile=async(dwId,file)=>{
+if(/\.(heic|heif)$/i.test(file.name)||file.type==="image/heic"||file.type==="image/heif"){setBp("❌ "+file.name+" はHEIC/HEIF形式のため非対応です。JPEG等に変換してから再度お試しください");return;}
+const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+if(isPdf){
+try{setBp("📄 "+file.name+" を読み込み中...");const pages=await pdfToPages(file);if(pages.length){setDws(p=>p.map(d=>d.id===dwId?{...d,data:pages[0]}:d));setBp(pages.length>1?"📎 添付しました（PDFの1ページ目を使用。他のページは図面タブから追加でアップロードしてください）":"📎 添付しました");}}
+catch(e){setBp("❌ PDF読込エラー: "+e.message);}
+return;
+}
+const r=new FileReader();r.onload=ev=>{setDws(p=>p.map(d=>d.id===dwId?{...d,data:ev.target.result}:d));setBp("📎 添付しました");};r.readAsDataURL(file);
+};
+
+// --- 使用者選択・ゲーミフィケーション ---
+const chooseStaff=async name=>{
+localStorage.setItem("ck_staff",name);
+setStaffState(name);
+const cached=loadProgressLocal(name);
+skipLevelRef.current=true;prevLevelRef.current=levelOf(cached.xp);
+setProgress(cached);
+try{
+const{data}=await apiDb("progress_get",{staff:name});
+if(data){
+const merged={xp:data.xp||0,quiz_correct:data.quiz_correct||0,quiz_total:data.quiz_total||0,weak:data.weak||{}};
+skipLevelRef.current=true;prevLevelRef.current=levelOf(merged.xp);
+setProgress(merged);saveProgressLocal(name,merged);
+}else{
+await apiDb("progress_upsert",{row:{staff:name,...defaultProgress()}});
+}
+}catch(e){setBp("⚠️ 進捗の取得に失敗しました（オフラインのデータを使用中）: "+e.message);}
+};
+const switchStaff=()=>{if(window.confirm("使用者選択画面に戻りますか？")){localStorage.removeItem("ck_staff");setStaffState("");}};
+const addXp=amount=>setProgress(p=>({...p,xp:(p.xp||0)+amount}));
+
+// --- 教育機能: 弱点ログの記録・解説生成・クイズ生成 ---
+const addWeak=entries=>{setProgress(p=>{const nw={...(p.weak||{})};entries.forEach(e=>{const cur=nw[e.id]||{id:e.id,tx:e.tx,law:e.law,dwLabel:e.dwLabel,ng:0,warn:0,quiz:0,last:0};if(e.status==="ng")cur.ng++;else if(e.status==="warn")cur.warn++;else if(e.status==="quiz")cur.quiz++;cur.tx=e.tx||cur.tx;cur.law=e.law||cur.law;cur.dwLabel=e.dwLabel||cur.dwLabel;cur.last=Date.now();nw[e.id]=cur;});return{...p,weak:nw};});};
+const clearWeak=()=>{if(window.confirm("弱点記録をすべて削除しますか？"))setProgress(p=>({...p,weak:{}}));};
+const explainItem=async(ck,item)=>{if(!ck||!ok||expl[ck.id]||explLd[ck.id])return;setExplLd(p=>({...p,[ck.id]:true}));try{const st=item?.status==="ok"?"適合":item?.status==="ng"?"不適合":item?.status==="warn"?"要確認":"（今回の分析結果なし）";const dt=item?.detail?("\nAIの所見:"+item.detail):"";const raw=await api([{role:"user",content:"建築基準法（2025年4月改正版）の専門家として、新人建築士向けに次のチェック項目を解説してください。\n項目:"+ck.tx+"\n根拠法令:"+(ck.law||"なし")+"\n今回の判定:"+st+dt+"\n\n次の3点を日本語で、短い文章3つに分けて簡潔に回答してください（合計300字程度、記号や見出しは不要）。\n1.この規定の趣旨・なぜ必要か\n2.実務でよくある間違い\n3.正しく対応するための具体的なポイント"}],900);setExpl(p=>({...p,[ck.id]:raw}));}catch(e){setExpl(p=>({...p,[ck.id]:"解説の取得に失敗しました: "+e.message}));}setExplLd(p=>({...p,[ck.id]:false}));};
+const genQuiz=async()=>{if(!ok||quizLd)return;const pool=allChecks();const weakIds=Object.keys(progress.weak||{});let src;if(weakIds.length&&Math.random()<0.6){const wid=weakIds[Math.floor(Math.random()*weakIds.length)];src=pool.find(c=>c.id===wid)||pool[Math.floor(Math.random()*pool.length)];}else{src=pool[Math.floor(Math.random()*pool.length)];}setQuizLd(true);setQuiz(null);try{const raw=await api([{role:"user",content:"あなたは一級建築士試験の問題作成者です。2025年4月改正建築基準法に基づき、次のチェック項目に関する実務知識を問う4択問題を1問作成してください。\n項目:"+src.tx+"（根拠:"+(src.law||"なし")+"、対象図面:"+src.dwLabel+"）\n新人建築士が実務で間違えやすいポイントを問う内容にしてください。選択肢は紛らわしいものを含め4つ、正解は1つだけにしてください。\nJSON形式のみで出力してください（バッククォート不要）:\n{\"question\":\"問題文\",\"options\":[\"選択肢1\",\"選択肢2\",\"選択肢3\",\"選択肢4\"],\"answer\":0,\"explain\":\"解説（120字程度）\"}"}],1200);let p;try{p=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch{p=null;}if(p&&p.options&&p.options.length===4){setQuiz({...p,sel:null,srcId:src.id,srcTx:src.tx});}else{setBp("❌ クイズの生成に失敗しました。もう一度お試しください");}}catch(e){setBp("❌ "+e.message);}setQuizLd(false);};
+const answerQuiz=sel=>{if(!quiz||quiz.sel!=null)return;const correct=sel===quiz.answer;setQuiz(q=>({...q,sel}));setProgress(p=>({...p,quiz_correct:(p.quiz_correct||0)+(correct?1:0),quiz_total:(p.quiz_total||0)+1}));addXp(correct?10:3);if(!correct)addWeak([{id:quiz.srcId,tx:quiz.srcTx,law:"",dwLabel:"クイズ",status:"quiz"}]);};
+
+// --- 物件履歴（Supabase） ---
+const fetchProjects=async()=>{setProjLd(true);try{const d=await apiDb("projects_list");setProjects(d.data||[]);}catch(e){setBp("❌ 物件履歴の取得に失敗: "+e.message);}setProjLd(false);};
+const saveProject=async()=>{if(!projName.trim()||savingProj||done===0)return;setSavingProj(true);try{const final_check=finalConfirmed?{confirmed:true,by:staff,at:new Date().toISOString(),note:finalNote.trim()}:{};const row={name:projName.trim(),mode,staff,summary:{ok:tOk,ng:tNg,warn:tWn,done,total:dws.length},drawings:dws.filter(d=>d.res).map(d=>({name:d.name,type:d.type,res:d.res})),ch_results:mode==="chouki"?chR:{},final_check};await apiDb("projects_insert",{row});setBp("✅ 「"+row.name+"」を物件履歴として保存しました");setProjName("");setFinalConfirmed(false);setFinalNote("");try{localStorage.removeItem("ck_draft_"+staff);}catch{}setDraftBanner(false);addXp(20);fetchProjects();}catch(e){setBp("❌ 保存に失敗: "+e.message);}setSavingProj(false);};
+const confirmProject=async id=>{const note=window.prompt("確認者名・所見（任意で追記できます）",staff||"")||"";try{await apiDb("projects_confirm",{id,by:staff,note});setBp("✅ 最終確認を記録しました");fetchProjects();}catch(e){setBp("❌ 記録に失敗: "+e.message);}};
+const loadProject=row=>{const nd=(row.drawings||[]).map((d,i)=>({id:"h"+i+"_"+row.id,name:d.name,type:d.type,data:"",res:d.res,ld:false,auto:true}));setDws(nd);const nr={};nd.forEach(d=>{(d.res?.items||[]).forEach(it=>{nr[it.id]={...it,dwId:d.id,dwN:d.name};});});setRes(nr);setChR(row.ch_results||{});setMode(row.mode||"kakunin");setAct(nd[0]?.id||null);setTab("summary");setBp("📂 「"+row.name+"」を読み込みました（"+new Date(row.created_at).toLocaleString("ja-JP")+" 保存分）");};
+const deleteProject=async id=>{if(!window.confirm("この履歴を削除しますか？"))return;try{await apiDb("projects_delete",{id});fetchProjects();}catch(e){setBp("❌ 削除に失敗: "+e.message);}};
+
+// --- Chatwork投稿用テキスト生成＆コピー（Claudeに貼り付けて投稿を依頼する方式） ---
+const ngList=()=>Object.values(res).filter(r=>r.status==="ng"&&!r.id?.startsWith("ch"));
+const buildChatworkText=()=>{
+const ngItems=ngList().filter(item=>cwSel[item.id]!==false).map(item=>{const ck=DW.flatMap(t=>t.checks).find(c=>c.id===item.id);return "・"+(ck?.tx||item.id)+(ck?.law?"【"+ck.law+"】":"")+(item.detail?"\n  → "+item.detail:"");});
+const lines=["【図面チェック結果】"+(mode==="chouki"?"長期優良住宅認定申請チェック":"建築確認申請チェック"),
+"担当:"+staff+"　日時:"+new Date().toLocaleString("ja-JP"),
+"適合:"+tOk+"件 / 不適合:"+tNg+"件 / 要確認:"+tWn+"件（"+done+"/"+dws.length+"図面完了）",
+""];
+if(cwNote.trim()){lines.push("[コメント]");lines.push(cwNote.trim());lines.push("");}
+if(ngItems.length){lines.push("[不適合項目]（"+ngItems.length+"/"+ngList().length+"件を選択）");lines.push(...ngItems);}
+return lines.join("\n");
+};
+const copyChatwork=async()=>{
+if(done===0)return;
+const text=buildChatworkText();
+try{await navigator.clipboard.writeText(text);setCwCopied(true);setBp("📋 コピーしました。Claudeに貼り付けて投稿を依頼してください");setTimeout(()=>setCwCopied(false),3000);}
+catch(e){setBp("❌ コピーに失敗: "+e.message);}
+};
+const postChatwork=async()=>{
+if(done===0||cwPosting)return;
+const text=buildChatworkText();
+if(!window.confirm("Chatwork「設計TM」ルームへ投稿します。よろしいですか？\n\n"+text.slice(0,300)+(text.length>300?"\n...":"")))return;
+setCwPosting(true);setBp("📤 Chatworkに投稿中...");
+try{await apiDb("chatwork_post",{text});setBp("✅ Chatworkの「設計TM」に投稿しました");}
+catch(e){setBp("❌ Chatwork投稿に失敗: "+e.message);}
+setCwPosting(false);
+};
+
+const detect=async dw=>{const b=dw.data.split(",")[1];const mt=dw.data.slice(0,30).includes("pdf")?"application/pdf":dw.data.slice(0,30).includes("png")?"image/png":"image/jpeg";const r=await api([{role:"user",content:[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b}},{type:"text",text:"この図面の種別を判定。以下からIDのみ返して:\n"+DW.map(t=>t.id+":"+t.label).join(", ")+"\n判定不能ならunknown"}]}],100);return DW.find(t=>r.trim().includes(t.id))?.id||"";};
+const analyze=async dw=>{if(!ok)return;let tid=dw.type;setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:true}:d));
+if(!tid){setBp("🔍 "+dw.name+" の種別を判別中...");try{tid=await detect(dw);if(tid)setDws(p=>p.map(d=>d.id===dw.id?{...d,type:tid,auto:true}:d));else{setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("⚠️ "+dw.name+" 種別不明。手動選択してください");return{ok:false,reason:"種別不明"};}}catch(e){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("❌ "+e.message);return{ok:false,reason:e.message};}}
+const dt=DW.find(t=>t.id===tid);if(!dt){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));return{ok:false,reason:"種別データ不整合"};}
+setBp("📋 "+dw.name+"（"+dt.label+"）を分析中...");
+const cp=dt.checks.map(c=>"- ["+c.id+"] "+c.tx+"（"+(c.cr?"必須":"推奨")+"）"+(c.law||"")).join("\n");
+const chP=mode==="chouki"?"\n\n【長期優良追加】\n"+CH.map(c=>"- ["+c.id+"] "+c.tx+"（"+c.cat+"）").join("\n"):"";
+try{const b64=dw.data.split(",")[1];const mt=dw.data.slice(0,30).includes("pdf")?"application/pdf":dw.data.slice(0,30).includes("png")?"image/png":"image/jpeg";
+const raw=await api([{role:"user",content:[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b64}},{type:"text",text:"一級建築士として2025年4月改正建築基準法に基づき判定。\n【"+dt.label+"】\n"+cp+chP+"\n\n各項目のdetail（所見）の記述ルール:\n1. 項目末尾に条文番号（法○条・令○条等）が示されている場合は、detailの中に必ずその条文番号を明記すること（例:「令38条」「法28条」）。\n2. この図面の記載内容だけで確認が完結する項目は「（条文）適合を確認」のように記載してよい。\n3. 構造図・仕様書・計算書など、この図面以外の資料と照合しないと最終確認できない項目は「（条文）適合確認には（必要な図面・資料名）との照合が必要」のように明記し、断定を避けてstatusはwarnにすること。\n4. 図面の記載から合理的に推定できるが完全な確証ではない項目は「（条文）概ね充足と判断」のように断定を避けた表現にすること。\n5. detailは条文番号を含めて80字程度まで許容する。\nJSON形式のみ。バッククォート不要。\n"+'{"drawing_type":"'+dt.label+'","summary":"所見50字","items":[{"id":"ID","status":"ok/ng/warn/na","detail":"所見（該当する場合は根拠条文を含む、80字程度）","confidence":0.0-1.0}]}'}]}]);
+let p;try{p=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch{p={summary:"解析失敗",items:[]};}
+if(p.items){const nr={...res};p.items.forEach(i=>{nr[i.id]={...i,dwId:dw.id,dwN:dw.name};});setRes(nr);if(mode==="chouki"){const nc={...chR};p.items.filter(i=>i.id.startsWith("ch")).forEach(i=>{nc[i.id]={...i};});setChR(nc);}
+// --- 教育機能: NG/要確認だった項目を弱点ログに自動記録 ---
+const wEntries=p.items.filter(i=>i.status==="ng"||i.status==="warn").map(i=>{const ck=dt.checks.find(c=>c.id===i.id)||CH.find(c=>c.id===i.id);return{id:i.id,tx:ck?.tx||i.id,law:ck?.law||"",dwLabel:dt.label,status:i.status};});
+if(wEntries.length)addWeak(wEntries);
+// --- ゲーミフィケーション: 分析完了でXP付与（全項目適合ならボーナス） ---
+const allOk=p.items.length>0&&p.items.every(i=>i.status==="ok");
+addXp(5+(allOk?10:0));
+}
+setDws(pr=>pr.map(d=>d.id===dw.id?{...d,ld:false,res:p,type:tid}:d));setAct(dw.id);
+return{ok:true};
+}catch(e){setDws(pr=>pr.map(d=>d.id===dw.id?{...d,ld:false,res:{summary:"Error: "+e.message,items:[]}}:d));setBp("❌ "+e.message);return{ok:false,reason:e.message};}};
+const batchAll=async()=>{const tg=dws.filter(d=>!d.res&&!d.ld&&d.data);if(!tg.length)return;if(tg.length>5&&!window.confirm(tg.length+"件を一括分析します（AI利用料が発生します）。実行してよろしいですか？"))return;setBr(true);setTab("results");const failed=[];for(let i=0;i<tg.length;i++){setBp((i+1)+"/"+tg.length+" "+tg[i].name);const r=await analyze(tg[i]);if(r&&r.ok===false)failed.push(tg[i].name+(r.reason?"（"+r.reason+"）":""));if(i<tg.length-1)await new Promise(r=>setTimeout(r,1000));}setBr(false);if(failed.length){setBp("⚠️ "+failed.length+"件の分析に失敗しました。図面タブの🔍ボタンで再試行してください: "+failed.join("、"));}else{setBp("");}};
+const sendC=async()=>{if(!cI.trim()||cL||!ok)return;const m=cI.trim();setCI("");setCM(p=>[...p,{r:"u",t:m}]);setCL(true);const cx=act?dws.find(d=>d.id===act):null;const ci=cx?.res?"\n図面:"+cx.name+"\n結果:"+JSON.stringify(cx.res.items?.slice(0,8)):"";try{const t=await api([...cM.slice(-6).map(x=>({role:x.r==="u"?"user":"assistant",content:x.t})),{role:"user",content:"建築基準法(2025年改正版)専門家。具体的数値で回答。"+ci+"\n\n"+m}],1500);setCM(p=>[...p,{r:"a",t}]);}catch(e){setCM(p=>[...p,{r:"a",t:"Error: "+e.message}]);}setCL(false);};
+const tOk=Object.values(res).filter(r=>r.status==="ok"&&!r.id?.startsWith("ch")).length;const tNg=Object.values(res).filter(r=>r.status==="ng"&&!r.id?.startsWith("ch")).length;const tWn=Object.values(res).filter(r=>r.status==="warn"&&!r.id?.startsWith("ch")).length;const done=dws.filter(d=>d.res).length;const sI=s=>s==="ok"?"✓":s==="ng"?"✗":s==="warn"?"⚠":"—";
+
+if(!staff){
+return(<div className="ov" style={{position:"fixed"}}><div className="dl fu" style={{textAlign:"center"}}>
+<div style={{fontSize:32,marginBottom:10}}>📐</div>
+<h2 style={{fontSize:16,marginBottom:6}}>図面チェッカー</h2>
+<p style={{fontSize:12,color:"var(--t2)",marginBottom:18}}>ご利用者を選択してください</p>
+<div style={{display:"flex",gap:10,justifyContent:"center"}}>{STAFF.map(s=><button key={s} className="bt bp" style={{padding:"14px 28px",fontSize:14}} onClick={()=>chooseStaff(s)}>👤 {s}</button>)}</div>
+</div></div>);
+}
+
+return(<div>
+{levelUp&&<div className="ov fu" style={{background:"rgba(0,0,0,.35)",zIndex:400}} onClick={()=>setLevelUp(null)}><div className="dl fu" style={{textAlign:"center",borderColor:"rgba(251,191,36,.5)",background:"linear-gradient(160deg,rgba(30,41,59,.98),rgba(15,23,42,.98))"}} onClick={e=>e.stopPropagation()}><div style={{fontSize:44,marginBottom:6}}>🎉</div><div style={{fontSize:18,fontWeight:800,color:"var(--ch)",marginBottom:4}}>レベルアップ！</div><div style={{fontSize:13,color:"var(--t2)"}}>Lv.{levelUp.from} → <span style={{color:"#a5b4fc",fontWeight:700}}>Lv.{levelUp.to}</span></div><div style={{fontSize:12,color:"var(--t2)",marginTop:6}}>{levelTitle(levelUp.to)}</div><button className="bt bp" style={{marginTop:16}} onClick={()=>setLevelUp(null)}>閉じる</button></div></div>}
+
+<header className="hd"><div className="hi"><div className="logo">📐</div><div style={{flex:1}}><h1 style={{fontSize:15,fontWeight:700,letterSpacing:-.5}}>図面チェッカー</h1><p style={{fontSize:9,color:"var(--t3)",letterSpacing:.8}}>DRAWING CHECKER — 2025年改正対応</p></div><div style={{display:"flex",gap:4}}><button className={"bt bs "+(mode==="kakunin"?"ba":"")} onClick={()=>setMode("kakunin")}>確認申請</button><button className={"bt bs "+(mode==="chouki"?"ba":"")} onClick={()=>setMode("chouki")} style={mode==="chouki"?{borderColor:"rgba(234,179,8,.4)",color:"var(--ch)",background:"rgba(234,179,8,.1)"}:{}}>長期優良</button><button className="bt bs" onClick={switchStaff} title="使用者を切り替え">👤 {staff}</button><button className="bt bs" onClick={()=>setTheme(t=>t==="dark"?"light":"dark")} title="表示テーマ切替">{theme==="dark"?"🌙":"☀️"}</button><span style={{fontSize:9,color:"var(--t3)",alignSelf:"center",padding:"0 2px"}} title="このセッションでのAI呼出回数（費用の目安）">API:{apiCallCount}回</span></div></div></header>
+
+<main className="mn">
+{ok&&<>
+{draftBanner&&<div className="cd bb fu" style={{display:"flex",alignItems:"center",gap:8}}><span style={{flex:1}}>♻️ 前回保存されていない分析結果があります。復元しますか？</span><button className="bt bs bp" onClick={restoreDraft}>復元</button><button className="bt bs" onClick={dismissDraft}>破棄</button></div>}
+<div className={"cd "+(mode==="chouki"?"ck":"ca")} style={{padding:"10px 14px"}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:20}}>{mode==="chouki"?"🏅":"📋"}</span><div><div style={{fontSize:13,fontWeight:600,color:mode==="chouki"?"var(--ch)":"#a5b4fc"}}>{mode==="chouki"?"長期優良住宅認定申請チェック":"建築確認申請チェック"}</div><div style={{fontSize:10,color:"var(--t3)"}}>全図面を一括アップロード → AI自動判別 → 順次分析</div></div></div></div>
+{bp&&<div className="bb">{br&&<div className="sp"/>}{bp}</div>}
+{done>0&&<div className="cd fu" style={{padding:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:11,fontWeight:600,color:"var(--t2)"}}>分析進捗</span><span style={{fontSize:10,color:"var(--t3)"}}>{done}/{dws.length}図面完了</span></div><div style={{display:"flex",gap:12}}>{[{l:"適合",c:tOk,cl:"var(--ok)"},{l:"不適合",c:tNg,cl:"var(--ng)"},{l:"要確認",c:tWn,cl:"var(--warn)"}].map(s=><div key={s.l} style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:s.cl}}/><span style={{fontSize:11,color:"var(--t2)"}}>{s.l}</span><span style={{fontSize:13,fontWeight:700,color:s.cl}}>{s.c}</span></div>)}</div></div>}
+<div className="tabs">{[{k:"upload",l:"📁 図面 ("+dws.length+")"},{k:"results",l:"🔍 分析結果",ng:tNg},{k:"summary",l:"📊 総合判定"},{k:"projects",l:"🏠 物件"},{k:"study",l:"🎓 学習"}].map(t=><button key={t.k} className={"bt tab "+(tab===t.k?"ba":"")} onClick={()=>setTab(t.k)}>{t.l}{t.ng>0&&<span className="bdg">NG:{t.ng}</span>}</button>)}</div>
+
+{tab==="upload"&&<>{!dws.length&&<div className="fu" style={{textAlign:"center",padding:"16px 16px 0"}}><h2 style={{fontSize:18,fontWeight:700,marginBottom:6,background:"linear-gradient(135deg,#a5b4fc,#c084fc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>図面を一括アップロード</h2><p style={{fontSize:12,color:"var(--t2)",lineHeight:1.7}}>全図面をまとめてドロップ。ファイル名から種別を自動判別します。</p></div>}
+<div className={"uz"+(dg?" dr":"")} onClick={()=>fR.current?.click()} onDragOver={e=>{e.preventDefault();setDg(true)}} onDragLeave={()=>setDg(false)} onDrop={e=>{e.preventDefault();setDg(false);addF(e.dataTransfer.files)}}><div style={{fontSize:42,marginBottom:6}}>📄</div><div style={{fontSize:14,fontWeight:600,color:"#a5b4fc"}}>図面をまとめてアップロード</div><div style={{fontSize:11,color:"var(--t3)"}}>PNG / JPG / PDF — 複数ファイル一括・ドラッグ＆ドロップ</div><input ref={fR} type="file" accept="image/*,.pdf" multiple onChange={e=>{addF(e.target.files);e.target.value=""}} style={{display:"none"}}/></div>
+{dws.length>0&&<div style={{marginTop:10}}>{dws.map(dw=>{const dt=DW.find(t=>t.id===dw.type);return <div key={dw.id} className="cd di fu"><div className="dt">{dw.data&&dw.data.includes("data:image")?<img src={dw.data} alt=""/>:<span style={{fontSize:22}}>📄</span>}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:4}}>{dw.name}</div><div style={{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap"}}><select className="ip" value={dw.type} onChange={e=>setDws(p=>p.map(d=>d.id===dw.id?{...d,type:e.target.value,auto:false}:d))} style={{maxWidth:180,fontSize:11,padding:"3px 8px"}}><option value="">🤖 AI自動判別</option>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select>{dw.auto&&dt&&<span style={{fontSize:9,color:"var(--ac)",background:"rgba(99,102,241,.1)",padding:"2px 6px",borderRadius:4}}>自動:{dt.icon}{dt.label}</span>}{!dw.data&&!dw.res&&<span style={{fontSize:9,color:"var(--warn)",background:"rgba(245,158,11,.1)",padding:"2px 6px",borderRadius:4}}>⚠画像未添付</span>}</div></div><div style={{display:"flex",gap:4,flexShrink:0,alignItems:"center"}}>{dw.res&&<span style={{fontSize:9,color:"var(--ok)",background:"rgba(16,185,129,.1)",padding:"2px 6px",borderRadius:4}}>✓済</span>}{dw.ld?<div className="sp"/>:!dw.res&&(!dw.data?<label className="bt bs bp" style={{cursor:"pointer"}}>📎再添付<input type="file" accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{if(e.target.files[0])reattachFile(dw.id,e.target.files[0]);e.target.value=""}}/></label>:<button className="bt bs bp" onClick={()=>analyze(dw)}>🔍</button>)}<button className="bi" onClick={()=>setDws(p=>p.filter(d=>d.id!==dw.id))}>✕</button></div></div>})}
+{dws.some(d=>!d.res&&!d.ld)&&<button className="bg" disabled={br} style={{width:"100%",padding:12,marginTop:8,fontSize:14,borderRadius:8}} onClick={batchAll}>{br?"分析中...":"🚀 全図面を一括分析（"+dws.filter(d=>!d.res).length+"件）"}</button>}
+{done>0&&done===dws.length&&<div className="cd co fu" style={{textAlign:"center",padding:16,marginTop:8}}><div style={{fontSize:20,marginBottom:4}}>✅</div><div style={{fontSize:13,fontWeight:600,color:"var(--ok)"}}>全{dws.length}図面の分析完了</div><button className="bt bs" style={{marginTop:8}} onClick={()=>setTab("summary")}>📊 総合判定を見る</button></div>}
+</div>}</>}
+
+{tab==="results"&&<>{done>1&&<div style={{display:"flex",gap:4,marginBottom:10,overflowX:"auto",paddingBottom:4}}>{dws.filter(d=>d.res).map(d=>{const t=DW.find(x=>x.id===d.type);const ng=d.res?.items?.filter(i=>i.status==="ng").length||0;return <button key={d.id} className={"bt bs "+(act===d.id?"ba":"")} onClick={()=>setAct(d.id)} style={{whiteSpace:"nowrap",position:"relative"}}>{t?.icon} {t?.label}{ng>0&&<span className="bdg">{ng}</span>}</button>})}</div>}
+{(()=>{const dw=dws.find(d=>d.id===act);if(!dw?.res)return<div style={{textAlign:"center",padding:40,color:"var(--t3)"}}>📁図面タブからアップロード・分析してください</div>;const dt=DW.find(t=>t.id===dw.type);return <div className="cd fu" style={{borderColor:(dt?.color||"")+"33"}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}><span style={{fontSize:22}}>{dt?.icon}</span><div><div style={{fontSize:14,fontWeight:700,color:dt?.color}}>{dt?.label}</div><div style={{fontSize:10,color:"var(--t3)"}}>{dw.name}</div></div><div style={{marginLeft:"auto",fontSize:11,color:"var(--t2)",background:"rgba(15,23,42,.5)",padding:"4px 8px",borderRadius:6,maxWidth:220,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dw.res.summary}</div></div>
+{dw.res.items?.map(item=>{const ck=dt?.checks?.find(c=>c.id===item.id)||CH.find(c=>c.id===item.id);return <div key={item.id} className={"ri "+item.status}><div className={"si "+item.status}>{sI(item.status)}</div><div style={{flex:1}}><div style={{fontSize:12,fontWeight:500,lineHeight:1.5}}>{ck?.cr&&<span style={{fontSize:8,background:"rgba(239,68,68,.15)",color:"var(--ng)",padding:"1px 4px",borderRadius:2,marginRight:4}}>必須</span>}{ck?.tx||item.id}{ck?.law&&<span style={{fontSize:9,color:"var(--ac)",marginLeft:6,fontWeight:400}}>【{ck.law}】</span>}</div>{item.detail&&<div style={{fontSize:11,color:"var(--t2)",marginTop:2,lineHeight:1.5}}>{item.detail}</div>}{item.confidence!=null&&<div style={{display:"flex",alignItems:"center",gap:4,marginTop:3}}><span style={{fontSize:8,color:"var(--t3)"}}>確信度</span><div style={{width:50,height:2,background:"rgba(148,163,184,.1)",borderRadius:1,overflow:"hidden"}}><div style={{width:(item.confidence||0)*100+"%",height:2,background:item.confidence>.7?"var(--ok)":item.confidence>.4?"var(--warn)":"var(--ng)",borderRadius:1}}/></div><span style={{fontSize:8,color:"var(--t3)"}}>{Math.round((item.confidence||0)*100)}%</span></div>}{expl[item.id]&&<div className="fu" style={{fontSize:11,color:"#a5b4fc",marginTop:6,lineHeight:1.7,whiteSpace:"pre-wrap",background:"rgba(99,102,241,.06)",padding:8,borderRadius:6}}>📖 {expl[item.id]}</div>}</div><div style={{display:"flex",flexDirection:"column",gap:2}}><button className="bi" style={{fontSize:12}} title="この項目をAIに解説してもらう" onClick={()=>explainItem(ck,item)}>{explLd[item.id]?<span className="sp" style={{width:12,height:12,borderWidth:2}}/>:"📖"}</button><button className="bi" style={{fontSize:12}} onClick={()=>{setCM([{r:"a",t:"「"+(ck?.tx||item.id)+"」について質問をどうぞ。\n判定: "+(item.status==="ok"?"適合":item.status==="ng"?"不適合":"要確認")+"\n所見: "+(item.detail||"なし")}]);setCOn(true)}}>💬</button></div></div>})}</div>})()}</>}
+
+{tab==="summary"&&<div className="fu">
+<div className="cd"><h3 style={{fontSize:14,fontWeight:700,marginBottom:10}}>図面別チェック結果</h3>{DW.map(dt=>{const ds=dws.filter(d=>d.type===dt.id&&d.res);if(!ds.length)return null;const items=ds.flatMap(d=>d.res?.items||[]);const o=items.filter(i=>i.status==="ok").length,n=items.filter(i=>i.status==="ng").length;const p=items.length?Math.round(o/items.length*100):0;return <div key={dt.id} className="pr"><span style={{fontSize:18}}>{dt.icon}</span><div style={{flex:1}}><div style={{fontSize:12,fontWeight:500}}>{dt.label}</div><div className="pb"><div className="pf" style={{width:p+"%",background:n>0?"var(--ng)":p===100?"var(--ok)":"var(--ac)"}}/></div></div><div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:13,fontWeight:700}}>{p}%</div><div style={{fontSize:9,color:"var(--t3)"}}>{n>0&&<span style={{color:"#f87171"}}>NG:{n} </span>}{o}/{items.length}</div></div></div>})}{!done&&<div style={{textAlign:"center",padding:20,color:"var(--t3)"}}>まだ分析結果がありません</div>}</div>
+{mode==="chouki"&&<div className="cd ck"><h3 style={{fontSize:14,fontWeight:700,marginBottom:10,color:"var(--ch)"}}>🏅 長期優良住宅追加チェック</h3>{CH.map(ch=>{const r=chR[ch.id];return <div key={ch.id} style={{padding:"6px 0",borderBottom:"1px solid rgba(234,179,8,.06)",display:"flex",alignItems:"center",gap:8}}><div className={"si "+(r?.status||"")} style={{width:18,height:18,fontSize:9}}>{r?sI(r.status):""}</div><div style={{flex:1}}><span style={{fontSize:9,color:"var(--ch)",background:"rgba(234,179,8,.08)",padding:"1px 4px",borderRadius:3,marginRight:4}}>{ch.cat}</span><span style={{fontSize:11}}>{ch.tx}</span>{r?.detail&&<div style={{fontSize:10,color:"var(--t2)",marginTop:2}}>{r.detail}</div>}</div><span style={{fontSize:9,color:"var(--t3)"}}>{r?(r.status==="ok"?"適合":r.status==="ng"?"不適合":"要確認"):"未チェック"}</span></div>})}</div>}
+{tNg>0&&<div className="cd cn"><h3 style={{fontSize:13,fontWeight:700,marginBottom:8,color:"#f87171"}}>⚠ 不適合項目({tNg}件)</h3>{Object.values(res).filter(r=>r.status==="ng").map((item,i)=>{const ck=DW.flatMap(t=>t.checks).find(c=>c.id===item.id)||CH.find(c=>c.id===item.id);return <div key={i} style={{padding:"5px 0",borderBottom:"1px solid rgba(239,68,68,.06)",fontSize:11,lineHeight:1.6}}><span style={{color:"#f87171",fontWeight:700}}>✗ </span>{ck?.tx||item.id}{ck?.law&&<span style={{fontSize:9,color:"var(--t3)"}}>【{ck.law}】</span>}{item.detail&&<div style={{fontSize:10,color:"#fb923c",paddingLeft:14}}>→ {item.detail}</div>}</div>})}</div>}
+{(()=>{
+const doneTypes=new Set(dws.filter(d=>d.res).map(d=>d.type));
+const uploadedTypes=new Set(dws.map(d=>d.type).filter(Boolean));
+const notUploaded=DW.filter(t=>!uploadedTypes.has(t.id));
+const uploadedNotAnalyzed=DW.filter(t=>uploadedTypes.has(t.id)&&!doneTypes.has(t.id));
+const noData=dws.filter(d=>!d.data&&!d.res&&!d.ld);
+const unclassified=dws.filter(d=>!d.type&&!d.res&&!d.ld&&d.data);
+const retryTarget=dws.filter(d=>!d.res&&!d.ld&&d.data).length;
+if(!notUploaded.length&&!uploadedNotAnalyzed.length&&!unclassified.length&&!noData.length)return null;
+return <div className="cd">
+{uploadedNotAnalyzed.length>0&&<div style={{marginBottom:10}}>
+<h3 style={{fontSize:12,fontWeight:600,marginBottom:6,color:"var(--warn)"}}>⏳ アップロード済み・未分析の図面</h3>
+<div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:8}}>{uploadedNotAnalyzed.map(t=><span key={t.id} style={{fontSize:10,color:"var(--warn)",background:"rgba(245,158,11,.1)",padding:"3px 8px",borderRadius:4}}>{t.icon} {t.label}</span>)}</div>
+{retryTarget>0&&<button className="bt bs bp" onClick={()=>{setTab("upload");batchAll();}}>🚀 今すぐ分析する（{retryTarget}件）</button>}
+</div>}
+{noData.length>0&&<div style={{marginBottom:10,fontSize:11,color:"var(--warn)",lineHeight:1.7}}>⚠️ 画像が添付されていない図面が{noData.length}件あります（下書き復元時など）。図面タブの各項目にある「📎再添付」ボタンから画像を選び直してください。</div>}
+{unclassified.length>0&&<div style={{marginBottom:notUploaded.length?10:0,fontSize:11,color:"var(--t2)"}}>🔍 種別未定の図面が{unclassified.length}件あります（図面タブの🔍ボタンでAIが自動判別します）</div>}
+{notUploaded.length>0&&<div style={{marginBottom:10}}>
+<h3 style={{fontSize:12,fontWeight:600,marginBottom:6,color:"var(--t2)"}}>📎 未提出の図面</h3>
+<div style={{display:"flex",flexWrap:"wrap",gap:5}}>{notUploaded.map(t=><span key={t.id} style={{fontSize:10,color:"var(--t3)",background:"rgba(30,41,59,.5)",padding:"3px 8px",borderRadius:4}}>{t.icon} {t.label}</span>)}</div>
+</div>}
+<label className="bt bs bp" style={{cursor:"pointer",display:"inline-block"}}>📎 ここから図面を追加でアップロード<input type="file" accept="image/*,.pdf" multiple style={{display:"none"}} onChange={e=>{addF(e.target.files);e.target.value=""}}/></label>
+</div>;
+})()}
+<div className="cd ca" style={{padding:"10px 14px"}}><div style={{fontSize:11,color:"var(--t2)",lineHeight:1.8}}><strong style={{color:"#a5b4fc"}}>使い方：</strong> 全図面を一括アップロード → AI自動判別 → 🚀一括分析 → 📊総合判定<br/><span style={{fontSize:10,color:"var(--t3)"}}>※ AIの判定は参考値です。最終判断は有資格者が行ってください。</span></div></div>
+{done>0&&<div className="cd" style={{padding:"10px 14px"}}>
+<h3 style={{fontSize:13,fontWeight:700,marginBottom:8}}>📤 Chatworkへ投稿（設計TM）</h3>
+<p style={{fontSize:11,color:"var(--t2)",marginBottom:8,lineHeight:1.7}}>ボタン一つでChatwork「設計TM」ルームに直接投稿されます。</p>
+{tNg>0&&<div style={{marginBottom:8}}>
+<div style={{fontSize:11,color:"var(--t2)",marginBottom:4}}>含める不適合項目を選択:</div>
+{ngList().map((item,i)=>{const ck=DW.flatMap(t=>t.checks).find(c=>c.id===item.id)||CH.find(c=>c.id===item.id);const checked=cwSel[item.id]!==false;return <label key={i} style={{display:"flex",alignItems:"flex-start",gap:6,fontSize:11,padding:"3px 0",cursor:"pointer"}}><input type="checkbox" checked={checked} onChange={e=>setCwSel(p=>({...p,[item.id]:e.target.checked}))} style={{marginTop:2}}/><span>{ck?.tx||item.id}{ck?.law&&<span style={{color:"var(--t3)"}}>【{ck.law}】</span>}</span></label>})}
+</div>}
+<textarea className="ip" placeholder="コメントを追加（任意）" value={cwNote} onChange={e=>setCwNote(e.target.value)} style={{width:"100%",minHeight:50,marginBottom:8,fontFamily:"inherit",resize:"vertical"}}/>
+<button className="bg" disabled={cwPosting} style={{width:"100%",padding:10,marginBottom:6}} onClick={postChatwork}>{cwPosting?"📤 投稿中...":"📤 Chatworkへ投稿（不適合"+ngList().filter(item=>cwSel[item.id]!==false).length+"/"+tNg+"件を含む）"}</button>
+<button className="bt bs" style={{width:"100%",padding:8}} onClick={copyChatwork}>{cwCopied?"✅ コピーしました":"📋 テキストをコピー（手動投稿用）"}</button>
+</div>}
+</div>}
+
+{tab==="projects"&&<div className="fu">
+<div className="cd">
+<h3 style={{fontSize:13,fontWeight:700,marginBottom:8}}>💾 現在の分析結果を物件として保存</h3>
+<div style={{display:"flex",gap:6}}>
+<input className="ip" placeholder="物件名（例：田中様邸 新築）" value={projName} onChange={e=>setProjName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")saveProject();}}/>
+<button className="bt bp" style={{flexShrink:0}} disabled={!projName.trim()||savingProj||done===0} onClick={saveProject}>{savingProj?"保存中...":"💾 保存"}</button>
+</div>
+{done===0&&<div style={{fontSize:10,color:"var(--t3)",marginTop:6}}>※ 📁図面タブで分析結果があると保存できます</div>}
+<label style={{display:"flex",alignItems:"center",gap:6,fontSize:11,marginTop:10,cursor:"pointer"}}><input type="checkbox" checked={finalConfirmed} onChange={e=>setFinalConfirmed(e.target.checked)}/><span>有資格者（一級建築士等）による最終確認済み</span></label>
+{finalConfirmed&&<input className="ip" placeholder="確認者名・所見（任意）" value={finalNote} onChange={e=>setFinalNote(e.target.value)} style={{marginTop:6}}/>}
+{!finalConfirmed&&<div style={{fontSize:10,color:"var(--warn)",marginTop:4}}>※ 未チェックの場合、AI判定のみの保存となります。最終判断は有資格者が行ってください。</div>}
+</div>
+<div className="cd">
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+<h3 style={{fontSize:13,fontWeight:700}}>📁 保存済み物件履歴</h3>
+<button className="bt bs" onClick={fetchProjects}>🔄 更新</button>
+</div>
+<input className="ip" placeholder="物件名で絞り込み..." value={projFilter} onChange={e=>setProjFilter(e.target.value)} style={{marginBottom:10}}/>
+{projLd&&<div style={{textAlign:"center",padding:20}}><div className="sp"/></div>}
+{!projLd&&projects.filter(p=>!projFilter||p.name.includes(projFilter)).length===0&&<div style={{textAlign:"center",padding:20,color:"var(--t3)"}}>保存された物件履歴はありません</div>}
+{!projLd&&projects.filter(p=>!projFilter||p.name.includes(projFilter)).map(p=><div key={p.id} className="wk" style={{alignItems:"flex-start"}}>
+<div style={{flex:1}}>
+<div style={{fontSize:13,fontWeight:700}}>{p.name}</div>
+<div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>{new Date(p.created_at).toLocaleString("ja-JP")}・{p.staff||"—"}・{p.mode==="chouki"?"🏅長期優良":"📋確認申請"}</div>
+<div style={{display:"flex",gap:8,marginTop:4,fontSize:10}}><span style={{color:"var(--ok)"}}>適合{p.summary?.ok??0}</span><span style={{color:"var(--ng)"}}>不適合{p.summary?.ng??0}</span><span style={{color:"var(--warn)"}}>要確認{p.summary?.warn??0}</span><span style={{color:"var(--t3)"}}>{p.summary?.done??0}/{p.summary?.total??0}図面</span></div>
+{p.final_check?.confirmed?<div style={{fontSize:10,color:"var(--ok)",marginTop:4}}>✅ 最終確認済み（{p.final_check.by}・{new Date(p.final_check.at).toLocaleDateString("ja-JP")}）{p.final_check.note&&<div style={{color:"var(--t3)"}}>{p.final_check.note}</div>}</div>:<div style={{fontSize:10,color:"var(--warn)",marginTop:4}}>⚠ 有資格者による最終確認 未実施</div>}
+</div>
+<div style={{display:"flex",flexDirection:"column",gap:4,flexShrink:0}}>
+<button className="bt bs" onClick={()=>loadProject(p)}>📂 開く</button>
+{!p.final_check?.confirmed&&<button className="bt bs" style={{color:"var(--ok)"}} onClick={()=>confirmProject(p.id)}>✔ 最終確認</button>}
+<button className="bt bs" onClick={()=>deleteProject(p.id)}>🗑</button>
+</div>
+</div>)}
+</div>
+</div>}
+
+{tab==="study"&&<div className="fu">
+<div className="cd" style={{background:"linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.06))",borderColor:"rgba(99,102,241,.25)"}}>
+<div style={{display:"flex",alignItems:"center",gap:12}}>
+<div style={{fontSize:28}}>{levelTitle(levelOf(progress.xp)).split(" ")[0]}</div>
+<div style={{flex:1}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",flexWrap:"wrap",gap:4}}>
+<span style={{fontSize:14,fontWeight:700}}>👤{staff}・Lv.{levelOf(progress.xp)} {levelTitle(levelOf(progress.xp)).split(" ").slice(1).join(" ")}</span>
+<span style={{fontSize:10,color:"var(--t3)"}}>{progress.xp%XP_PER_LEVEL}/{XP_PER_LEVEL} XP（累計{progress.xp}XP）</span>
+</div>
+<div className="pb" style={{marginTop:6}}><div className="pf" style={{width:(progress.xp%XP_PER_LEVEL)+"%",background:"linear-gradient(90deg,var(--ac),var(--ac2))"}}/></div>
+<div style={{fontSize:10,color:"var(--t2)",marginTop:6}}>クイズ正答率 {progress.quiz_total?Math.round(progress.quiz_correct/progress.quiz_total*100):0}%（{progress.quiz_correct}/{progress.quiz_total}問）</div>
+</div>
+</div>
+</div>
+<div className="tabs" style={{marginBottom:10}}>{[{k:"glossary",l:"📖 用語解説"},{k:"quiz",l:"🧠 理解度クイズ"},{k:"weak",l:"📌 弱点管理"}].map(t=><button key={t.k} className={"bt stab "+(studySub===t.k?"ba":"")} onClick={()=>setStudySub(t.k)}>{t.l}</button>)}</div>
+
+{studySub==="glossary"&&<div className="cd fu">
+<div style={{fontSize:11,color:"var(--t2)",marginBottom:10,lineHeight:1.7}}>図面種別ごとのチェック項目と、その意味をやさしく解説します。「AI解説」を押すと、趣旨・実務でのよくある間違い・対応ポイントをより詳しく説明します。</div>
+<select className="ip" value={studyType} onChange={e=>setStudyType(e.target.value)} style={{marginBottom:12}}>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}<option value="chouki">🏅 長期優良住宅（追加項目）</option></select>
+{(studyType==="chouki"?CH:(DW.find(t=>t.id===studyType)?.checks||[])).map(ck=><div key={ck.id} className="gi"><div style={{display:"flex",alignItems:"flex-start",gap:8}}><div style={{flex:1}}>{ck.cr&&<span style={{fontSize:8,background:"rgba(239,68,68,.15)",color:"var(--ng)",padding:"1px 4px",borderRadius:2,marginRight:4}}>必須</span>}<span style={{fontSize:12,fontWeight:600}}>{ck.tx}</span>{ck.law&&<span style={{fontSize:10,color:"var(--t3)",marginLeft:6}}>{ck.law}</span>}<div style={{fontSize:11,color:"var(--t2)",marginTop:3,lineHeight:1.6}}>{ck.hint}</div>{expl[ck.id]&&<div className="fu" style={{fontSize:11,color:"#a5b4fc",marginTop:6,lineHeight:1.7,whiteSpace:"pre-wrap",background:"rgba(99,102,241,.06)",padding:8,borderRadius:6}}>{expl[ck.id]}</div>}</div><button className="bt bs" disabled={explLd[ck.id]} onClick={()=>explainItem(ck,null)}>{explLd[ck.id]?<div className="sp" style={{width:12,height:12,borderWidth:2}}/>:(expl[ck.id]?"再取得":"🤖 AI解説")}</button></div></div>)}
+</div>}
+
+{studySub==="quiz"&&<div className="cd fu">
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><span style={{fontSize:12,color:"var(--t2)"}}>正答率（正解+10XP・不正解+3XP）</span><span style={{fontSize:14,fontWeight:700,color:"var(--ac)"}}>{progress.quiz_total?Math.round(progress.quiz_correct/progress.quiz_total*100):0}%（{progress.quiz_correct}/{progress.quiz_total}問）</span></div>
+{!quiz&&!quizLd&&<button className="bt bp" style={{width:"100%",padding:12}} onClick={genQuiz}>🎲 問題を出題する</button>}
+{quizLd&&<div style={{textAlign:"center",padding:24}}><div className="sp"/></div>}
+{quiz&&<div className="fu">
+<div style={{fontSize:10,color:"var(--t3)",marginBottom:4}}>出題元：{quiz.srcTx}</div>
+<div style={{fontSize:13,fontWeight:600,marginBottom:12,lineHeight:1.7}}>{quiz.question}</div>
+{quiz.options.map((o,i)=><button key={i} className={"qo "+(quiz.sel!=null?(i===quiz.answer?"qc":(i===quiz.sel?"qw":"")):"")} disabled={quiz.sel!=null} onClick={()=>answerQuiz(i)}>{String.fromCharCode(65+i)}. {o}</button>)}
+{quiz.sel!=null&&<><div className="fu" style={{fontSize:12,marginTop:8,padding:10,background:"rgba(99,102,241,.06)",borderRadius:8,lineHeight:1.7}}>{quiz.sel===quiz.answer?"✅ 正解！":"❌ 不正解"}　{quiz.explain}</div><button className="bt bp" style={{width:"100%",padding:10,marginTop:10}} onClick={genQuiz}>次の問題へ →</button></>}
+</div>}
+</div>}
+
+{studySub==="weak"&&<div className="cd fu">
+<div style={{fontSize:11,color:"var(--t2)",marginBottom:10,lineHeight:1.7}}>図面分析でNG・要確認になった項目や、クイズで間違えた項目を自動で記録しています。頻度が高い項目ほど重点的に復習しましょう。</div>
+{Object.keys(progress.weak||{}).length===0&&<div style={{textAlign:"center",padding:20,color:"var(--t3)"}}>まだ記録がありません</div>}
+{Object.values(progress.weak||{}).sort((a,b)=>(b.ng+b.warn+b.quiz)-(a.ng+a.warn+a.quiz)).map(w=><div key={w.id} className="wk"><div style={{flex:1}}><div style={{fontSize:12,fontWeight:600}}>{w.tx}</div><div style={{fontSize:10,color:"var(--t3)"}}>{w.dwLabel}{w.law?"・"+w.law:""}</div></div><div style={{textAlign:"right",fontSize:10}}>{w.ng>0&&<div style={{color:"var(--ng)"}}>NG×{w.ng}</div>}{w.warn>0&&<div style={{color:"var(--warn)"}}>要確認×{w.warn}</div>}{w.quiz>0&&<div style={{color:"var(--t2)"}}>クイズ誤答×{w.quiz}</div>}</div></div>)}
+{Object.keys(progress.weak||{}).length>0&&<button className="bt bs" style={{marginTop:10}} onClick={clearWeak}>🗑 記録をクリア</button>}
+</div>}
+</div>}
+
+</>}
+<div style={{textAlign:"center",padding:"20px 0",fontSize:10,color:"var(--t3)"}}>Powered by ハゼモト建設株式会社</div>
+</main>
+{ok&&cOn&&<div className="cp"><div className="ch"><span style={{fontSize:18}}>💬</span><div style={{flex:1,fontSize:13,fontWeight:600,color:"#a5b4fc"}}>AI相談</div><button className="bi" onClick={()=>setCOn(false)}>✕</button></div><div className="cb">{cM.map((m,i)=><div key={i} style={{display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}><div className={"cm "+(m.r==="u"?"u":"a")}>{m.t}</div></div>)}{cL&&<div style={{textAlign:"center",fontSize:11,color:"var(--ac)"}}>分析中...</div>}<div ref={cE}/></div><div className="ci"><input className="ip" value={cI} onChange={e=>setCI(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendC()}}} placeholder="質問を入力..." style={{fontSize:12}}/><button className="bt bp" disabled={cL} onClick={sendC} style={{flexShrink:0}}>送信</button></div></div>}
+{ok&&!cOn&&<button className="fab" onClick={()=>{setCM([{r:"a",t:"建築基準法（2025年改正版）について質問をどうぞ。"}]);setCOn(true)}}>💬</button>}
+</div>)}
+ReactDOM.createRoot(document.getElementById("app")).render(<App/>);
+</script></body></html>
