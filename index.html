@@ -199,6 +199,37 @@ const[apiCallCount,setApiCallCount]=useState(0);
 const[siteCond,setSiteCond]=useState(()=>loadLS("ck_sitecond",{fire:"",youto:"",note:""}));
 const siteCondRef=useRef(siteCond);
 useEffect(()=>{siteCondRef.current=siteCond;saveLS("ck_sitecond",siteCond);},[siteCond]);
+// --- 要記載事項（計算結果との連動チェック） ---
+const[reqList,setReqList]=useState(()=>loadLS("ck_req",{name:"",items:[]}));
+const reqRef=useRef(reqList);
+useEffect(()=>{reqRef.current=reqList;saveLS("ck_req",reqList);},[reqList]);
+const[reqForm,setReqForm]=useState({label:"",where:"ritsumen"});
+const importReqJSON=file=>{const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);const v=reqFromKoyaura(d);if(!v||!v.items.length)throw new Error("要記載事項を読み取れませんでした（小屋裏換気アプリの「入力値を保存(JSON)」のファイルを選んでください）");setReqList(prev=>({name:v.name||prev.name,items:[...prev.items.filter(x=>x.src!=="koyaura"),...v.items]}));setBp("✅ 計算結果から要記載事項"+v.items.length+"件を取り込みました。立面図を分析すると、図面に書かれているかを自動で照合します");}catch(e){setBp("❌ 取込に失敗: "+e.message);}};r.readAsText(file);};
+const addReqTpl=i=>{const t=REQ_TPL[i];setReqList(p=>p.items.some(x=>x.label===t.label)?p:{...p,items:[...p.items,{id:"mn"+Date.now()+i,src:"manual",cat:t.cat,label:t.label,qty:"",unit:"",spec:"",where:t.where}]});};
+const addReqManual=()=>{const lb=reqForm.label.trim();if(!lb)return;setReqList(p=>({...p,items:[...p.items,{id:"mn"+Date.now(),src:"manual",cat:"その他",label:lb.slice(0,120),qty:"",unit:"",spec:"",where:[reqForm.where]}]}));setReqForm(f=>({...f,label:""}));};
+const delReq=id=>setReqList(p=>({...p,items:p.items.filter(x=>x.id!==id)}));
+const clearReq=()=>{if(window.confirm("登録済みの要記載事項をすべて削除しますか？"))setReqList({name:"",items:[]});};
+// 要記載事項ごと・図面種別ごとの照合結果を集約（同種別の図面が複数ある場合は、1枚でも記載があればOK）
+const aggReq=()=>{
+const out=[];
+(reqList.items||[]).forEach(q=>{(q.where||[]).forEach(t=>{
+const lbl=DW.find(x=>x.id===t)?.label||t;
+const ds=dws.filter(d=>d.type===t&&d.res&&!d.skip);
+if(!ds.length){out.push({q,t,lbl,status:"pending",detail:lbl+"が未分析のため未照合",action:"",found:"",n:0,stale:false});return;}
+const dsC=ds.filter(d=>(d.res.req_ids||[]).includes(q.id));
+if(!dsC.length){out.push({q,t,lbl,status:"pending",detail:"この図面は要記載事項を取り込む前に分析されています。再分析すると照合されます",action:"",found:"",n:ds.length,stale:true});return;}
+const rs=dsC.map(d=>{const r=(d.res.req_results||[]).find(x=>x.id===q.id);return r?{...r,status:["ok","ng","warn"].includes(r.status)?r.status:"warn"}:{status:"warn",detail:"AIの照合結果に含まれませんでした。再分析してください",action:"",found:""};});
+const pick=rs.find(r=>r.status==="ok")||rs.find(r=>r.status==="warn")||rs[0];
+out.push({q,t,lbl,status:pick.status,detail:pick.detail||"",action:pick.action||"",found:pick.found||"",n:ds.length,stale:false});
+});});
+return out;};
+const reanalyzeForReq=async()=>{
+const tg=dws.filter(d=>d.res&&d.data&&!d.skip&&(reqRef.current.items||[]).some(q=>(q.where||[]).includes(d.type)&&!(d.res.req_ids||[]).includes(q.id)));
+if(!tg.length){setBp("⚠️ 再分析できる図面がありません（画像が未添付の図面は図面タブの「📎再添付」から追加してください）");return;}
+if(!window.confirm("要記載事項の照合のため、"+tg.length+"件の図面を再分析します（AI利用料が発生します）。よろしいですか？"))return;
+setBr(true);
+for(let i=0;i<tg.length;i++){setBp("🔄 再分析 "+(i+1)+"/"+tg.length+" "+tg[i].name);await analyze(tg[i]);if(i<tg.length-1)await new Promise(r=>setTimeout(r,1000));}
+setBr(false);setBp("");};
 const YOUTO_LIST=["第一種低層住居専用地域","第二種低層住居専用地域","第一種中高層住居専用地域","第二種中高層住居専用地域","第一種住居地域","第二種住居地域","準住居地域","田園住居地域","近隣商業地域","商業地域","準工業地域","工業地域","用途地域の指定なし"];
 const FIRE_LIST=["防火地域","準防火地域","法22条区域","指定なし（無指定）"];
 // --- 該当なし項目の折りたたみ表示 ---
