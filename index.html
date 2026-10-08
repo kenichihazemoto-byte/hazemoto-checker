@@ -114,6 +114,44 @@ const saveLS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 
 // --- 使用者・ゲーミフィケーション・物件履歴（Supabase連携） ---
 const STAFF=["安元","粟戸","城","桑靏","櫨本"];
+// --- 要記載事項（計算結果 → 図面への記載漏れチェック） ---
+// 小屋裏換気アプリ(koyaura-kanki)の「入力値を保存(JSON)」を読み込み、
+// 棟換気・軒裏給気・補助ベントキャップの部材と数量を「図面に書くべき事項」に変換する。
+// schema:"hazemoto-required-notations/v1" のJSONはそのまま取り込める（採光・24時間換気など他の計算ツールも同形式で出力可）。
+const KY_PRODUCTS={1:["i-ROOF 1P",170],2:["i-ROOF 2P",340],3:["片流れ i-ROOF 1P",80],4:["片流れ i-ROOF 2P",160],5:["雨押え i-ROOF 1P",70],6:["片流れ 双快 1P",120],7:["片流れ 双快 2P",240]};
+const KY_VENTS={100:50,150:110,200:200};
+const REQ_TPL=[
+{cat:"採光",label:"採光計算に用いた窓の窓記号・サイズ（居室ごと）",where:["ritsumen","heimen"]},
+{cat:"換気",label:"24時間換気の給気口・排気口（フード・ガラリ）の位置と型番",where:["ritsumen","heimen"]}];
+const REQ_WHERE_OK=["haichi","heimen","ritsumen","danmen","kanazuchi","kiso","hekiwall","energy"];
+const fmtN=(n,d)=>Number(n).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
+const reqFromKoyaura=d=>{
+if(!d||typeof d!=="object")return null;
+if(d.schema==="hazemoto-required-notations/v1"&&Array.isArray(d.items)){
+const items=d.items.map((q,i)=>({id:"ky"+(i+1),src:"koyaura",cat:String(q.cat||"その他").slice(0,20),label:String(q.label||"").slice(0,120),qty:q.qty==null?"":q.qty,unit:String(q.unit||"").slice(0,10),spec:String(q.spec||"").slice(0,200),where:(Array.isArray(q.where)?q.where:["ritsumen"]).filter(w=>REQ_WHERE_OK.includes(w))})).filter(q=>q.label&&q.where.length);
+return{name:String(d.construction||"").slice(0,80),items};
+}
+// 小屋裏換気アプリの保存JSON（v2.x）
+if(d.ceiling==null||!Array.isArray(d.noki))return null;
+const ceil=parseFloat(d.ceiling)||0;
+const needS=ceil*10000/900,needE=ceil*10000/1600;
+const zero=d.soffitMode==="zero";
+const vs=KY_VENTS[parseInt(d.ventSize)]?parseInt(d.ventSize):100,vo=KY_VENTS[vs];
+let nokiOpen=0,nokiArea=0,bars=0,totLen=0;
+d.noki.forEach(n=>{const l=parseFloat(n.l)||0,w=parseFloat(n.w)||0;if(zero){nokiOpen+=l*100;bars+=Math.ceil(l/1.82);totLen+=l;}else{const a=w*l;nokiArea+=a;nokiOpen+=a*543;}});
+const sv=nokiOpen>=needS?0:Math.ceil((needS-nokiOpen)/vo);
+const pid=parseInt(d.adoptSel)||6,pr=KY_PRODUCTS[pid]||KY_PRODUCTS[6];
+const aq=parseInt(d.adoptQty)||0,tot=aq*pr[1];
+const ev=tot>=needE?0:Math.ceil((needE-tot)/vo);
+const items=[];let k=0;const mk=o=>{k++;items.push({id:"ky"+k,src:"koyaura",where:["ritsumen"],...o});};
+if(aq>0)mk({cat:"小屋裏換気",label:"棟換気："+pr[0],qty:aq,unit:"本",spec:"1本あたり有効開口"+pr[1]+"cm²／排気合計"+fmtN(tot,0)+"cm²（必要"+fmtN(needE,1)+"cm²以上）。屋根伏図にも棟換気の位置を図示"});
+if(zero)mk({cat:"小屋裏換気",label:"軒ゼロ用給気材：JOTO FV-E055-L18",qty:bars,unit:"本",spec:"屋根の全周に施工・合計延長"+fmtN(totLen,2)+"m（1本1.82m・部位ごと切上げ）／給気開口"+fmtN(nokiOpen,0)+"cm²（必要"+fmtN(needS,1)+"cm²以上）"});
+else if(nokiArea>0)mk({cat:"小屋裏換気",label:"軒天給気材：NBL ASN836U（アスノン8mm全有孔板）",qty:fmtN(nokiArea,2),unit:"㎡",spec:"軒・けらばの軒天に使用／給気開口"+fmtN(nokiOpen,0)+"cm²（必要"+fmtN(needS,1)+"cm²以上）"});
+if(sv>0)mk({cat:"小屋裏換気",label:"補助ベントキャップφ"+vs+"（給気用）",qty:sv,unit:"個",spec:"軒裏吸気だけでは給気面積が不足するため追加（1個あたり有効開口"+vo+"cm²）"});
+if(ev>0)mk({cat:"小屋裏換気",label:"補助ベントキャップφ"+vs+"（排気用）",qty:ev,unit:"個",spec:"棟換気だけでは排気面積が不足するため追加（1個あたり有効開口"+vo+"cm²）"});
+return{name:String(d.construction||"").slice(0,80),items};
+};
+
 const XP_PER_LEVEL=100;
 const levelOf=xp=>Math.max(1,Math.floor((xp||0)/XP_PER_LEVEL)+1);
 const levelTitle=lv=>lv>=15?"🏆 図面マスター":lv>=10?"🥇 エキスパート":lv>=6?"🥈 ベテランチェッカー":lv>=3?"🥉 一人前チェッカー":"🌱 見習いチェッカー";
