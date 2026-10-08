@@ -414,6 +414,8 @@ const lines=["【図面チェック結果】"+(mode==="chouki"?"長期優良住�
 ""];
 if(cwNote.trim()){lines.push("[コメント]");lines.push(cwNote.trim());lines.push("");}
 if(ngItems.length){lines.push("[不適合項目]（"+ngItems.length+"/"+ngList().length+"件を選択）");lines.push(...ngItems);}
+const rqNg=aggReq().filter(r=>r.status==="ng");
+if(rqNg.length){lines.push("");lines.push("[図面への記載漏れ（計算結果との照合）]（"+rqNg.length+"件）");rqNg.forEach(r=>{lines.push("・"+r.lbl+"："+r.q.label+(r.q.qty!==""&&r.q.qty!=null?" "+r.q.qty+(r.q.unit||""):""));if(r.detail)lines.push("  → "+r.detail);if(r.action)lines.push("  ＜やること＞"+r.action);});}
 return lines.join("\n");
 };
 const copyChatwork=async()=>{
@@ -473,6 +475,12 @@ html+='<h2>🏅 長期優良住宅追加チェック</h2>';
 choukiItems.forEach(it=>{
 html+='<div class="item '+it.status+'"><div class="sym">'+it.sym+'</div><div style="flex:1"><div><span class="law">['+escHtml(it.cat)+']</span> '+escHtml(it.tx)+'<span class="law">（'+it.label+'）</span></div>'+(it.detail?'<div class="detail">→ '+escHtml(it.detail)+'</div>':'')+(it.lawNote?'<div class="lawnote">📘 条文の意味: '+escHtml(it.lawNote)+'</div>':'')+(it.action?'<div class="action">🛠 やること: '+escHtml(it.action)+'</div>':'')+'</div></div>';
 });
+}
+const rqA=aggReq();
+if(rqA.length){
+html+='<h2>📌 図面への要記載事項（計算結果との照合）</h2>';
+rqA.forEach(r=>{const sym=r.status==="ok"?"☑":r.status==="ng"?"☒":"☐";const lb=r.status==="ok"?"記載あり":r.status==="ng"?"記載なし・相違":r.status==="warn"?"判読不能・要確認":"未照合";
+html+='<div class="item '+(r.status==="pending"?"warn":r.status)+'"><div class="sym">'+sym+'</div><div style="flex:1"><div><span class="law">['+escHtml(r.lbl)+']</span> '+escHtml(r.q.label)+(r.q.qty!==""&&r.q.qty!=null?' <b>'+escHtml(r.q.qty)+escHtml(r.q.unit||"")+'</b>':'')+'<span class="law">（'+lb+'）</span></div>'+(r.detail?'<div class="detail">→ '+escHtml(r.detail)+'</div>':'')+(r.action?'<div class="action">🛠 やること: '+escHtml(r.action)+'</div>':'')+'</div></div>';});
 }
 const todoItems=Object.values(res).filter(r=>r.action&&(r.status==="ng"||r.status==="warn"));
 if(todoItems.length){
