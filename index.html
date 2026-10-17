@@ -312,6 +312,22 @@ const restoreDraft=()=>{try{const raw=localStorage.getItem("ck_draft_"+staff);co
 const dismissDraft=()=>{localStorage.removeItem("ck_draft_"+staff);setDraftBanner(false);};
 useEffect(()=>{cE.current?.scrollIntoView({behavior:"smooth"});},[cM]);
 useEffect(()=>{if(staff)chooseStaff(staff);},[]);
+// --- 小屋裏換気アプリからのURL hash連動取込 ---
+useEffect(()=>{
+try{
+const h=window.location.hash;if(!h)return;
+const m=h.match(/^#koyaura=(.+)$/);if(!m)return;
+const json=decodeURIComponent(escape(atob(m[1])));
+const d=JSON.parse(json);
+const v=reqFromKoyaura(d);
+if(v&&v.items.length){
+setReqList(prev=>({name:v.name||prev.name,items:[...prev.items.filter(x=>x.src!=="koyaura"),...v.items]}));
+setBp("✅ 小屋裏換気アプリから要記載事項"+v.items.length+"件を自動取り込みしました。立面図をアップロードして照合してください");
+if(v.name)setProjName(v.name);
+}
+history.replaceState(null,"",window.location.pathname+window.location.search);
+}catch(e){console.warn("koyaura hash import error:",e);}
+},[]);
 useEffect(()=>{if(tab==="projects"&&staff)fetchProjects();},[tab]);
 useEffect(()=>{
 if(!staff)return;
