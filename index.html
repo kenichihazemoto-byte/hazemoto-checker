@@ -3,6 +3,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useRef,useEffect}=React;
@@ -245,7 +246,46 @@ setReqList(prev=>({name:v.name||prev.name,items:[...prev.items.filter(x=>x.src!=
 setBp("✅ PDFから要記載事項"+v.items.length+"件を取り込みました。立面図を分析すると、図面に書かれているかを自動で照合します");
 }catch(e){setBp("❌ PDF取込に失敗: "+e.message);}
 };
-const importReqFile=file=>{if(!file)return;const n=file.name.toLowerCase();if(n.endsWith(".pdf")||file.type==="application/pdf"){importReqPDF(file);}else{importReqJSON(file);}};
+const importReqExcel=async file=>{
+setBp("📊 Excelから小屋裏換気の計算結果を読み取っています…");
+try{
+const buf=await file.arrayBuffer();
+const wb=XLSX.read(buf,{type:"array"});
+let allText="";
+wb.SheetNames.forEach(name=>{const ws=wb.Sheets[name];const csv=XLSX.utils.sheet_to_csv(ws,{blankrows:false});if(csv.trim()){allText+="【シート: "+name+"】\n"+csv+"\n\n";}});
+if(allText.trim().length<20)throw new Error("Excelからデータを読み取れませんでした");
+const prompt=`以下は小屋裏換気計算書のExcelから抽出したテキストです。この計算結果から、建築図面（主に立面図）に記載すべき換気部材の情報を読み取り、以下のJSON形式で出力してください。
+
+出力形式:
+{"schema":"hazemoto-required-notations/v1","construction":"工事名（あれば）","items":[
+{"cat":"小屋裏換気","label":"部材名と型番","qty":数量(数値),"unit":"本or個or㎡","spec":"仕様の詳細（有効開口面積、必要面積との比較など）","where":["ritsumen"]}
+]}
+
+読み取るべき主な部材:
+- 棟換気（i-ROOF等）: 型番・本数・1本あたりの有効開口面積・排気合計
+- 軒天給気材（アスノン全有孔板等）または軒ゼロ用給気材（JOTO FV-E055-L18等）: 面積or本数・給気開口面積
+- 補助ベントキャップ: サイズ・個数・給気用/排気用の区分
+- 天井面積・必要換気面積（給気1/900、排気1/1600）があれば specに含める
+
+注意:
+- 計算結果が「適合」「不適合」の判定がある場合はspecに含める
+- 数量は必ず数値型で出力（文字列にしない）
+- 該当する部材がなければitemsは空配列[]
+- JSON以外のテキストを出力しないこと
+
+---Excel抽出テキスト---
+${allText.slice(0,8000)}`;
+const raw=await api([{role:"user",content:[{type:"text",text:prompt}]}],2000);
+const m=raw.match(/\{[\s\S]*\}/);
+if(!m)throw new Error("AIからの応答をJSON形式で解析できませんでした");
+const d=JSON.parse(m[0]);
+const v=reqFromKoyaura(d);
+if(!v||!v.items.length)throw new Error("Excelから換気部材の情報を読み取れませんでした。計算結果が含まれているか確認してください");
+setReqList(prev=>({name:v.name||prev.name,items:[...prev.items.filter(x=>x.src!=="koyaura"),...v.items]}));
+setBp("✅ Excelから要記載事項"+v.items.length+"件を取り込みました。立面図を分析すると、図面に書かれているかを自動で照合します");
+}catch(e){setBp("❌ Excel取込に失敗: "+e.message);}
+};
+const importReqFile=file=>{if(!file)return;const n=file.name.toLowerCase();if(n.endsWith(".pdf")||file.type==="application/pdf"){importReqPDF(file);}else if(n.endsWith(".xlsx")||n.endsWith(".xls")||file.type==="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"||file.type==="application/vnd.ms-excel"){importReqExcel(file);}else{importReqJSON(file);}};
 const addReqTpl=i=>{const t=REQ_TPL[i];setReqList(p=>p.items.some(x=>x.label===t.label)?p:{...p,items:[...p.items,{id:"mn"+Date.now()+i,src:"manual",cat:t.cat,label:t.label,qty:"",unit:"",spec:"",where:t.where}]});};
 const addReqManual=()=>{const lb=reqForm.label.trim();if(!lb)return;setReqList(p=>({...p,items:[...p.items,{id:"mn"+Date.now(),src:"manual",cat:"その他",label:lb.slice(0,120),qty:"",unit:"",spec:"",where:[reqForm.where]}]}));setReqForm(f=>({...f,label:""}));};
 const delReq=id=>setReqList(p=>({...p,items:p.items.filter(x=>x.id!==id)}));
@@ -630,9 +670,9 @@ return(<div>
 <div className="cd" style={{padding:"10px 14px"}}>
 <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
 <div style={{fontSize:12,fontWeight:600,flex:1,minWidth:200}}>📌 図面への要記載事項<span style={{fontSize:9,color:"var(--t3)",fontWeight:400,marginLeft:6}}>（計算で必要になった部材が、図面に書かれているかを自動照合）</span></div>
-<label className="bt bs bp" style={{cursor:"pointer"}}>🏠 小屋裏換気の計算結果を取込（JSON/PDF）<input type="file" accept=".json,.pdf,application/json,application/pdf" style={{display:"none"}} onChange={e=>{if(e.target.files[0])importReqFile(e.target.files[0]);e.target.value=""}}/></label>
+<label className="bt bs bp" style={{cursor:"pointer"}}>🏠 小屋裏換気の計算結果を取込（JSON/PDF/Excel）<input type="file" accept=".json,.pdf,.xlsx,.xls,application/json,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style={{display:"none"}} onChange={e=>{if(e.target.files[0])importReqFile(e.target.files[0]);e.target.value=""}}/></label>
 </div>
-{reqList.items.length===0?<div style={{fontSize:10.5,color:"var(--t3)",marginTop:6,lineHeight:1.7}}>小屋裏換気アプリの計算結果（JSONまたはPDF）を取り込むと、棟換気・軒天給気・ベントキャップの部材と数量が自動で登録されます。立面図を分析すると、それらが図面に実際に書かれているかを照合し、書かれていなければ追記すべき文言まで表示します。<br/>※ PDFの場合はAIがテキストを解析して部材情報を抽出します（API1回分を消費）。</div>:<div style={{marginTop:6}}>
+{reqList.items.length===0?<div style={{fontSize:10.5,color:"var(--t3)",marginTop:6,lineHeight:1.7}}>小屋裏換気アプリの計算結果（JSON・PDF・Excel）を取り込むと、棟換気・軒天給気・ベントキャップの部材と数量が自動で登録されます。立面図を分析すると、それらが図面に実際に書かれているかを照合し、書かれていなければ追記すべき文言まで表示します。<br/>※ PDF・Excelの場合はAIがテキストを解析して部材情報を抽出します（API1回分を消費）。</div>:<div style={{marginTop:6}}>
 {reqList.name&&<div style={{fontSize:10,color:"var(--t3)",marginBottom:4}}>計算書の工事名: {reqList.name}</div>}
 {reqList.items.map(q=><div key={q.id} className="wk" style={{alignItems:"flex-start"}}><div style={{flex:1}}><div style={{fontSize:11.5,lineHeight:1.6}}><span style={{fontSize:9,color:"var(--ac)",background:"rgba(99,102,241,.1)",padding:"1px 5px",borderRadius:3,marginRight:5}}>{q.cat}</span>{q.label}{q.qty!==""&&q.qty!=null&&<b style={{marginLeft:6}}>{q.qty}{q.unit}</b>}</div>{q.spec&&<div style={{fontSize:10,color:"var(--t3)",lineHeight:1.5}}>{q.spec}</div>}<div style={{fontSize:9.5,color:"var(--t3)",marginTop:2}}>記載先: {(q.where||[]).map(w=>DW.find(x=>x.id===w)?.label||w).join("・")}</div></div><button className="bi" onClick={()=>delReq(q.id)}>🗑</button></div>)}
 <button className="bt bs" style={{marginTop:6}} onClick={clearReq}>すべて削除</button>
