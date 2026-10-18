@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小屋裏換気 図面自動読取シミュレーター | ハゼモト建設</title>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<style>
+  :root {
+    --primary:#1F4E78; --primary-light:#2E75B6; --accent:#ED7D31;
+    --success:#70AD47; --danger:#C00000; --warning:#FFC000; --recmd:#FFD966;
+    --bg:#F5F5F5; --card:#FFFFFF; --border:#DDD; --text:#333; --muted:#666;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Yu Gothic","Hiragino Sans","Meiryo",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:12px;}
+  .container{max-width:1200px;margin:0 auto;}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;padding:24px;border-radius:8px;margin-bottom:16px;}
+  header h1{font-size:24px;margin-bottom:6px;}
+  header .sub{font-size:14px;opacity:0.95;}
+  header .company{font-size:11px;opacity:0.85;margin-top:10px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+  .step{display:inline-block;background:var(--accent);color:white;padding:5px 14px;border-radius:4px;font-weight:bold;font-size:13px;margin-right:10px;}
+  .step.s1{background:#ED7D31;}.step.s2{background:#70AD47;}.step.s3{background:#4472C4;}.step.s4{background:#7030A0;}.step.s5{background:#C00000;}
+  h2{font-size:18px;color:var(--primary);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--primary-light);display:flex;align-items:center;}
+  h3{font-size:14px;color:var(--accent);margin:14px 0 8px;}
+  label{display:block;font-size:13px;font-weight:bold;margin-bottom:4px;}
+  .hint{font-size:11px;color:var(--muted);margin-top:2px;}
+  input[type="number"],input[type="text"],select{width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:4px;font-size:14px;background:#FFFACD;color:#0000FF;font-weight:bold;font-family:inherit;}
+  input:focus,select:focus{outline:none;border-color:var(--accent);background:#FFF8DC;box-shadow:0 0 0 3px rgba(237,125,49,0.2);}
+  input.focused-target{border-color:var(--accent);background:#FFE4B5;}
+  .row{display:grid;grid-template-columns:200px 1fr auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed #EEE;}
+  .row-result{background:#FFF2CC;padding:10px 14px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin:6px 0;}
+  .result-label{font-weight:bold;font-size:13px;}
+  .result-value{font-weight:bold;color:var(--primary);font-size:16px;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;}
+  th,td{padding:8px 6px;border:1px solid var(--border);text-align:center;}
+  th{background:var(--primary-light);color:white;font-weight:bold;}
+  td.name{text-align:left;padding-left:12px;font-weight:bold;}
+  td input{width:60px;padding:4px 6px;text-align:center;font-size:13px;}
+  tr.recmd{background:var(--recmd);}
+  tr.recmd td.name::before{content:"★ ";color:var(--danger);}
+  .judge{display:inline-block;padding:3px 12px;border-radius:3px;font-weight:bold;font-size:13px;}
+  .ok{background:#C6EFCE;color:#006100;}
+  .ng{background:#FFC7CE;color:#9C0006;}
+  .warning-bar{background:#FFEB9C;color:#9C5700;padding:10px 14px;border-radius:4px;font-size:12px;margin:8px 0;border-left:4px solid var(--warning);}
+  .summary{background:#F0F7FF;border:2px solid var(--primary-light);padding:18px;border-radius:6px;margin-top:12px;}
+  .summary-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted #CCC;font-size:13px;}
+  .summary-item:last-child{border-bottom:none;}
+  .summary-item .label{font-weight:bold;}
+  .summary-item .val{color:var(--primary);font-weight:bold;}
+  .cost-total{background:var(--primary);color:white;padding:14px;border-radius:4px;text-align:center;font-size:19px;font-weight:bold;margin-top:10px;}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+  button{padding:10px 18px;background:var(--primary);color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;font-family:inherit;transition:all 0.15s;}
+  button:hover{background:var(--primary-light);transform:translateY(-1px);}
+  button.accent{background:var(--accent);}
+  button.success{background:var(--success);}
+  button.danger{background:var(--danger);}
+  button:disabled{opacity:0.5;cursor:not-allowed;}
+  .noki-row{display:grid;grid-template-columns:40px 1fr 80px 80px 80px 90px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px dashed #EEE;font-size:13px;}
+  .noki-row.header{font-weight:bold;background:var(--primary-light);color:white;padding:8px 0;}
+  .noki-row.header>div{text-align:center;}
+  .noki-row>div:nth-child(1),.noki-row>div:nth-child(5),.noki-row>div:nth-child(6){text-align:center;}
+  .noki-row input{padding:4px 6px;font-size:12px;text-align:center;}
+  .noki-row.zero{grid-template-columns:40px 1fr 110px 110px;}
+  .noki-row.zero>div:nth-child(1),.noki-row.zero>div:nth-child(3),.noki-row.zero>div:nth-child(4){text-align:center;}
+  .footer{text-align:center;padding:20px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);margin-top:20px;}
+
+  /* アップロードエリア */
+  .drop-zone{border:3px dashed var(--primary-light);border-radius:8px;padding:30px;text-align:center;background:#F0F7FF;cursor:pointer;transition:all 0.2s;}
+  .drop-zone:hover,.drop-zone.dragover{background:#DDEBF7;border-color:var(--accent);}
+  .drop-zone .icon{font-size:48px;margin-bottom:10px;}
+  .drop-zone .msg{font-size:16px;font-weight:bold;color:var(--primary);}
+  .drop-zone .sub{font-size:12px;color:var(--muted);margin-top:6px;}
+
+  /* PDF プレビュー */
+  #pdfContainer{margin-top:16px;background:#EEE;border-radius:6px;padding:8px;max-height:600px;overflow:auto;text-align:center;}
+  #pdfContainer canvas{max-width:100%;box-shadow:0 2px 8px rgba(0,0,0,0.15);margin-bottom:8px;background:white;}
+  .pdf-page-nav{display:flex;justify-content:center;gap:10px;margin:10px 0;align-items:center;}
+  .pdf-page-nav button{padding:5px 12px;font-size:12px;}
+  .pdf-page-nav span{font-size:12px;color:var(--muted);}
+
+  /* 抽出値チップ */
+  .chips-panel{background:#FFF8DC;border:1px solid var(--warning);border-radius:6px;padding:14px;margin-top:12px;}
+  .chips-panel h3{margin-top:0;color:#9C5700;}
+  .chips-container{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;max-height:200px;overflow-y:auto;}
+  .chip{padding:5px 10px;background:white;border:1px solid var(--warning);border-radius:15px;cursor:pointer;font-size:12px;font-weight:bold;color:var(--primary);transition:all 0.15s;user-select:none;}
+  .chip:hover{background:var(--recmd);transform:scale(1.05);}
+  .chip.used{background:#C6EFCE;border-color:var(--success);color:#006100;}
+  .chip.applying{background:var(--accent);color:white;transform:scale(1.1);}
+  .chip .label{font-size:10px;color:var(--muted);display:block;font-weight:normal;}
+  .chip.suggested{background:#FFE4B5;border-color:var(--accent);}
+
+  /* 自動検出結果 */
+  .auto-detect{background:#E2EFDA;border:1px solid var(--success);border-radius:6px;padding:12px;margin-top:10px;font-size:13px;}
+  .auto-detect .title{color:#006100;font-weight:bold;margin-bottom:6px;}
+  .auto-detect-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #B0C4B0;}
+  .auto-detect-item:last-child{border-bottom:none;}
+  .auto-detect-item button{padding:3px 10px;font-size:11px;background:var(--success);}
+
+  /* ステータス表示 */
+  .status{padding:10px;border-radius:4px;margin:10px 0;font-size:13px;text-align:center;}
+  .status.loading{background:#FFF3CD;color:#856404;}
+  .status.success{background:#D4EDDA;color:#155724;}
+  .status.error{background:#F8D7DA;color:#721C24;}
+
+  /* AI図面読取 */
+  .ai-panel{background:#EEF4FF;border:2px solid var(--primary-light);border-radius:8px;padding:14px;margin-top:12px;}
+  .ai-panel h3{margin:0 0 6px;color:var(--primary);}
+  .ai-panel .ai-note{font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .ai-row{display:grid;grid-template-columns:150px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px dotted #B8C8E8;font-size:13px;}
+  .ai-row:last-child{border-bottom:none;}
+  .ai-row .k{font-weight:bold;color:var(--primary);}
+  .ai-row .v{font-weight:bold;}
+  .ai-row .b{display:block;font-size:11px;color:var(--muted);font-weight:normal;margin-top:2px;}
+  .ai-row button{padding:4px 12px;font-size:12px;background:var(--success);}
+  .conf{display:inline-block;padding:1px 7px;border-radius:9px;font-size:10px;font-weight:bold;margin-left:6px;}
+  .conf.high{background:#C6EFCE;color:#006100;}
+  .conf.medium{background:#FFEB9C;color:#9C5700;}
+  .conf.low{background:#FFC7CE;color:#9C0006;}
+  @media (max-width:640px){.ai-row{grid-template-columns:1fr;}}
+  @media print{
+    .ai-panel{display:none !important;}
+  }
+  @media print{
+    body{background:white;padding:0;}
+    button,.no-print{display:none !important;}
+    .card{border:1px solid #999;box-shadow:none;page-break-inside:avoid;}
+  }
+  @media (max-width:640px){
+    .row{grid-template-columns:1fr;}
+    header h1{font-size:18px;}
+    table{font-size:11px;}
+    th,td{padding:4px 3px;}
+  }
+
+  .qm{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;background:#2E75B6;color:#fff;font-size:12px;font-weight:bold;cursor:pointer;margin-left:6px;vertical-align:middle;user-select:none;}
+  .qm:hover,.qm:focus{background:#1F4E78;outline:none;}
+  #helpPop{position:absolute;z-index:9999;display:none;max-width:320px;background:#1F4E78;color:#fff;padding:10px 12px;border-radius:6px;font-size:13px;line-height:1.7;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+  .warnBox{margin:10px 0;}
+  .wn-title{font-weight:bold;font-size:13px;margin-bottom:4px;color:#1F4E78;}
+  .wn{padding:6px 10px;border-radius:4px;font-size:12.5px;margin:4px 0;border-left:4px solid;line-height:1.6;}
+  .wn.ng{background:#FFC7CE;color:#9C0006;border-color:#C00000;}
+  .wn.warn{background:#FFEB9C;color:#7A4A00;border-color:#E0A800;}
+  .wn.info{background:#E8F1FB;color:#1F4E78;border-color:#2E75B6;}
+  .wn.ok{background:#C6EFCE;color:#006100;border-color:#00A000;}
+  .conf-badge{display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:bold;align-self:center;}
+  .conf-badge.ok{background:#C6EFCE;color:#006100;}
+  .conf-badge.ng{background:#FFEB9C;color:#9C5700;}
+  #cfOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:none;overflow:auto;padding:16px;}
+  #cfBox{background:#fff;max-width:720px;margin:20px auto;border-radius:10px;padding:18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.4);}
+  #cfBox h3{margin:0 0 6px;color:#1F4E78;}
+  .cf-row{display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center;margin:8px 0;}
+  .cf-row input,.cf-row select{width:100%;padding:6px;font-size:15px;box-sizing:border-box;}
+  .cf-noki{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:6px;align-items:center;margin:4px 0;font-size:13px;}
+  .cf-noki input{width:100%;padding:5px;font-size:14px;box-sizing:border-box;}
+  .cf-ai{font-size:11px;color:#666;display:block;margin-top:2px;}
+  .refTag{display:inline-block;background:#FFEB9C;color:#9C5700;border-radius:8px;font-size:10px;padding:0 6px;margin-left:4px;}
+  .hist-row{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:8px 10px;border-bottom:1px solid #ddd;font-size:13px;}
+  .hist-row small{color:#666;}
+  @media print{.no-print{display:none!important;}}
+  #printSheet{display:none;}
+  #printSheet h1{font-size:18px;margin:0 0 6px;color:#000;}
+  #printSheet h2{font-size:13px;margin:12px 0 4px;color:#000;border-bottom:1px solid #000;padding-bottom:2px;display:block;}
+  #printSheet table{width:100%;border-collapse:collapse;font-size:11px;margin:4px 0;}
+  #printSheet th,#printSheet td{border:1px solid #000;padding:3px 5px;text-align:center;background:#fff;color:#000;}
+  #printSheet td.l{text-align:left;}
+  #printSheet .meta{font-size:11px;}
+  @media print{
+    body.print-sheet .container > *:not(#printSheet){display:none !important;}
+    body.print-sheet #printSheet{display:block !important;}
+    body.print-sheet{background:#fff;padding:0;}
+    @page{size:A4;margin:12mm;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🏠 小屋裏換気 図面自動読取シミュレーター</h1>
+  <div class="sub">図面PDFをアップロードするだけで、寸法を自動抽出→換気計算まで一気通貫</div>
+  <div class="company">ハゼモト建設株式会社 EcoSuma仕様対応 / TOKO i-ROOF・双快 対応 / TEL 093-931-0521</div>
+</header>
+
+<div class="card">
+  <h2><span class="step s1">STEP 1</span>図面ファイルをアップロード</h2>
+  <p class="hint" style="margin-bottom:10px;">屋根伏図・天井伏図が含まれる<strong>PDFファイル</strong>をアップロードしてください（画像PDF/JPG/PNGにも対応）。数値を自動抽出します。</p>
+
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click();">
+    <div class="icon">📄</div>
+    <div class="msg">クリックしてファイルを選択 または ここにドラッグ&drop</div>
+    <div class="sub">PDF / PNG / JPG に対応（最大 100MB）</div>
+  </div>
+  <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+
+  <div id="fileStatus"></div>
+
+  <div class="ai-panel no-print" id="aiPanel" style="display:none;">
+    <h3>🤖 AIで図面を読み取る（工事名・天井面積・軒の寸法）</h3>
+    <div class="ai-note">スキャン画像のPDFや、文字が読み取れない図面でも、AIが図面の画像を読んで入力値の候補を出します。AI利用料が発生します（1回あたり十数円〜数十円程度）。読み取り結果は必ず図面と照合してください。</div>
+    <button class="accent" id="aiReadBtn" onclick="aiRead()">🤖 AIで読み取る</button>
+    <div id="aiStatus"></div>
+    <div id="aiResult" style="display:none;"></div>
+  </div>
+
+  <div id="pdfContainer" style="display:none;"></div>
+
+  <div class="chips-panel" id="chipsPanel" style="display:none;">
+    <h3>💡 抽出された数値（クリックで入力欄に反映）</h3>
+    <p class="hint">下の数値チップをクリックしてから、入力したい入力欄をクリックすると自動入力されます。<br>または、入力欄をクリック→フォーカスした状態で、チップをクリックしても反映されます。</p>
+    <div class="chips-container" id="chipsContainer"></div>
+  </div>
+
+  <div class="auto-detect" id="autoDetect" style="display:none;">
+    <div class="title">✨ 自動検出された推奨値</div>
+    <div id="autoDetectItems"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="step s2">STEP 2</span>基本情報</h2>
+  <div class="row">
+    <label>工事名<span class="qm no-print" data-h="name" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="text" id="construction" value="○○様邸新築工事" data-target-name="工事名">
+    <span></span>
+  </div>
+  <div class="row">
+    <label>天井面積（小屋裏面積）<span class="qm no-print" data-h="area" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="ceiling" value="75.34" step="0.01" data-target-name="天井面積">
+    <span>㎡</span>
+  </div>
+  <div class="row">
+    <label>補助ベントキャップ サイズ<span class="qm no-print" data-h="vent" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <select id="ventSize">
+      <option value="100" selected>φ100（有効開口 50 cm²/個）</option>
+      <option value="150">φ150（有効開口 110 cm²/個）</option>
+      <option value="200">φ200（有効開口 200 cm²/個）</option>
+    </select>
+    <span></span>
+  </div>
+  <p class="hint">給気・排気の不足分を補うベントキャップの口径。有効開口・単価は参考値です（防虫網付を想定。採用製品のメーカー仕様書で必ず確認してください）。</p>
+  <div class="row-result"><span class="result-label">必要給気面積（1/900以上）<span class="qm no-print" data-h="supply" tabindex="0" role="button" aria-label="説明を見る">?</span></span><span class="result-value" id="needSupply">-</span></div>
+  <div class="row-result"><span class="result-label">必要排気面積（1/1600以上）<span class="qm no-print" data-h="exhaust" tabindex="0" role="button" aria-label="説明を見る">?</span></span><span class="result-value" id="needExhaust">-</span></div>
+  <div class="warnBox no-print"></div>
+  <div class="btn-group no-print"><button class="accent" type="button" onclick="openConfirm(false)">✅ 入力内容を最終確認する</button><span id="confBadge" class="conf-badge ng">⚠️ 最終確認はまだです</span></div>
+  <p class="hint no-print">図面を読み取ったあと（または手入力のあと）に押すと、工事名・面積・屋根の形・軒の寸法を1画面で見直せます。<strong>図面と見比べてから「確定」</strong>してください。</p>
+</div>
+
+<div class="card">
+  <h2><span class="step s3">STEP 3</span>軒裏吸気</h2>
+  <div class="row">
+    <label>軒裏形式<span class="qm no-print" data-h="soffit" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <select id="soffitType">
+      <option value="normal">通常軒天（軒天ボード：NBL ASN836U）</option>
+      <option value="zero">軒ゼロ・破風レス（JOTO FV-E055-L18）</option>
+    </select>
+    <span></span>
+  </div>
+  <p class="hint" style="color:#9C5700;">⚠️ 軒ゼロかどうかは図面から自動判定されません。必ず上記プルダウンで手動選択してください。（PDFに「軒ゼロ」「破風レス」等の記載があれば、下の「自動検出された推奨値」欄に候補が表示されます。内容を確認のうえ「適用」ボタンを押すと切り替わります）</p>
+  <p class="hint" id="soffitHint">軒とけらばの幅・長さを入力。開孔率543 cm²/㎡（NBL アスノン8mm全有孔板 ASN836U）</p>
+
+  <div class="noki-row header" id="nokiHeader">
+    <div>No.</div><div>部位</div><div>幅(m)</div><div>長さ(m)</div><div>面積(㎡)</div><div>開口(cm²)</div>
+  </div>
+  <div id="nokiTable"></div>
+
+  <div class="row-result" style="margin-top:12px;"><span class="result-label">軒裏吸気 合計開口面積</span><span class="result-value" id="nokiTotal">-</span></div>
+  <div class="row-result" id="zeroBarRow" style="display:none;"><span class="result-label">JOTO FV-E055-L18 必要本数目安</span><span class="result-value" id="zeroBarCount">-</span></div>
+  <div class="row-result"><span class="result-label">給気不足時の追加ベントキャップ<span class="ventSizeLabel">φ100</span></span><span class="result-value" id="supplyVent">-</span></div>
+  <div class="row-result"><span class="result-label">給気判定<span class="qm no-print" data-h="judge" tabindex="0" role="button" aria-label="説明を見る">?</span></span><span id="supplyJudge">-</span></div>
+</div>
+
+<div class="card">
+  <h2><span class="step s4">STEP 4</span>棟換気 製品比較シミュレーション</h2>
+  <p class="hint">各製品の「採用本数」を変更すると、合計開口・不足分ベントキャップ（STEP 2で選択したサイズ）・部材費・施工費・総コスト・判定が瞬時に再計算されます。<strong>棟換気の取付は屋根屋さん、ベントキャップの取付は大工さん</strong>の施工として職種別に集計します。</p>
+
+  <h3>■ 単価設定（実勢価格に合わせて修正してください）</h3>
+  <div class="row">
+    <label>棟換気 取付費（別途の場合のみ）<span class="qm no-print" data-h="muneLabor" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="laborMune" value="0" step="100">
+    <span>円/本</span>
+  </div>
+  <div class="row">
+    <label>ベントキャップ 部材単価<span class="qm no-print" data-h="ventMat" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="priceVentMat" value="3000" step="100">
+    <span>円/個</span>
+  </div>
+  <div class="row">
+    <label>ベントキャップ 取付費（大工）<span class="qm no-print" data-h="ventLabor" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="laborVent" value="3000" step="100">
+    <span>円/個</span>
+  </div>
+  <div class="row" id="laborSoffitRow">
+    <label>軒天 施工費（大工）<span class="qm no-print" data-h="soffitLabor" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="laborSoffit" value="3000" step="100">
+    <span>円/㎡</span>
+  </div>
+  <div class="row" id="laborZeroRow" style="display:none;">
+    <label>軒ゼロ換気材 取付費（大工）</label>
+    <input type="number" id="laborZero" value="2000" step="100">
+    <span>円/本</span>
+  </div>
+  <div class="row">
+    <label>片持ち棟 換気棟合せ（屋根屋）の長さ<span class="qm no-print" data-h="kata" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="kataLen" value="0" step="0.1" min="0">
+    <span>m</span>
+  </div>
+  <div class="row">
+    <label>片持ち棟 換気棟合せ 単価</label>
+    <input type="number" id="kataRate" value="4000" step="100">
+    <span>円/m</span>
+  </div>
+  <div class="btn-group no-print" style="margin-top:6px;"><button type="button" onclick="useKataLen()">棟側の軒の長さを入れる</button></div>
+  <p class="hint">片流れ屋根で、屋根屋さんの見積に「片持ち棟 換気棟合せ」（初期 ¥4,000/m）がある場合だけ長さを入れてください。<strong>不要なら 0 のまま</strong>で構いません。入れると屋根屋の費用に加算されます（全案共通のため、比較一覧表には含みません）。</p>
+  <div class="btn-group no-print">
+    <button class="success" type="button" onclick="savePrices()">💾 この単価を保存（次回から使う）</button>
+    <button type="button" onclick="resetPrices()">↩ 単価を初期値に戻す</button>
+    <span id="priceState" class="conf-badge ng">未保存（初期値＝参考値）</span>
+  </div>
+  <p class="hint">実際の見積単価に直したら「単価を保存」を押すと、このパソコンのブラウザに記憶されて次回も使えます（150φ・200φ のキャップ単価もここで保存されます）。</p>
+  <p class="hint">初期値は目安です。棟換気の単価は下の表の「単価★」欄で製品ごとに直接編集できます。<strong>単価は取付費込み（屋根屋さん見積の単価）として扱い、取付費は初期値0円です</strong>（取付が別途の場合のみ上の欄に入力）。ベントキャップ部材単価はサイズ変更時に標準値へ戻ります。</p>
+
+  <div style="overflow-x:auto;">
+  <table id="productTable">
+    <thead><tr>
+      <th>No.</th><th>製品名</th><th>1本開口<br>(cm²)</th><th>推奨本数</th>
+      <th>採用本数<br>★入力★</th><th>合計開口<br>(cm²)</th>
+      <th>不足時<br>ﾍﾞﾝﾄﾞ数</th><th>単価(取付込)<br>(円/本)★</th><th>部材費<br>(円)</th><th>施工費<br>(円)</th><th>総コスト<br>(円)</th><th>判定</th>
+    </tr></thead>
+    <tbody id="productBody"></tbody>
+  </table>
+  </div>
+
+  <div class="warning-bar">⭐ EcoSuma推奨：<strong>片流れ 双快</strong>（i-ROOFの1.5倍換気量、少本数で施工可）</div>
+
+  <h3 style="margin-top:20px;">■ 棟換気 比較一覧表（安い順）<span class="qm no-print" data-h="cmp" tabindex="0" role="button" aria-label="説明を見る">?</span></h3>
+  <p class="hint">全製品を「排気の基準（天井面積の1/1600）を満たす最小の本数」で並べて比較します。<strong>金額は「棟換気＋ベントキャップ」のみ</strong>（軒天など全案共通の費用は含みません）。<br>
+  ① <strong>最小本数</strong>：補助ベントなしで基準を満たす本数　② <strong>1本減＋補助ベント</strong>：本数を1本減らし、不足分をベントキャップ（STEP 2で選んだ口径）で補う案。安いほうを「最安案」として表示します。</p>
+  <div class="row" style="grid-template-columns:200px 1fr auto;">
+    <label>屋根の形（製品の絞り込み）<span class="qm no-print" data-h="roof" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <select id="roofFilter"><option value="all">すべて表示</option><option value="kata">片流れ屋根（片流れ用の製品だけ）</option><option value="kirizuma">切妻・寄棟屋根（i-ROOF・雨押えだけ）</option></select>
+    <span></span>
+  </div>
+  <p class="hint">屋根の形に合わない製品（例：片流れ屋根にi-ROOF）を選ばないよう、屋根の形を選んでください。AIで図面を読み取った場合は自動で選ばれます。</p>
+  <div style="overflow-x:auto;"><table id="cmpTable">
+    <thead><tr><th>順位</th><th>製品名</th><th>1本開口<br>(cm²)</th><th>① 最小本数</th><th>① 金額</th><th>② 1本減＋補助ベント</th><th>② 金額</th><th>最安案</th><th class="no-print"></th></tr></thead>
+    <tbody id="cmpBody"></tbody>
+  </table></div>
+  <div class="btn-group no-print"><button class="accent" onclick="copyCmpTable()">📋 比較一覧表をコピー</button></div>
+  <p class="hint no-print">「この案にする」を押すと、STEP 5 の採用案に自動で入ります。価格は初期値の目安なので、実際の見積単価に直してから比較してください。</p>
+</div>
+
+<div class="card">
+  <h2><span class="step s5">STEP 5</span>採用案の決定・結果</h2>
+  <div class="row">
+    <label>採用する棟換気部材<span class="qm no-print" data-h="adopt" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <select id="adoptSel"></select>
+    <span></span>
+  </div>
+  <div class="row">
+    <label>採用本数<span class="qm no-print" data-h="qty" tabindex="0" role="button" aria-label="説明を見る">?</span></label>
+    <input type="number" id="adoptQty" value="3" min="0" step="1">
+    <span>本</span>
+  </div>
+  <div class="row-result"><span class="result-label">1本あたり開口</span><span class="result-value" id="adoptOpen">-</span></div>
+  <div class="row-result"><span class="result-label">排気合計開口</span><span class="result-value" id="adoptTotal">-</span></div>
+  <div class="row-result"><span class="result-label">補助ベントキャップ<span class="ventSizeLabel">φ100</span>（排気）</span><span class="result-value" id="adoptVent">-</span></div>
+  <div class="row-result"><span class="result-label">排気判定<span class="qm no-print" data-h="judge" tabindex="0" role="button" aria-label="説明を見る">?</span></span><span id="exhaustJudge">-</span></div>
+
+  <h3 style="margin-top:16px;">■ ベントキャップ口径の比較（採用案ベース）</h3>
+  <p class="hint">100φ・150φ・200φを同じ条件で比べます。部材単価★は口径ごとに編集できます（初期値は参考値）。取付費は共通の「ベントキャップ 取付費」を使用。</p>
+  <div style="overflow-x:auto;"><table id="ventCmpTable">
+    <thead><tr><th>口径</th><th>1個開口<br>(cm²)</th><th>部材単価<br>(円/個)★</th><th>給気用</th><th>排気用</th><th>合計個数</th><th>金額(材+工)</th><th></th></tr></thead>
+    <tbody id="ventCmpBody"></tbody>
+  </table></div>
+
+  <div class="warnBox no-print"></div>
+  <h3 style="margin-top:20px;">■ 採用案サマリー</h3>
+  <div class="summary" id="summaryBox"></div>
+
+  <h3 style="margin-top:16px;">■ 参考コスト試算（材工・職種別）</h3>
+  <table id="costTable">
+    <thead><tr><th>項目</th><th>数量</th><th>単価</th><th>金額</th><th>備考</th></tr></thead>
+    <tbody id="costBody"></tbody>
+  </table>
+  <div class="cost-total" id="costTotal">部材費合計：-</div>
+
+  <div class="btn-group no-print">
+    <button class="accent" onclick="copyCadTable()">📋 表入力用コピー（表のまま貼る）</button>
+    <button class="accent" onclick="copyCadText()">📋 文字入力用コピー（文章で貼る）</button>
+    <button onclick="printResultSheet()">📄 結果シートをPDF保存（図面に貼る・添付用）</button>
+    <button onclick="window.print()">🖨️ 画面全体を印刷</button>
+    <button class="success" onclick="saveHistory()">🗂️ 物件履歴に保存</button>
+    <button class="success" onclick="exportJSON()">💾 入力値を保存(JSON)</button>
+    <button onclick="document.getElementById('jsonInput').click();">📂 入力値を読込</button>
+    <button class="accent" onclick="sendToChecker()" style="background:linear-gradient(135deg,#4472C4,#2E75B6);color:#fff;font-weight:bold;">📋 図面チェッカーに送信</button>
+    <button class="danger" onclick="resetAll()">🔄 すべてリセット</button>
+  </div>
+  <input type="file" id="jsonInput" accept=".json" style="display:none">
+
+  <div class="warning-bar no-print" style="margin-top:20px;background:#E8F1FB;color:#1F4E78;border-left-color:#2E75B6;">
+    <strong>📌 この結果を図面（ARCHITREND）に貼り付ける手順</strong>
+    <ol style="margin:8px 0 4px 20px;line-height:1.9;">
+      <li>上の <strong>工事名・天井面積・採用案</strong> が正しいか確認し、STEP 2 の「入力内容を最終確認する」を押しておきます。</li>
+      <li>ARCHITRENDの<strong>どの機能で貼るか</strong>を選び、対応するボタンを押します。
+        <ul style="margin:4px 0 4px 18px;">
+          <li><strong>表入力</strong>で貼る → 「📋 <strong>表入力用コピー</strong>」（タブ区切りの表。そのまま貼ると表になります）</li>
+          <li><strong>文字入力</strong>で貼る → 「📋 <strong>文字入力用コピー</strong>」（1行ずつの文章。コメント欄・注記にそのまま入ります）</li>
+          <li><strong>PDFで貼る・添付する</strong> → 「📄 <strong>結果シートをPDF保存</strong>」（A4の計算書。印刷画面で「PDFに保存」を選びます）</li>
+        </ul></li>
+      <li><strong>ARCHITRENDでこの物件の「立面図」を開き</strong>、空いている場所（余白）で上の機能を開いて <strong>Ctrl＋V</strong> で貼り付けます。</li>
+      <li>表の形にならないときは、<strong>先にExcelに貼り付けて</strong>から、その表をコピーして図面に貼ってください（確実です）。</li>
+      <li><strong>軒裏吸気の表は軒の近く</strong>、<strong>棟換気の表は屋根の棟の近く</strong>に置き、文字の大きさを図面の縮尺に合わせます。</li>
+      <li>最後に、図面上の <strong>工事名・天井面積・本数</strong> がこの画面と一致しているか見比べます。</li>
+    </ol>
+    <span style="font-size:11px;">※ ARCHITRENDの画面やメニューの名前は、バージョンによって違う場合があります。操作で迷ったら、社内のARCHITREND担当者に確認してください。</span>
+  </div>
+</div>
+
+
+<div id="printSheet"></div>
+
+<div class="card no-print" id="histCard">
+  <h2>🗂️ 物件履歴 <small style="font-weight:normal;font-size:12px;">（このパソコンのこのブラウザに保存・最大30件）</small></h2>
+  <p class="hint">STEP 5 の「物件履歴に保存」で、工事名・面積・軒の寸法・採用案・単価をまとめて記憶します。同じ工事名で保存すると上書きされます。別のパソコンへ移すときは「入力値を保存(JSON)」を使ってください。</p>
+  <div id="histList"></div>
+</div>
+
+<div id="cfOverlay"><div id="cfBox">
+  <h3>✅ 入力内容の最終確認</h3>
+  <p class="hint">図面を見ながら、下の値が合っているか確認してください。違うところはここで直せます。黄色や赤の「要確認」「不確か」は特に図面と見比べてください。</p>
+  <div id="cfBody"></div>
+  <label style="display:block;margin:14px 0 6px;font-size:14px;"><input type="checkbox" id="cfOk" style="width:auto;margin-right:6px;"> 図面と見比べて、上の内容で間違いありません</label>
+  <div class="btn-group">
+    <button class="success" type="button" id="cfGo" disabled onclick="confirmInputs()">この内容で確定する</button>
+    <button type="button" onclick="closeConfirm()">閉じる（あとで確認）</button>
+  </div>
+</div></div>
+<div id="helpPop"></div>
+
+<div class="footer">
+  ハゼモト建設株式会社 &nbsp;/&nbsp; TEL 093-931-0521 &nbsp;/&nbsp; https://hazemoto-k.co.jp<br>
+  小屋裏換気 図面自動読取シミュレーター v2.6.1（読取確認・入力チェック・単価保存・物件履歴・やさしい説明対応） (2026) &nbsp;/&nbsp; PDF.js による自動抽出
+</div>
+
+</div>
+
+<script>
+// PDF.js の読み込み確認（file://プロトコルでも動作するように非モジュール版を使用）
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+  window.pdfjsLib = pdfjsLib;
+  // 日本語対応：CMap と 標準フォントのCDNパス
+  window.PDF_CMAP_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/";
+  window.PDF_FONT_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/";
+  console.log('PDF.js loaded successfully:', pdfjsLib.version || '3.11.174');
+} else {
+  console.error('PDF.js failed to load. Check CDN connectivity.');
+  window.addEventListener('load', () => {
+    const status = document.getElementById('fileStatus');
+    if (status) status.innerHTML = '<div class="status error">⚠️ PDF.js が読み込めませんでした。インターネット接続を確認するか、PDF以外の入力をご利用ください。手動入力は可能です。</div>';
+  });
+}
+
+// ===== 製品マスターデータ =====
+const PRODUCTS = [
+  { id: 1, name: "i-ROOF 1P", size: "1,080mm/本", opening: 170, price: 9000, recmd: false },
+  { id: 2, name: "i-ROOF 2P", size: "1,990mm/本", opening: 340, price: 16000, recmd: false },
+  { id: 3, name: "片流れ i-ROOF 1P", size: "1,150mm/本", opening: 80, price: 8000, recmd: false },
+  { id: 4, name: "片流れ i-ROOF 2P", size: "2,150mm/本", opening: 160, price: 14000, recmd: false },
+  { id: 5, name: "雨押え i-ROOF 1P", size: "1,053mm/本", opening: 70, price: 7500, recmd: false },
+  { id: 6, name: "片流れ 双快 1P", size: "1,150mm/本", opening: 120, price: 12000, recmd: true },
+  { id: 7, name: "片流れ 双快 2P", size: "2,150mm/本", opening: 240, price: 20000, recmd: true },
+];
+let NOKI = [
+  { name: "軒（棟側・長辺）", w: 0.60, l: 9.20 },
+  { name: "軒（軒先・長辺）", w: 0.60, l: 9.20 },
+  { name: "けらば（短辺①）", w: 0.30, l: 8.19 },
+  { name: "けらば（短辺②）", w: 0.30, l: 8.19 },
+];
+const NOKI_OPEN_RATE = 543, NOKI_PRICE = 4000;
+// 補助ベントキャップ（防虫網付・参考値。メーカー仕様書で要確認）
+const VENTS = { 100:{open:50, price:3000}, 150:{open:110, price:5000}, 200:{open:200, price:8000} };
+let ventSize = 100;
+let VENT_OPEN = VENTS[100].open, VENT_PRICE = VENTS[100].price;
+// 軒ゼロ（破風レス）対応：城東テクノ FV-E055-L18
+// 有効換気面積 100 cm²/m、長さ1,820mm(1.82m)/本、正価 9,200円/本（6本/ケース）
+const ZERO_OPEN_RATE = 100, ZERO_BAR_LEN = 1.82, ZERO_BAR_PRICE = 9200;
+const DEF_PRICES = PRODUCTS.map(p => p.price);
+let adoptedQty = [0, 0, 7, 4, 0, 5, 3];
+let soffitMode = 'normal'; // 'normal'（通常軒天）| 'zero'（軒ゼロ・破風レス）
+
+// フォーカス中のInput要素を追跡
+let focusedInput = null;
+let selectedChip = null;
+
+// ===== 描画 =====
+function updateSoffitHint() {
+  document.getElementById('soffitHint').textContent = soffitMode === 'zero'
+    ? '軒ゼロ・破風レス住宅向け：JOTO FV-E055-L18（有効換気面積 100 cm²/m、長さ1,820mm/本）を屋根の全周（軒先・けらば・水上側）に施工する想定です。部位ごとの施工延長(m)を入力してください。'
+    : '軒とけらばの幅・長さを入力。開孔率543 cm²/㎡（NBL アスノン8mm全有孔板 ASN836U）';
+  document.getElementById('zeroBarRow').style.display = soffitMode === 'zero' ? 'flex' : 'none';
+  document.getElementById('laborSoffitRow').style.display = soffitMode === 'zero' ? 'none' : 'grid';
+  document.getElementById('laborZeroRow').style.display = soffitMode === 'zero' ? 'grid' : 'none';
+}
+function renderNoki() {
+  const header = document.getElementById('nokiHeader');
+  if (soffitMode === 'zero') {
+    header.className = 'noki-row header zero';
+    header.innerHTML = `<div>No.</div><div>部位</div><div>長さ(m)</div><div>開口(cm²)</div>`;
+  } else {
+    header.className = 'noki-row header';
+    header.innerHTML = `<div>No.</div><div>部位</div><div>幅(m)</div><div>長さ(m)</div><div>面積(㎡)</div><div>開口(cm²)</div>`;
+  }
+  const box = document.getElementById('nokiTable'); box.innerHTML = '';
+  NOKI.forEach((n, i) => {
+    const row = document.createElement('div');
+    if (soffitMode === 'zero') {
+      row.className = 'noki-row zero';
+      row.innerHTML = `<div>${i+1}</div><div>${n.name}</div>
+        <div><input type="number" step="0.01" value="${n.l}" data-noki="l" data-idx="${i}" data-target-name="${n.name}長さ"></div>
+        <div id="nokiOpen${i}">-</div>`;
+    } else {
+      row.className = 'noki-row';
+      row.innerHTML = `<div>${i+1}</div><div>${n.name}</div>
+        <div><input type="number" step="0.01" value="${n.w}" data-noki="w" data-idx="${i}" data-target-name="${n.name}幅"></div>
+        <div><input type="number" step="0.01" value="${n.l}" data-noki="l" data-idx="${i}" data-target-name="${n.name}長さ"></div>
+        <div id="nokiArea${i}">-</div><div id="nokiOpen${i}">-</div>`;
+    }
+    box.appendChild(row);
+  });
+  attachInputListeners();
+}
+function renderProducts() {
+  const body = document.getElementById('productBody'); body.innerHTML = '';
+  PRODUCTS.forEach((p, i) => {
+    const tr = document.createElement('tr'); if (p.recmd) tr.className = 'recmd';
+    tr.innerHTML = `<td>${p.id}</td><td class="name">${p.name}<br><small style="color:#999;">${p.size}</small></td>
+      <td>${p.opening}</td><td id="prodRecmd${i}">-</td>
+      <td><input type="number" min="0" step="1" value="${adoptedQty[i]}" data-prod-idx="${i}"></td>
+      <td id="prodTotal${i}">-</td><td id="prodVent${i}">-</td>
+      <td><input type="number" min="0" step="100" value="${p.price}" data-price-idx="${i}" style="width:72px;"></td>
+      <td id="prodCost${i}">-</td><td id="prodLabor${i}">-</td><td id="prodGrand${i}">-</td><td id="prodJudge${i}">-</td>`;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input[data-prod-idx]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      adoptedQty[parseInt(e.target.dataset.prodIdx)] = parseInt(e.target.value) || 0; calc();
+    });
+  });
+  body.querySelectorAll('input[data-price-idx]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      PRODUCTS[parseInt(e.target.dataset.priceIdx)].price = parseFloat(e.target.value) || 0; calc();
+    });
+  });
+}
+function selectVentSize(sz) {
+  const sel = document.getElementById('ventSize'); sel.value = String(sz);
+  sel.dispatchEvent(new Event('change'));
+}
+function renderVentCmp() {
+  const body = document.getElementById('ventCmpBody'); if (!body) return;
+  body.innerHTML = [100,150,200].map(sz => `<tr id="vcRow${sz}">
+    <td class="name">φ${sz}${(sz !== 100 && !pricesSaved) ? '<span class="refTag">参考値</span>' : ''}</td><td>${VENTS[sz].open}</td>
+    <td><input type="number" min="0" step="100" value="${VENTS[sz].price}" data-vsz="${sz}" style="width:72px;"></td>
+    <td id="vcS${sz}">-</td><td id="vcE${sz}">-</td><td id="vcN${sz}">-</td><td id="vcC${sz}">-</td>
+    <td><button type="button" class="no-print" data-vsel="${sz}" style="padding:2px 8px;font-size:12px;">この口径にする</button></td></tr>`).join('');
+  body.querySelectorAll('input[data-vsz]').forEach(inp => inp.addEventListener('input', e => {
+    const sz = parseInt(e.target.dataset.vsz); VENTS[sz].price = parseFloat(e.target.value) || 0;
+    if (sz === ventSize) document.getElementById('priceVentMat').value = VENTS[sz].price;
+    calc();
+  }));
+  body.querySelectorAll('button[data-vsel]').forEach(b => b.addEventListener('click', () => selectVentSize(parseInt(b.dataset.vsel))));
+}
+function attachVentSelect() {
+  document.getElementById('ventSize').addEventListener('change', e => {
+    ventSize = parseInt(e.target.value);
+    VENT_OPEN = VENTS[ventSize].open;
+    VENT_PRICE = VENTS[ventSize].price;
+    document.getElementById('priceVentMat').value = VENTS[ventSize].price;
+    document.querySelectorAll('.ventSizeLabel').forEach(el => el.textContent = 'φ' + ventSize);
+    calc();
+  });
+}
+function attachSoffitSelect() {
+  document.getElementById('soffitType').addEventListener('change', e => {
+    soffitMode = e.target.value;
+    updateSoffitHint();
+    renderNoki();
+    calc();
+  });
+}
+function renderAdoptSelect() {
+  const sel = document.getElementById('adoptSel'); sel.innerHTML = '';
+  PRODUCTS.forEach(p => {
+    const opt = document.createElement('option'); opt.value = p.id;
+    opt.textContent = (p.recmd ? "★ " : "") + p.name;
+    if (p.id === 6) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', calc);
+  document.getElementById('adoptQty').addEventListener('input', calc);
+}
+
+// 全input要素に共通リスナー
+function attachInputListeners() {
+  document.querySelectorAll('input[type="number"],input[type="text"]').forEach(inp => {
+    // イベント設定は1回のみ
+    if (inp.dataset._bound) return;
+    inp.dataset._bound = '1';
+    inp.addEventListener('focus', e => {
+      // 既存のフォーカス表示を外す
+      document.querySelectorAll('.focused-target').forEach(el => el.classList.remove('focused-target'));
+      e.target.classList.add('focused-target');
+      focusedInput = e.target;
+      // チップが選択されていれば即時適用
+      if (selectedChip) {
+        applyChipToInput(selectedChip, e.target);
+        selectedChip = null;
+      }
+    });
+    inp.addEventListener('blur', () => setTimeout(() => { if (focusedInput === inp) focusedInput = null; }, 100));
+    inp.addEventListener('input', () => {
+      // ノキ関連の入力時にデータ更新
+      if (inp.dataset.noki) {
+        const idx = parseInt(inp.dataset.idx);
+        NOKI[idx][inp.dataset.noki] = parseFloat(inp.value) || 0;
+      }
+      if (inp.id === 'ceiling' || inp.id === 'construction' || inp.dataset.noki) setConfirmed(false);
+      calc();
+    });
+  });
+}
+
+// ===== メイン計算 =====
+function rate(id){ return parseFloat(document.getElementById(id).value) || 0; }
+function calc() {
+  VENT_PRICE = rate('priceVentMat'); VENTS[ventSize].price = VENT_PRICE;
+  { const vi = document.querySelector('input[data-vsz="'+ventSize+'"]'); if (vi && document.activeElement !== vi) vi.value = VENT_PRICE; }
+  const muneLabor = rate('laborMune'), ventLabor = rate('laborVent');
+  const kataLen = rate('kataLen'), kataRate = rate('kataRate'), kataCost = kataLen * kataRate;
+  const soffitLaborRate = rate('laborSoffit'), zeroLaborRate = rate('laborZero');
+  const ceiling = parseFloat(document.getElementById('ceiling').value) || 0;
+  const ceilCm2 = ceiling * 10000, needSupply = ceilCm2 / 900, needExhaust = ceilCm2 / 1600;
+  document.getElementById('needSupply').textContent = fmt(needSupply, 1) + ' cm² 以上';
+  document.getElementById('needExhaust').textContent = fmt(needExhaust, 1) + ' cm² 以上';
+
+  let nokiTotalArea = 0, nokiTotalOpen = 0, zeroBarTotal = 0;
+  NOKI.forEach((n, i) => {
+    if (soffitMode === 'zero') {
+      const open = (n.l || 0) * ZERO_OPEN_RATE;
+      document.getElementById('nokiOpen'+i).textContent = fmt(open, 0);
+      nokiTotalOpen += open;
+      zeroBarTotal += Math.ceil((n.l || 0) / ZERO_BAR_LEN);
+    } else {
+      const area = n.w * n.l, open = area * NOKI_OPEN_RATE;
+      document.getElementById('nokiArea'+i).textContent = fmt(area, 3);
+      document.getElementById('nokiOpen'+i).textContent = fmt(open, 0);
+      nokiTotalArea += area; nokiTotalOpen += open;
+    }
+  });
+  document.getElementById('nokiTotal').textContent = fmt(nokiTotalOpen, 0) + ' cm²';
+  if (soffitMode === 'zero') {
+    document.getElementById('zeroBarCount').textContent = zeroBarTotal + ' 本（1本 ' + ZERO_BAR_LEN + 'm、部位ごとに切り上げ）';
+  }
+  const supplyVentCount = nokiTotalOpen >= needSupply ? 0 : Math.ceil((needSupply - nokiTotalOpen) / VENT_OPEN);
+  document.getElementById('supplyVent').textContent = supplyVentCount + ' 個';
+  const supplyOk = nokiTotalOpen + supplyVentCount * VENT_OPEN >= needSupply;
+  document.getElementById('supplyJudge').innerHTML = `<span class="judge ${supplyOk?'ok':'ng'}">${supplyOk?'給気 OK':'給気 NG'}</span>`;
+
+  PRODUCTS.forEach((p, i) => {
+    const rec = Math.ceil(needExhaust / p.opening);
+    document.getElementById('prodRecmd'+i).textContent = rec + ' 本';
+    const qty = adoptedQty[i], total = qty * p.opening;
+    document.getElementById('prodTotal'+i).textContent = fmt(total, 0);
+    const ventCount = qty === 0 ? 0 : (total >= needExhaust ? 0 : Math.ceil((needExhaust - total) / VENT_OPEN));
+    document.getElementById('prodVent'+i).textContent = ventCount + ' 個';
+    const matCost = qty * p.price + ventCount * VENT_PRICE;
+    const roofLabor = qty * muneLabor, carpLabor = ventCount * ventLabor;
+    const laborCost = roofLabor + carpLabor, grandCost = matCost + laborCost;
+    document.getElementById('prodCost'+i).textContent = qty > 0 ? '¥' + fmt(matCost, 0) : '-';
+    document.getElementById('prodLabor'+i).innerHTML = qty > 0 ? '¥' + fmt(laborCost, 0) + '<br><small style="color:#999;">屋根屋' + fmt(roofLabor,0) + '<br>大工' + fmt(carpLabor,0) + '</small>' : '-';
+    document.getElementById('prodGrand'+i).innerHTML = qty > 0 ? '<strong>¥' + fmt(grandCost, 0) + '</strong>' : '-';
+    const judge = qty === 0 ? '-' : (total + ventCount * VENT_OPEN >= needExhaust ? 'OK' : 'NG');
+    const judgeEl = document.getElementById('prodJudge'+i);
+    if (judge === '-') judgeEl.textContent = '-';
+    else judgeEl.innerHTML = `<span class="judge ${judge==='OK'?'ok':'ng'}">${judge}</span>`;
+  });
+
+  const adoptId = parseInt(document.getElementById('adoptSel').value);
+  const adopt = PRODUCTS.find(p => p.id === adoptId);
+  const adoptQty = parseInt(document.getElementById('adoptQty').value) || 0;
+  document.getElementById('adoptOpen').textContent = adopt.opening + ' cm²/本';
+  const adoptTotal = adoptQty * adopt.opening;
+  document.getElementById('adoptTotal').textContent = fmt(adoptTotal, 0) + ' cm²';
+  const adoptVent = adoptTotal >= needExhaust ? 0 : Math.ceil((needExhaust - adoptTotal) / VENT_OPEN);
+  document.getElementById('adoptVent').textContent = adoptVent + ' 個';
+  const exhaustOk = adoptTotal + adoptVent * VENT_OPEN >= needExhaust;
+  document.getElementById('exhaustJudge').innerHTML = `<span class="judge ${exhaustOk?'ok':'ng'}">${exhaustOk?'排気 OK':'排気 NG'}</span>`;
+
+  { const rows = [100,150,200].map(sz => {
+      const o = VENTS[sz].open;
+      const sc = nokiTotalOpen >= needSupply ? 0 : Math.ceil((needSupply - nokiTotalOpen) / o);
+      const ec = adoptTotal >= needExhaust ? 0 : Math.ceil((needExhaust - adoptTotal) / o);
+      const n = sc + ec; return { sz, sc, ec, n, cost: n * (VENTS[sz].price + ventLabor) };
+    });
+    const min = Math.min(...rows.map(r => r.cost));
+    rows.forEach(r => {
+      const g = id => document.getElementById(id + r.sz); if (!g('vcS')) return;
+      g('vcS').textContent = r.sc + ' 個'; g('vcE').textContent = r.ec + ' 個'; g('vcN').textContent = r.n + ' 個';
+      g('vcC').innerHTML = '¥' + fmt(r.cost,0) + (r.cost === min ? ' <span class="judge ok">最安</span>' : '');
+      document.getElementById('vcRow' + r.sz).style.background = r.sz === ventSize ? '#FFF8E1' : '';
+    }); }
+  { const body = document.getElementById('cmpBody');
+    if (body) {
+      const supplyCost = supplyVentCount * (VENT_PRICE + ventLabor);
+      const rf = document.getElementById('roofFilter').value;
+      const rows = PRODUCTS.filter(p => rf === 'all' ? true : rf === 'kata' ? [3,4,6,7].includes(p.id) : [1,2,5].includes(p.id)).map(p => {
+        const q1 = needExhaust > 0 ? Math.ceil(needExhaust / p.opening) : 0;
+        const c1 = q1 * (p.price + muneLabor);
+        const q2 = Math.max(q1 - 1, 0);
+        const v2 = Math.ceil(Math.max(needExhaust - q2 * p.opening, 0) / VENT_OPEN);
+        const c2 = q2 * (p.price + muneLabor) + v2 * (VENT_PRICE + ventLabor);
+        const useB = q1 > 0 && c2 < c1;
+        return { p, q1, c1, q2, v2, c2, useB, best: useB ? c2 : c1, bestQty: useB ? q2 : q1 };
+      }).sort((a, b) => a.best - b.best);
+      body.innerHTML = rows.map((r, i) => `<tr${i === 0 ? ' style="background:#E2F0D9;"' : (r.p.recmd ? ' style="background:#FFF2CC;"' : '')}>
+        <td>${i + 1}</td><td class="name">${r.p.name}${r.p.recmd ? ' <span style="color:#C00000;">★推奨</span>' : ''}</td><td>${r.p.opening}</td>
+        <td>${r.q1} 本</td><td>¥${fmt(r.c1,0)}</td>
+        <td>${r.q2} 本 ＋ ベント ${r.v2} 個</td><td>¥${fmt(r.c2,0)}</td>
+        <td><strong>${r.useB ? '②' : '①'}</strong> ¥${fmt(r.best,0)}${i === 0 ? ' <span class="judge ok">最安</span>' : ''}</td>
+        <td class="no-print"><button type="button" style="padding:2px 8px;font-size:12px;" onclick="adoptFromCmp(${r.p.id},${r.bestQty})">この案にする</button></td></tr>`).join('');
+      window._cmpRows = rows; window._cmpSupply = { count: supplyVentCount, cost: supplyCost };
+    } }
+  renderWarnings({ ceiling, needSupply, needExhaust, supplyOk, exhaustOk, adopt, adoptQty, adoptTotal, nokiTotalOpen, nokiTotalArea, muneLabor, kataLen });
+  const totalOk = supplyOk && exhaustOk;
+  document.getElementById('summaryBox').innerHTML = `
+    <div class="summary-item"><span class="label">工事名</span><span class="val">${document.getElementById('construction').value}</span></div>
+    <div class="summary-item"><span class="label">天井面積</span><span class="val">${fmt(ceiling,2)} ㎡</span></div>
+    <div class="summary-item"><span class="label">軒裏形式</span><span class="val">${soffitMode==='zero' ? '軒ゼロ・破風レス（JOTO FV-E055-L18）' : '通常軒天（NBL ASN836U）'}</span></div>
+    <div class="summary-item"><span class="label">採用棟換気</span><span class="val">${adopt.name}</span></div>
+    <div class="summary-item"><span class="label">採用本数</span><span class="val">${adoptQty} 本</span></div>
+    <div class="summary-item"><span class="label">棟換気開口</span><span class="val">${fmt(adoptTotal,0)} / ${fmt(needExhaust,1)} cm²</span></div>
+    <div class="summary-item"><span class="label">軒裏吸気開口</span><span class="val">${fmt(nokiTotalOpen,0)} / ${fmt(needSupply,1)} cm²</span></div>
+    <div class="summary-item"><span class="label">補助ベントキャップφ${ventSize}（給気）</span><span class="val">${supplyVentCount} 個</span></div>
+    <div class="summary-item"><span class="label">補助ベントキャップφ${ventSize}（排気）</span><span class="val">${adoptVent} 個</span></div>
+    <div class="summary-item"><span class="label">概算コスト（材工）</span><span class="val" id="sumCostSlot"></span></div>
+    <div class="summary-item"><span class="label">総合判定</span><span class="val" style="color:${totalOk?'#006100':'#9C0006'};">${totalOk?'✅ 全項目クリア OK':'⚠️ 要見直し NG'}</span></div>`;
+
+  const muneCost = adoptQty * adopt.price;
+  let soffitCost, soffitQtyLabel, soffitUnitLabel, soffitRowName, soffitNote;
+  if (soffitMode === 'zero') {
+    soffitCost = zeroBarTotal * ZERO_BAR_PRICE;
+    soffitQtyLabel = zeroBarTotal + ' 本';
+    soffitUnitLabel = '¥' + fmt(ZERO_BAR_PRICE,0) + '/本';
+    soffitRowName = '軒ゼロ用 JOTO FV-E055-L18';
+    soffitNote = '軒天換気材（破風レス対応・1本1.82m／正価）';
+  } else {
+    soffitCost = nokiTotalArea * NOKI_PRICE;
+    soffitQtyLabel = fmt(nokiTotalArea,3) + ' ㎡';
+    soffitUnitLabel = '¥' + fmt(NOKI_PRICE,0) + '/㎡';
+    soffitRowName = '軒天 NBL ASN836U';
+    soffitNote = 'アスノン8mm全有孔板';
+  }
+  const ventQtyAll = supplyVentCount + adoptVent;
+  const ventCost = ventQtyAll * VENT_PRICE;
+  const muneLaborCost = adoptQty * muneLabor;
+  const ventLaborCost = ventQtyAll * ventLabor;
+  const soffitLaborCost = soffitMode === 'zero' ? zeroBarTotal * zeroLaborRate : nokiTotalArea * soffitLaborRate;
+  const soffitLaborQty = soffitMode === 'zero' ? zeroBarTotal + ' 本' : fmt(nokiTotalArea,3) + ' ㎡';
+  const soffitLaborUnit = soffitMode === 'zero' ? '¥' + fmt(zeroLaborRate,0) + '/本' : '¥' + fmt(soffitLaborRate,0) + '/㎡';
+  const roofTotal = muneCost + muneLaborCost + kataCost;
+  const carpTotal = soffitCost + soffitLaborCost + ventCost + ventLaborCost;
+  const matTotal = muneCost + soffitCost + ventCost;
+  const laborTotal = muneLaborCost + soffitLaborCost + ventLaborCost + kataCost;
+  const totalCost = matTotal + laborTotal;
+  document.getElementById('costBody').innerHTML = `
+    <tr><td class="name">【屋根屋】棟換気（取付込）</td><td>${adoptQty} 本</td><td>¥${fmt(adopt.price,0)}/本</td><td>¥${fmt(muneCost,0)}</td><td style="text-align:left;">${adopt.name}</td></tr>
+    ${muneLabor>0 ? `<tr><td class="name">【屋根屋】棟換気 取付費（別途）</td><td>${adoptQty} 本</td><td>¥${fmt(muneLabor,0)}/本</td><td>¥${fmt(muneLaborCost,0)}</td><td style="text-align:left;">屋根工事に含めて発注</td></tr>` : ""}
+    ${kataCost>0 ? `<tr><td class="name">【屋根屋】片持ち棟 換気棟合せ</td><td>${fmt(kataLen,1)} m</td><td>¥${fmt(kataRate,0)}/m</td><td>¥${fmt(kataCost,0)}</td><td style="text-align:left;">屋根屋見積の別項目</td></tr>` : ""}
+    <tr style="background:#F0F7FF;"><td class="name">屋根屋 小計</td><td></td><td></td><td><strong>¥${fmt(roofTotal,0)}</strong></td><td></td></tr>
+    <tr><td class="name">【大工】${soffitRowName}</td><td>${soffitQtyLabel}</td><td>${soffitUnitLabel}</td><td>¥${fmt(soffitCost,0)}</td><td style="text-align:left;">${soffitNote}</td></tr>
+    <tr><td class="name">【大工】${soffitMode==='zero' ? '軒ゼロ換気材 取付費' : '軒天 施工費'}</td><td>${soffitLaborQty}</td><td>${soffitLaborUnit}</td><td>¥${fmt(soffitLaborCost,0)}</td><td style="text-align:left;">大工手間</td></tr>
+    <tr><td class="name">【大工】ベントキャップφ${ventSize} 部材</td><td>${ventQtyAll} 個</td><td>¥${fmt(VENT_PRICE,0)}/個</td><td>¥${fmt(ventCost,0)}</td><td style="text-align:left;">給気${supplyVentCount}個 + 排気${adoptVent}個</td></tr>
+    <tr><td class="name">【大工】ベントキャップ 取付費</td><td>${ventQtyAll} 個</td><td>¥${fmt(ventLabor,0)}/個</td><td>¥${fmt(ventLaborCost,0)}</td><td style="text-align:left;">穴あけ・シーリング含む大工手間</td></tr>
+    <tr style="background:#F0F7FF;"><td class="name">大工 小計</td><td></td><td></td><td><strong>¥${fmt(carpTotal,0)}</strong></td><td></td></tr>`;
+  const sumSlot = document.getElementById('sumCostSlot'); if (sumSlot) sumSlot.textContent = '¥' + fmt(totalCost,0) + '（屋根屋 ¥' + fmt(roofTotal,0) + '／大工 ¥' + fmt(carpTotal,0) + '）';
+  document.getElementById('costTotal').textContent = '材工合計：¥' + fmt(totalCost, 0) + '（部材 ¥' + fmt(matTotal,0) + ' ＋ 施工 ¥' + fmt(laborTotal,0) + '）';
+}
+function fmt(n, decimals) { return Number(n).toLocaleString('ja-JP', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }); }
+
+// ===== ファイルアップロード & PDF解析 =====
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileStatus = document.getElementById('fileStatus');
+
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+async function handleFile(file) {
+  if (file.size > 100 * 1024 * 1024) {
+    fileStatus.innerHTML = '<div class="status error">❌ ファイルサイズが大きすぎます（100MB以下にしてください）</div>';
+    return;
+  }
+  fileStatus.innerHTML = `<div class="status loading">⏳ ${file.name} を読み込み中...</div>`;
+
+  try {
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      await processPDF(file);
+    } else if (file.type.startsWith('image/')) {
+      await processImage(file);
+    } else {
+      throw new Error('対応していないファイル形式です');
+    }
+  } catch (err) {
+    fileStatus.innerHTML = `<div class="status error">❌ エラー: ${err.message}</div>`;
+    console.error(err);
+  }
+}
+
+async function processPDF(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({
+    data: arrayBuffer,
+    cMapUrl: window.PDF_CMAP_URL,
+    cMapPacked: true,
+    standardFontDataUrl: window.PDF_FONT_URL
+  }).promise;
+
+  fileStatus.innerHTML = `<div class="status loading">⏳ PDF解析中... (${pdf.numPages}ページ)</div>`;
+
+  const container = document.getElementById('pdfContainer');
+  container.innerHTML = '';
+  container.style.display = 'block';
+
+  const allText = [];
+
+  // ページナビゲーション用
+  const nav = document.createElement('div');
+  nav.className = 'pdf-page-nav';
+  nav.innerHTML = `<span>ページ: ${pdf.numPages}枚 (全て表示)</span>`;
+  container.appendChild(nav);
+
+  // 全ページをレンダリング＆テキスト抽出
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const scale = 1.2;
+    const viewport = page.getViewport({ scale });
+
+    // Canvas レンダリング
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    container.appendChild(canvas);
+
+    // ページ番号ラベル
+    const pageLabel = document.createElement('div');
+    pageLabel.style.cssText = 'font-size:11px;color:#666;margin:4px 0 12px;';
+    pageLabel.textContent = `— Page ${pageNum} —`;
+    container.appendChild(pageLabel);
+
+    // テキスト抽出
+    const textContent = await page.getTextContent();
+    textContent.items.forEach(item => {
+      if (item.str && item.str.trim()) allText.push(item.str.trim());
+    });
+  }
+
+  fileStatus.innerHTML = `<div class="status success">✅ ${file.name} を読み込みました（${pdf.numPages}ページ、テキスト ${allText.length} 個抽出）</div>`;
+  analyzeExtractedText(allText);
+  aiSetSource({ kind: 'pdf', pdf, count: pdf.numPages, name: file.name });
+}
+
+async function processImage(file) {
+  const container = document.getElementById('pdfContainer');
+  container.innerHTML = '';
+  container.style.display = 'block';
+
+  const img = document.createElement('img');
+  img.style.maxWidth = '100%';
+  img.style.background = 'white';
+  const url = URL.createObjectURL(file);
+  img.src = url;
+  container.appendChild(img);
+
+  fileStatus.innerHTML = `<div class="status success">✅ 画像を表示しました。<br>※画像からの数値自動抽出は非対応です。図面を見ながら手動で入力してください。</div>`;
+  // 画像OCRは重いため省略。ユーザーは目視で入力（AI読取は上のパネルから）
+  aiSetSource({ kind: "img", file, count: 1, name: file.name });
+}
+
+// ===== テキスト解析 =====
+function analyzeExtractedText(textArr) {
+  // 全テキストを結合
+  const fullText = textArr.join(' ');
+
+  // 数値パターンを抽出（小数含む、カンマ含む）
+  const numberPattern = /(?<!\d)(\d{1,4}(?:,\d{3})*(?:\.\d+)?)/g;
+  const rawNumbers = [];
+  let match;
+  while ((match = numberPattern.exec(fullText)) !== null) {
+    const cleaned = match[1].replace(/,/g, '');
+    const num = parseFloat(cleaned);
+    if (!isNaN(num) && num > 0 && num < 100000) {
+      rawNumbers.push({ raw: match[1], value: num });
+    }
+  }
+
+  // 重複を排除しつつ、代表的な建築寸法パターンだけに絞る
+  const uniqueMap = new Map();
+  rawNumbers.forEach(n => {
+    if (!uniqueMap.has(n.value)) uniqueMap.set(n.value, n);
+  });
+  let numbers = Array.from(uniqueMap.values());
+
+  // 建築で使いそうな範囲でフィルタ
+  numbers = numbers.filter(n => {
+    const v = n.value;
+    // 面積系 (10〜300㎡)
+    if (v >= 10 && v <= 500 && String(v).includes('.')) return true;
+    // 幅系 (100〜1000mm)
+    if (v >= 100 && v <= 1000 && Number.isInteger(v)) return true;
+    // 長さ系 (1000〜30000mm 建物寸法)
+    if (v >= 1000 && v <= 30000) return true;
+    // メートル値 (5〜30m)
+    if (v >= 3 && v <= 30 && String(v).includes('.')) return true;
+    return false;
+  });
+
+  // 用途別にラベル付け
+  numbers.forEach(n => {
+    const v = n.value;
+    if (v >= 10 && v <= 500 && String(v).includes('.')) n.label = '面積(㎡)候補';
+    else if (v >= 100 && v <= 900 && Number.isInteger(v)) n.label = '軒幅(mm)候補';
+    else if (v >= 900 && v <= 30000 && Number.isInteger(v)) n.label = '長さ(mm)候補';
+    else if (v >= 3 && v <= 30 && String(v).includes('.')) n.label = '長さ(m)候補';
+    else n.label = '';
+  });
+
+  // ソート
+  numbers.sort((a, b) => a.value - b.value);
+
+  // チップ描画
+  renderChips(numbers);
+
+  // 自動検出（コンテキスト付きで面積や寸法を推定）
+  autoDetectValues(fullText, numbers);
+}
+
+function renderChips(numbers) {
+  const panel = document.getElementById('chipsPanel');
+  const container = document.getElementById('chipsContainer');
+  container.innerHTML = '';
+  panel.style.display = 'block';
+
+  if (numbers.length === 0) {
+    container.innerHTML = '<div style="color:#666;font-size:12px;">数値を抽出できませんでした（スキャン画像のPDFの可能性があります。上の「🤖 AIで図面を読み取る」をお使いください）</div>';
+    return;
+  }
+
+  numbers.forEach(n => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `${n.raw}<span class="label">${n.label}</span>`;
+    chip.dataset.value = n.value;
+    chip.dataset.raw = n.raw;
+    chip.addEventListener('click', () => onChipClick(chip));
+    container.appendChild(chip);
+  });
+}
+
+function onChipClick(chip) {
+  // 選択状態を切り替え
+  if (chip.classList.contains('applying')) {
+    chip.classList.remove('applying');
+    selectedChip = null;
+    return;
+  }
+  document.querySelectorAll('.chip.applying').forEach(c => c.classList.remove('applying'));
+
+  if (focusedInput) {
+    applyChipToInput(chip, focusedInput);
+  } else {
+    // フォーカスされていない場合、選択状態にする
+    chip.classList.add('applying');
+    selectedChip = chip;
+  }
+}
+
+function applyChipToInput(chip, input) {
+  let value = parseFloat(chip.dataset.value);
+  // mm→m 変換の推定
+  if (input.dataset.noki) {
+    // ノキ入力（幅または長さ）
+    const key = input.dataset.noki;
+    if (key === 'w' && value >= 100 && value <= 1000) value = value / 1000; // 300mm→0.3m
+    else if (key === 'l' && value >= 1000) value = value / 1000; // 8190mm→8.19m
+  }
+  input.value = value;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  chip.classList.remove('applying');
+  chip.classList.add('used');
+  selectedChip = null;
+}
+
+function autoDetectValues(fullText, numbers) {
+  const detected = [];
+
+  // 天井面積の検出：小数を含み10〜500の範囲
+  // 「面積」「天井」「小屋裏」などのキーワード近くを優先
+  const areaCandidates = numbers.filter(n => String(n.value).includes('.') && n.value >= 10 && n.value <= 500 && n.value < 1000);
+  if (areaCandidates.length > 0) {
+    // 一番大きい面積候補を採用（天井面積は建物全体の面積に近い）
+    const best = areaCandidates.reduce((a, b) => b.value > a.value ? b : a);
+    detected.push({
+      label: '天井面積（推定）',
+      value: best.value,
+      unit: '㎡',
+      apply: () => {
+        document.getElementById('ceiling').value = best.value;
+        document.getElementById('ceiling').dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+  }
+
+  // 軒幅の検出：300, 500, 600 など典型的な数値
+  const nokiWidths = numbers.filter(n => Number.isInteger(n.value) && [300, 400, 450, 500, 600, 700, 800].includes(n.value));
+  if (nokiWidths.length > 0) {
+    detected.push({
+      label: `検出された軒幅候補（mm）`,
+      value: nokiWidths.map(n => n.value).join(', '),
+      unit: 'mm',
+      apply: null
+    });
+  }
+
+  // 建物長辺・短辺の検出：4000mm以上
+  const dimensions = numbers.filter(n => Number.isInteger(n.value) && n.value >= 4000 && n.value <= 30000);
+  if (dimensions.length > 0) {
+    detected.push({
+      label: '検出された建物寸法候補（mm）',
+      value: dimensions.map(n => n.value.toLocaleString()).join(', '),
+      unit: 'mm',
+      apply: null
+    });
+  }
+
+  // 軒ゼロ（破風レス）関連キーワードの検出：あくまで「候補」表示のみ。
+  // 最終的な軒裏形式の判定・切替は常に手動（プルダウン操作 or 下記「適用」ボタン）で行う。
+  const zeroKeywords = ['軒ゼロ', '軒０', '軒0', '破風レス', '軒レス', '軒の出ゼロ', '軒先ゼロ', 'ケラバレス', '軒天なし', '軒天無し', 'FV-E055'];
+  const foundZeroKw = zeroKeywords.filter(kw => fullText.includes(kw));
+  if (foundZeroKw.length > 0) {
+    detected.push({
+      label: '図面テキストに軒ゼロ関連の記載を検出（要確認）',
+      value: foundZeroKw.join('、'),
+      unit: '',
+      apply: () => {
+        const sel = document.getElementById('soffitType');
+        sel.value = 'zero';
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+  }
+
+  // 表示
+  const box = document.getElementById('autoDetect');
+  const items = document.getElementById('autoDetectItems');
+  items.innerHTML = '';
+  if (detected.length === 0) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  detected.forEach(d => {
+    const div = document.createElement('div'); div.className = 'auto-detect-item';
+    div.innerHTML = `<span>${d.label}: <strong>${d.value} ${d.unit}</strong></span>`;
+    if (d.apply) {
+      const btn = document.createElement('button');
+      btn.textContent = '適用';
+      btn.onclick = d.apply;
+      div.appendChild(btn);
+    }
+    items.appendChild(div);
+  });
+}
+
+// ===== CAD貼付・保存・読込 =====
+window.copyCadTable = function() {
+  const ceiling = parseFloat(document.getElementById('ceiling').value) || 0;
+  const needSupply = ceiling * 10000 / 900, needExhaust = ceiling * 10000 / 1600;
+  const adoptId = parseInt(document.getElementById('adoptSel').value);
+  const adopt = PRODUCTS.find(p => p.id === adoptId);
+  const adoptQty = parseInt(document.getElementById('adoptQty').value) || 0;
+  const adoptTotal = adoptQty * adopt.opening;
+  const adoptVent = adoptTotal >= needExhaust ? 0 : Math.ceil((needExhaust - adoptTotal) / VENT_OPEN);
+  let nokiTotalOpen = 0, nokiTotalArea = 0, zeroBarTotal = 0;
+  NOKI.forEach(n => {
+    if (soffitMode === 'zero') { nokiTotalOpen += (n.l||0) * ZERO_OPEN_RATE; zeroBarTotal += Math.ceil((n.l||0) / ZERO_BAR_LEN); }
+    else { const a=n.w*n.l; nokiTotalArea+=a; nokiTotalOpen+=a*NOKI_OPEN_RATE; }
+  });
+  const supplyVent = nokiTotalOpen >= needSupply ? 0 : Math.ceil((needSupply - nokiTotalOpen) / VENT_OPEN);
+  let tsv = `小屋裏換気計算表（補助ベントキャップ：φ${ventSize}・${VENT_OPEN}cm²/個）\n工事名\t${document.getElementById('construction').value}\n作成日\t${new Date().toLocaleDateString('ja-JP')}\tハゼモト建設株式会社\n天井面積\t${fmt(ceiling,2)}㎡\t必要給気\t${fmt(needSupply,1)}cm²\t必要排気\t${fmt(needExhaust,1)}cm²\n\n軒裏吸気（${soffitMode==='zero' ? '軒ゼロ・JOTO FV-E055-L18' : 'NBL ASN836U'}）\n`;
+  if (soffitMode === 'zero') {
+    tsv += `No.\t部位\t長さ(m)\t有効換気面積\t開口(cm²)\n`;
+    NOKI.forEach((n,i) => { tsv += `${i+1}\t${n.name}\t${fmt(n.l,2)}\t100cm²/m\t${fmt((n.l||0)*ZERO_OPEN_RATE,0)}\n`; });
+    tsv += `合計\t\t\t\t${fmt(nokiTotalOpen,0)}\n※必要本数目安：${zeroBarTotal}本（1本${ZERO_BAR_LEN}m、部位ごとに切上げ）\n`;
+  } else {
+    tsv += `No.\t部位\t幅(m)\t長さ(m)\t面積(㎡)\t開孔率\t有効開口(cm²)\n`;
+    NOKI.forEach((n,i) => { const a = n.w * n.l; tsv += `${i+1}\t${n.name}\t${fmt(n.w,2)}\t${fmt(n.l,2)}\t${fmt(a,3)}\t${NOKI_OPEN_RATE}\t${fmt(a*NOKI_OPEN_RATE,0)}\n`; });
+    tsv += `合計\t\t\t\t${fmt(nokiTotalArea,3)}\t\t${fmt(nokiTotalOpen,0)}\n`;
+  }
+  if (supplyVent > 0) tsv += `※給気補助 ベントキャップφ${ventSize} × ${supplyVent}個 追加\n`;
+  tsv += `\n棟換気\n製品\t1本開口\t本数\t合計開口\t補助ﾍﾞﾝﾄﾞ\t判定\n`;
+  const judge = adoptTotal + adoptVent * VENT_OPEN >= needExhaust ? 'OK' : 'NG';
+  tsv += `${adopt.name}\t${adopt.opening}cm²/本\t${adoptQty}本\t${fmt(adoptTotal,0)}cm²\t${adoptVent}個\t${judge}\n`;
+  { const kl = parseFloat(document.getElementById('kataLen').value) || 0; if (kl > 0) tsv += `※片持ち棟 換気棟合せ ${fmt(kl,1)}m\n`; }
+  const nameVal = document.getElementById('construction').value.trim();
+  const nameIsDefault = !nameVal || nameVal === '○○様邸新築工事';
+  navigator.clipboard.writeText(tsv).then(() => alert('表入力用にコピーしました。\n\n次の操作：ARCHITRENDでこの物件の「立面図」を開き、「表入力」の機能で空いている場所に Ctrl＋V で貼り付けてください。\n（表の形にならないときは、先にExcelへ貼ってから図面へ貼ります。文章で貼りたいときは「文字入力用コピー」を使います）' + (window._confirmed ? '' : '\n※STEP 2 の「入力内容を最終確認する」がまだです。図面と見比べてから貼り付けると安心です。') + (nameIsDefault ? '\n※工事名が初期値（○○様邸新築工事）のままです。STEP 2 で修正してからコピーし直してください。' : ''))).catch(err => alert('コピーに失敗: ' + err.message));
+};
+
+// ===== 結果の集計（文字入力用・PDF用） =====
+function collectResult() {
+  const g = id => document.getElementById(id).value;
+  const ceiling = parseFloat(g('ceiling')) || 0;
+  const needSupply = ceiling * 10000 / 900, needExhaust = ceiling * 10000 / 1600;
+  const adopt = PRODUCTS.find(p => p.id === parseInt(g('adoptSel')));
+  const qty = parseInt(g('adoptQty')) || 0;
+  const total = qty * adopt.opening;
+  const exVent = total >= needExhaust ? 0 : Math.ceil((needExhaust - total) / VENT_OPEN);
+  let open = 0, area = 0, bars = 0;
+  const rows = NOKI.map(n => {
+    if (soffitMode === 'zero') { const o = (n.l || 0) * ZERO_OPEN_RATE; open += o; bars += Math.ceil((n.l || 0) / ZERO_BAR_LEN); return { n, a: null, o }; }
+    const a = n.w * n.l, o = a * NOKI_OPEN_RATE; area += a; open += o; return { n, a, o };
+  });
+  const suVent = open >= needSupply ? 0 : Math.ceil((needSupply - open) / VENT_OPEN);
+  return { name: g('construction'), ceiling, needSupply, needExhaust, adopt, qty, total, exVent, suVent, rows, open, area, bars,
+    supplyOk: open + suVent * VENT_OPEN >= needSupply, exhaustOk: total + exVent * VENT_OPEN >= needExhaust,
+    kataLen: parseFloat(g('kataLen')) || 0, date: new Date().toLocaleDateString('ja-JP') };
+}
+window.copyCadText = function() {
+  const r = collectResult(), z = soffitMode === 'zero';
+  let t = `小屋裏換気計算書\n工事名：${r.name}\n作成日：${r.date}　ハゼモト建設株式会社\n天井面積：${fmt(r.ceiling, 2)}㎡（必要給気 ${fmt(r.needSupply, 1)}cm²以上／必要排気 ${fmt(r.needExhaust, 1)}cm²以上）\n\n`;
+  t += `【軒裏吸気】${z ? '軒ゼロ・JOTO FV-E055-L18（100cm²/m）' : '通常軒天 NBL ASN836U（開孔率543cm²/㎡）'}\n`;
+  r.rows.forEach((x, i) => { t += z ? `${i + 1}. ${x.n.name}　長さ${fmt(x.n.l, 2)}m＝開口${fmt(x.o, 0)}cm²\n` : `${i + 1}. ${x.n.name}　幅${fmt(x.n.w, 2)}m×長さ${fmt(x.n.l, 2)}m＝${fmt(x.a, 3)}㎡＝開口${fmt(x.o, 0)}cm²\n`; });
+  t += `合計開口：${fmt(r.open, 0)}cm²（必要${fmt(r.needSupply, 1)}cm²）`;
+  if (z) t += `　必要本数目安：${r.bars}本`;
+  if (r.suVent > 0) t += `\n給気補助：ベントキャップφ${ventSize}×${r.suVent}個`;
+  t += `\n給気判定：${r.supplyOk ? 'OK' : 'NG'}\n\n【棟換気】\n${r.adopt.name}（${r.adopt.opening}cm²/本）×${r.qty}本＝${fmt(r.total, 0)}cm²（必要${fmt(r.needExhaust, 1)}cm²）\n`;
+  if (r.exVent > 0) t += `排気補助：ベントキャップφ${ventSize}×${r.exVent}個\n`;
+  if (r.kataLen > 0) t += `片持ち棟 換気棟合せ：${fmt(r.kataLen, 1)}m\n`;
+  t += `排気判定：${r.exhaustOk ? 'OK' : 'NG'}\n`;
+  const nameIsDefault = !r.name.trim() || r.name.trim() === '○○様邸新築工事';
+  navigator.clipboard.writeText(t).then(() => alert('文字入力用にコピーしました。\n\n次の操作：ARCHITRENDでこの物件の「立面図」を開き、「文字入力」の機能で空いている場所に Ctrl＋V で貼り付けてください。' + (window._confirmed ? '' : '\n※STEP 2 の「入力内容を最終確認する」がまだです。') + (nameIsDefault ? '\n※工事名が初期値のままです。STEP 2 で修正してからコピーし直してください。' : ''))).catch(err => alert('コピーに失敗: ' + err.message));
+};
+window.printResultSheet = function() {
+  const r = collectResult(), z = soffitMode === 'zero', E = aiEsc;
+  const nameIsDefault = !r.name.trim() || r.name.trim() === '○○様邸新築工事';
+  if (nameIsDefault && !confirm('工事名が初期値のままです。このままPDFにしますか？')) return;
+  let h = `<h1>小屋裏換気計算書</h1><div class="meta">工事名：<strong>${E(r.name)}</strong>　／　作成日：${r.date}　／　ハゼモト建設株式会社</div>
+  <h2>基本条件</h2><table><tr><th>天井面積</th><th>必要給気面積（1/900）</th><th>必要排気面積（1/1600）</th><th>補助ベントキャップ</th></tr>
+  <tr><td>${fmt(r.ceiling, 2)} ㎡</td><td>${fmt(r.needSupply, 1)} cm²以上</td><td>${fmt(r.needExhaust, 1)} cm²以上</td><td>φ${ventSize}（${VENT_OPEN}cm²/個）</td></tr></table>
+  <h2>軒裏吸気（${z ? '軒ゼロ・JOTO FV-E055-L18' : '通常軒天 NBL ASN836U'}）</h2><table>`;
+  h += z ? '<tr><th>No.</th><th>部位</th><th>長さ(m)</th><th>開口(cm²)</th></tr>' : '<tr><th>No.</th><th>部位</th><th>幅(m)</th><th>長さ(m)</th><th>面積(㎡)</th><th>開口(cm²)</th></tr>';
+  r.rows.forEach((x, i) => { h += z ? `<tr><td>${i + 1}</td><td class="l">${E(x.n.name)}</td><td>${fmt(x.n.l, 2)}</td><td>${fmt(x.o, 0)}</td></tr>` : `<tr><td>${i + 1}</td><td class="l">${E(x.n.name)}</td><td>${fmt(x.n.w, 2)}</td><td>${fmt(x.n.l, 2)}</td><td>${fmt(x.a, 3)}</td><td>${fmt(x.o, 0)}</td></tr>`; });
+  h += `<tr><th colspan="${z ? 3 : 5}">合計開口</th><th>${fmt(r.open, 0)} cm²</th></tr></table>
+  <div class="meta">${z ? '必要本数目安：' + r.bars + '本　' : ''}${r.suVent > 0 ? '給気補助 ベントキャップφ' + ventSize + '：' + r.suVent + '個　' : ''}給気判定：<strong>${r.supplyOk ? 'OK' : 'NG'}</strong></div>
+  <h2>棟換気</h2><table><tr><th>製品</th><th>1本開口</th><th>本数</th><th>合計開口</th><th>補助ベント</th><th>判定</th></tr>
+  <tr><td class="l">${E(r.adopt.name)}</td><td>${r.adopt.opening} cm²</td><td>${r.qty} 本</td><td>${fmt(r.total, 0)} cm²</td><td>φ${ventSize} ${r.exVent} 個</td><td><strong>${r.exhaustOk ? 'OK' : 'NG'}</strong></td></tr></table>`;
+  if (r.kataLen > 0) h += `<div class="meta">片持ち棟 換気棟合せ：${fmt(r.kataLen, 1)} m</div>`;
+  h += '<div class="meta" style="margin-top:10px;">※本書は小屋裏換気の検討結果です。製品の有効開口は参考値を含みます。</div>';
+  const box = document.getElementById('printSheet'); box.innerHTML = h;
+  document.body.classList.add('print-sheet');
+  const done = () => { document.body.classList.remove('print-sheet'); window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  window.print();
+};
+
+window.adoptFromCmp = function(id, qty) {
+  document.getElementById('adoptSel').value = String(id);
+  document.getElementById('adoptQty').value = qty;
+  calc();
+  const el = document.getElementById('adoptSel'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+window.copyCmpTable = function() {
+  const rows = window._cmpRows || []; if (!rows.length) return;
+  const nameVal = document.getElementById('construction').value;
+  let tsv = `棟換気 比較一覧表（安い順）\n工事名\t${nameVal}\n天井面積\t${fmt(parseFloat(document.getElementById('ceiling').value)||0,2)}㎡\t補助ベントキャップ\tφ${ventSize}\n※金額は棟換気＋ベントキャップのみ\n\n順位\t製品名\t1本開口(cm²)\t①最小本数\t①金額\t②本数\t②ベント(個)\t②金額\t最安案\n`;
+  rows.forEach((r, i) => { tsv += `${i+1}\t${r.p.name}\t${r.p.opening}\t${r.q1}本\t${r.c1}円\t${r.q2}本\t${r.v2}個\t${r.c2}円\t${r.useB ? '②' : '①'} ${r.best}円\n`; });
+  navigator.clipboard.writeText(tsv).then(() => alert('比較一覧表をコピーしました。\nARCHITRENDで使う場合は、先にExcelへ貼り付けて確認してください。')).catch(err => alert('コピーに失敗: ' + err.message));
+};
+
+function gatherData() {
+  const g = id => document.getElementById(id).value;
+  return { construction: g('construction'), ceiling: g('ceiling'), soffitMode, ventSize, noki: JSON.parse(JSON.stringify(NOKI)),
+    adopted: adoptedQty.slice(), adoptSel: g('adoptSel'), adoptQty: g('adoptQty'), roof: g('roofFilter'),
+    prices: PRODUCTS.map(p => p.price), ventPrices: { 100: VENTS[100].price, 150: VENTS[150].price, 200: VENTS[200].price },
+    rates: { ventMat: g('priceVentMat'), muneLabor: g('laborMune'), ventLabor: g('laborVent'), soffitLabor: g('laborSoffit'), zeroLabor: g('laborZero'), kataLen: g('kataLen'), kataRate: g('kataRate') } };
+}
+function applyData(data) {
+  const set = (id, v) => { if (v != null && v !== '') document.getElementById(id).value = v; };
+  document.getElementById('construction').value = data.construction || '';
+  document.getElementById('ceiling').value = data.ceiling || 75.34;
+  soffitMode = data.soffitMode === 'zero' ? 'zero' : 'normal';
+  document.getElementById('soffitType').value = soffitMode;
+  updateSoffitHint();
+  ventSize = VENTS[data.ventSize] ? parseInt(data.ventSize) : 100;
+  if (data.ventPrices) [100, 150, 200].forEach(sz => { const v = parseFloat(data.ventPrices[sz]); if (isFinite(v)) VENTS[sz].price = v; });
+  VENT_OPEN = VENTS[ventSize].open; VENT_PRICE = VENTS[ventSize].price;
+  document.getElementById('ventSize').value = ventSize;
+  document.querySelectorAll('.ventSizeLabel').forEach(el => el.textContent = 'φ' + ventSize);
+  document.getElementById('priceVentMat').value = VENT_PRICE;
+  if (data.noki) NOKI = data.noki;
+  if (data.adopted) adoptedQty = data.adopted;
+  if (data.prices) data.prices.forEach((v, i) => { if (PRODUCTS[i]) PRODUCTS[i].price = parseFloat(v) || PRODUCTS[i].price; });
+  if (data.rates) { set('priceVentMat', data.rates.ventMat); set('laborMune', data.rates.muneLabor); set('laborVent', data.rates.ventLabor); set('laborSoffit', data.rates.soffitLabor); set('laborZero', data.rates.zeroLabor); set('kataLen', data.rates.kataLen); set('kataRate', data.rates.kataRate); }
+  if (data.roof) document.getElementById('roofFilter').value = data.roof;
+  renderNoki(); renderProducts(); renderVentCmp();
+  if (data.adoptSel) document.getElementById('adoptSel').value = data.adoptSel;
+  if (data.adoptQty) document.getElementById('adoptQty').value = data.adoptQty;
+  calc(); setConfirmed(false);
+}
+window.exportJSON = function() {
+  const data = gatherData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
+  a.download = `換気計算_${data.construction || 'output'}.json`; a.click(); URL.revokeObjectURL(url);
+};
+window.sendToChecker = function() {
+  if (!window._confirmed) { if (!confirm('まだ最終確認が済んでいません。このまま図面チェッカーに送信しますか？')) return; }
+  const data = gatherData();
+  const json = JSON.stringify(data);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const checkerUrl = 'https://kenichihazemoto-byte.github.io/hazemoto-checker/#koyaura=' + b64;
+  window.open(checkerUrl, '_blank');
+};
+document.getElementById('jsonInput').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { applyData(JSON.parse(ev.target.result)); alert('入力値を読み込みました。内容を図面と見比べて、STEP 2 の「入力内容を最終確認する」を押してください。'); }
+    catch (err) { alert('ファイル読込失敗: ' + err.message); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// ===== ブラウザ保存（try/catchで保護） =====
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+const PRICE_KEY = 'kanki_prices_v1', HIST_KEY = 'kanki_hist_v1';
+const VENT_DEF = { 100: 3000, 150: 5000, 200: 8000 };
+let pricesSaved = false;
+function setPriceState(savedAt) {
+  const el = document.getElementById('priceState'); if (!el) return;
+  pricesSaved = !!savedAt;
+  el.className = 'conf-badge ' + (savedAt ? 'ok' : 'ng');
+  el.textContent = savedAt ? '✅ 保存した単価を使用中（' + savedAt + '）' : '未保存（初期値＝参考値）';
+}
+window.savePrices = function() {
+  const g = id => document.getElementById(id).value;
+  const when = new Date().toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const d = { at: when, prices: PRODUCTS.map(p => p.price), vents: { 100: VENTS[100].price, 150: VENTS[150].price, 200: VENTS[200].price },
+    rates: { muneLabor: g('laborMune'), ventLabor: g('laborVent'), soffitLabor: g('laborSoffit'), zeroLabor: g('laborZero'), kataRate: g('kataRate') } };
+  if (!lsSet(PRICE_KEY, JSON.stringify(d))) { alert('このブラウザでは保存できませんでした（プライベートモード等）。「入力値を保存(JSON)」をご利用ください。'); return; }
+  setPriceState(when); renderVentCmp(); calc();
+  alert('単価を保存しました。次回からこの単価で始まります。');
+};
+function loadPrices() {
+  const raw = lsGet(PRICE_KEY); if (!raw) { setPriceState(null); return; }
+  try {
+    const d = JSON.parse(raw);
+    (d.prices || []).forEach((v, i) => { if (PRODUCTS[i] && isFinite(parseFloat(v))) PRODUCTS[i].price = parseFloat(v); });
+    [100, 150, 200].forEach(sz => { const v = parseFloat((d.vents || {})[sz]); if (isFinite(v)) VENTS[sz].price = v; });
+    const r = d.rates || {}, set = (id, v) => { if (v != null && v !== '') document.getElementById(id).value = v; };
+    set('laborMune', r.muneLabor); set('laborVent', r.ventLabor); set('laborSoffit', r.soffitLabor); set('laborZero', r.zeroLabor); set('kataRate', r.kataRate);
+    VENT_PRICE = VENTS[ventSize].price; document.getElementById('priceVentMat').value = VENT_PRICE;
+    setPriceState(d.at || '保存済み');
+  } catch (e) { setPriceState(null); }
+}
+window.resetPrices = function() {
+  if (!confirm('単価を初期値（参考値）に戻します。保存していた単価も消えます。よろしいですか？')) return;
+  lsDel(PRICE_KEY);
+  PRODUCTS.forEach((p, i) => p.price = DEF_PRICES[i]);
+  [100, 150, 200].forEach(sz => VENTS[sz].price = VENT_DEF[sz]);
+  VENT_PRICE = VENTS[ventSize].price;
+  document.getElementById('priceVentMat').value = VENT_PRICE;
+  document.getElementById('laborMune').value = 0; document.getElementById('laborVent').value = 3000;
+  document.getElementById('laborSoffit').value = 3000; document.getElementById('laborZero').value = 2000; document.getElementById('kataRate').value = 4000;
+  setPriceState(null); renderProducts(); renderVentCmp(); calc();
+};
+window.useKataLen = function() {
+  const l = NOKI[0] && NOKI[0].l; if (!l) { alert('STEP 3 の「軒（棟側・長辺）」の長さが入っていません。'); return; }
+  document.getElementById('kataLen').value = l; calc();
+};
+
+// ===== 物件履歴 =====
+function histRead() { try { const a = JSON.parse(lsGet(HIST_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+window.saveHistory = function() {
+  const data = gatherData(); const name = String(data.construction || '').trim();
+  if (!name || name === '○○様邸新築工事') { alert('工事名が初期値のままです。STEP 2 で工事名を入れてから保存してください。'); return; }
+  let list = histRead();
+  const idx = list.findIndex(h => h.name === name);
+  const adoptName = (PRODUCTS.find(p => String(p.id) === String(data.adoptSel)) || {}).name || '';
+  const rec = { id: idx >= 0 ? list[idx].id : Date.now(), name, savedAt: new Date().toISOString(), ceiling: data.ceiling, adoptName, adoptQty: data.adoptQty, data };
+  if (idx >= 0) { if (!confirm('同じ工事名「' + name + '」が履歴にあります。上書きしますか？')) return; list[idx] = rec; } else list.unshift(rec);
+  list = list.slice(0, 30);
+  if (!lsSet(HIST_KEY, JSON.stringify(list))) { alert('このブラウザでは保存できませんでした（プライベートモード等）。「入力値を保存(JSON)」をご利用ください。'); return; }
+  renderHist(); alert('物件履歴に保存しました。');
+};
+function renderHist() {
+  const box = document.getElementById('histList'); if (!box) return;
+  const list = histRead();
+  if (!list.length) { box.innerHTML = '<p class="hint">まだ保存された物件はありません。</p>'; return; }
+  box.innerHTML = list.map(h => {
+    const d = new Date(h.savedAt), t = isNaN(d) ? '' : d.toLocaleString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return `<div class="hist-row"><div><strong>${aiEsc(h.name)}</strong><br><small>${t} ／ 天井面積 ${aiEsc(h.ceiling)} ㎡ ／ ${aiEsc(h.adoptName)} ${aiEsc(h.adoptQty)}本</small></div>
+      <div><button type="button" onclick="histLoadItem(${h.id})">読込</button> <button type="button" class="danger" onclick="histDel(${h.id})">削除</button></div></div>`;
+  }).join('');
+}
+window.histLoadItem = function(id) {
+  const h = histRead().find(x => x.id === id); if (!h) return;
+  if (!confirm('「' + h.name + '」を読み込みます。いま入力中の内容は置き換わります。よろしいですか？')) return;
+  applyData(h.data); window.scrollTo({ top: 0, behavior: 'smooth' });
+  alert('読み込みました。内容を図面と見比べて、STEP 2 の「入力内容を最終確認する」を押してください。');
+};
+window.histDel = function(id) {
+  const h = histRead().find(x => x.id === id); if (!h) return;
+  if (!confirm('「' + h.name + '」を履歴から削除します。よろしいですか？')) return;
+  lsSet(HIST_KEY, JSON.stringify(histRead().filter(x => x.id !== id))); renderHist();
+};
+
+// ===== 最終確認画面 =====
+window._confirmed = false;
+function setConfirmed(v) {
+  window._confirmed = v;
+  const b = document.getElementById('confBadge'); if (!b) return;
+  b.className = 'conf-badge ' + (v ? 'ok' : 'ng');
+  b.textContent = v ? '✅ 最終確認済み（' + new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) + '）' : '⚠️ 最終確認はまだです';
+  if (window._inited) calc();
+}
+window.openConfirm = function(fromAI) {
+  const g = id => document.getElementById(id), d = (fromAI && aiLast) ? aiLast : null;
+  const aiName = d ? String(d.construction_name || '').trim() : '';
+  const ca = d ? (d.ceiling_area || {}) : {}, aiArea = d ? aiNum(ca.value) : null;
+  const stv = d ? (d.soffit_type || {}).value : null;
+  const name = aiName || g('construction').value;
+  const area = (aiArea != null && aiArea > 0) ? aiArea : g('ceiling').value;
+  const soffit = (stv === 'zero' || stv === 'normal') ? stv : soffitMode;
+  const E = aiEsc;
+  let h = `<div class="cf-row"><label>工事名</label><div><input type="text" id="cfName" value="${E(name)}">${aiName ? '<span class="cf-ai">AI読取：' + E(aiName) + '</span>' : ''}</div></div>
+    <div class="cf-row"><label>天井面積（㎡）</label><div><input type="number" id="cfArea" step="0.01" value="${E(area)}">${aiArea != null ? '<span class="cf-ai">AI読取：' + fmt(aiArea, 2) + ' ㎡ ' + aiConf(ca.confidence) + ' 根拠：' + E(ca.basis || '') + '</span>' : ''}</div></div>
+    <div class="cf-row"><label>屋根の形</label><div><select id="cfRoof"><option value="all">不明・すべて表示</option><option value="kata">片流れ屋根</option><option value="kirizuma">切妻・寄棟屋根</option></select>${d && d.roof_type ? '<span class="cf-ai">AI判定：' + E(d.roof_type) + '</span>' : ''}</div></div>
+    <div class="cf-row"><label>軒裏の形式</label><div><select id="cfSoffit"><option value="normal">通常軒天</option><option value="zero">軒ゼロ・破風レス</option></select>${d && (d.soffit_type || {}).evidence ? '<span class="cf-ai">AI：' + E(d.soffit_type.evidence) + '</span>' : ''}</div></div>
+    <div style="margin-top:10px;font-weight:bold;font-size:13px;">軒・けらばの寸法（軒ゼロの場合は「長さ」だけ使います）</div>
+    <div class="cf-noki" style="font-weight:bold;color:#666;"><div>部位</div><div>軒の出・幅(m)</div><div>長さ(m)</div></div>`;
+  NOKI.forEach((n, i) => {
+    const an = d && (d.noki || [])[i] ? d.noki[i] : null;
+    const aw = an ? aiNum(an.w_m) : null, al = an ? aiNum(an.l_m) : null;
+    const w = aw != null ? aw : n.w, l = al != null ? al : n.l;
+    const tag = an && (aw != null || al != null) ? aiConf(an.confidence) + (an.basis ? '<span class="cf-ai">' + E(an.basis) + '</span>' : '') : '';
+    h += `<div class="cf-noki"><div>${E(n.name)}${tag}</div><input type="number" step="0.01" id="cfW${i}" value="${E(w)}"><input type="number" step="0.01" id="cfL${i}" value="${E(l)}"></div>`;
+  });
+  g('cfBody').innerHTML = h;
+  { const rt = d ? String(d.roof_type || '') : ''; g('cfRoof').value = /片流/.test(rt) ? 'kata' : /切妻|寄棟/.test(rt) ? 'kirizuma' : g('roofFilter').value; } g('cfSoffit').value = soffit;
+  g('cfOk').checked = false; g('cfGo').disabled = true;
+  g('cfOverlay').style.display = 'block';
+  g('cfBox').scrollTop = 0;
+};
+window.closeConfirm = function() { document.getElementById('cfOverlay').style.display = 'none'; };
+document.addEventListener('change', e => { if (e.target && e.target.id === 'cfOk') document.getElementById('cfGo').disabled = !e.target.checked; });
+window.confirmInputs = function() {
+  const g = id => document.getElementById(id);
+  const area = parseFloat(g('cfArea').value);
+  if (!(area > 0)) { alert('天井面積は 0 より大きい数字を入れてください。'); return; }
+  g('construction').value = g('cfName').value;
+  g('ceiling').value = area;
+  g('roofFilter').value = g('cfRoof').value;
+  const st = g('soffitType'); if (st.value !== g('cfSoffit').value) { st.value = g('cfSoffit').value; st.dispatchEvent(new Event('change')); }
+  NOKI.forEach((n, i) => { n.w = parseFloat(g('cfW' + i).value) || 0; n.l = parseFloat(g('cfL' + i).value) || 0; });
+  renderNoki(); calc(); closeConfirm(); setConfirmed(true);
+};
+
+// ===== 入力チェック（異常値の警告） =====
+function renderWarnings(c) {
+  const W = [], add = (lv, t) => W.push({ lv, t });
+  const name = document.getElementById('construction').value.trim();
+  if (!name || name === '○○様邸新築工事') add('warn', '工事名が初期値のままです。STEP 2 で現場名に直してください（CAD貼付にも入ります）。');
+  if (!(c.ceiling > 0)) add('ng', '天井面積が 0 です。数字を入れてください。');
+  else if (c.ceiling < 20 || c.ceiling > 200) add('warn', `天井面積 ${fmt(c.ceiling, 2)} ㎡ は、一般的な戸建て（20〜200㎡）から外れています。単位（㎡）や桁を図面で確認してください。`);
+  let allZero = true;
+  NOKI.forEach(n => {
+    if ((n.w || 0) > 0 || (n.l || 0) > 0) allZero = false;
+    if (soffitMode !== 'zero') {
+      if (n.w < 0 || n.l < 0) add('ng', `「${n.name}」にマイナスの値があります。`);
+      if (n.w > 1.2) add('warn', `「${n.name}」の軒の出 ${fmt(n.w, 2)} m は大きめです（1.2m超）。mmとmを間違えていないか確認してください。`);
+      if (n.w > 0 && !(n.l > 0)) add('warn', `「${n.name}」は軒の出があるのに長さが 0 です。`);
+    }
+    if (n.l > 25) add('warn', `「${n.name}」の長さ ${fmt(n.l, 2)} m は長すぎます（25m超）。`);
+  });
+  if (allZero) add('info', '軒・けらばの寸法がすべて 0 です（パラペット等で軒が無い場合は正常）。給気は全てベントキャップで補う計算になります。');
+  if (c.adoptQty <= 0) add('warn', '棟換気の採用本数が 0 本です。STEP 5 で本数を入れてください。');
+  else if (c.needExhaust > 0 && c.adoptTotal > c.needExhaust * 2.5) add('warn', `棟換気の開口が必要量の約 ${fmt(c.adoptTotal / c.needExhaust, 1)} 倍あり、多すぎる可能性があります。`);
+  if (!c.supplyOk) add('ng', '給気が不足しています（給気 NG）。ベントキャップの追加などで補ってください。');
+  if (!c.exhaustOk) add('ng', '排気が不足しています（排気 NG）。棟換気の本数を増やすか、ベントキャップで補ってください。');
+  const rf = document.getElementById('roofFilter').value, KATA = [3, 4, 6, 7], KIRI = [1, 2, 5];
+  if (rf === 'kata' && KIRI.includes(c.adopt.id)) add('warn', `屋根が「片流れ」なのに、採用が切妻・寄棟用の「${c.adopt.name}」です。製品が合っているか確認してください。`);
+  if (rf === 'kirizuma' && KATA.includes(c.adopt.id)) add('warn', `屋根が「切妻・寄棟」なのに、採用が片流れ用の「${c.adopt.name}」です。製品が合っているか確認してください。`);
+  PRODUCTS.forEach(p => { if (!(p.price > 0)) add('warn', `「${p.name}」の単価が 0 円です。`); else if (p.price > 100000) add('warn', `「${p.name}」の単価 ${fmt(p.price, 0)} 円は高すぎます。桁を確認してください。`); });
+  if (!(VENT_PRICE > 0)) add('warn', 'ベントキャップの部材単価が 0 円です。');
+  if (c.muneLabor > 0) add('info', `棟換気の取付費 ${fmt(c.muneLabor, 0)} 円/本を別途加算しています。製品の単価が「取付込み」なら二重計上になるので、取付込みの場合は 0 にしてください。`);
+  if (ventSize !== 100 && !pricesSaved) add('info', `ベントキャップφ${ventSize} の単価は参考値です。実際の見積単価に直して「単価を保存」してください。`);
+  if (aiLast && /代用/.test(((aiLast.ceiling_area || {}).basis) || '')) add('info', '天井面積はAIが「床面積で代用」した値です。面積表などで天井（小屋裏）面積を確認してください。');
+  if (!window._confirmed) add('info', 'STEP 2 の「入力内容を最終確認する」がまだです。CAD貼付の前に押してください。');
+  const icon = { ng: '⛔', warn: '⚠️', info: 'ℹ️', ok: '✅' };
+  const html = '<div class="wn-title">🔎 入力チェック</div>' + (W.length ? W.map(w => `<div class="wn ${w.lv}">${icon[w.lv]} ${w.t}</div>`).join('') : '<div class="wn ok">✅ 入力値に気になる点は見つかりませんでした。</div>');
+  document.querySelectorAll('.warnBox').forEach(el => { el.innerHTML = html; });
+}
+
+// ===== 「？」やさしい説明 =====
+const HELP = {
+  name: '現場（お客様邸）の名前です。CAD貼付の表にそのまま入ります。「○○様邸新築工事」のままにしないでください。',
+  area: '小屋裏（屋根裏）の下にある天井の面積です。図面の面積表に「天井面積」「小屋裏面積」があればその値。なければ最上階の床面積で代用しますが、その場合は少し違うことがあります。',
+  vent: '換気の不足分を補う小さな丸い換気口（ベントキャップ）の口径です。口径が大きいほど1個で多く換気できますが、価格も上がります。下の「口径の比較」で一番安い口径がわかります。',
+  supply: '空気を入れる（給気）ために必要な面積です。天井面積の 1/900 以上必要、というルールで計算しています。',
+  exhaust: '空気を出す（排気）ために必要な面積です。天井面積の 1/1600 以上必要、というルールで計算しています。',
+  soffit: '軒（屋根の出っ張り）の裏がどうなっているかです。普通は「通常軒天」。軒の出がなく破風も無い家は「軒ゼロ」を選びます。図面から自動では判定できないので、必ず見て選んでください。',
+  muneLabor: '棟換気の「取付だけの費用」です。屋根屋さんの見積単価に取付費が含まれている場合は 0 のままにしてください。入れると二重にかかります。',
+  ventMat: 'ベントキャップ1個の材料の値段です。口径を変えると値が変わります。実際の仕入れ価格に直して「単価を保存」できます。',
+  ventLabor: 'ベントキャップ1個を取り付ける大工さんの手間賃です（穴あけ・シーリング込み）。',
+  soffitLabor: '軒天ボードを張る大工さんの手間賃で、1㎡あたりの金額です。材料費は含みません（材料は別に計算しています）。',
+  kata: '片流れ屋根の高い側の棟に、屋根屋さんが取り付ける「換気棟合せ」の長さ(m)です。見積に項目がなければ 0 のままで構いません。',
+  roof: '屋根の形です。片流れ屋根には片流れ用の製品、切妻・寄棟にはi-ROOFなどを使います。選ぶと合わない製品が一覧から消えます。',
+  cmp: '全製品を「必要な換気量を満たす最小の本数」で並べて、金額の安い順に並べた表です。①は棟換気だけ、②は1本減らして足りない分をベントキャップで補う案です。',
+  adopt: '実際に使うと決めた棟換気の製品です。比較一覧表の「この案にする」を押すと自動で入ります。',
+  qty: '採用する棟換気の本数です。足りないとき（排気NG）は増やしてください。',
+  judge: '必要な換気面積を満たしていれば OK、足りなければ NG です。NG のときは本数やベントキャップを増やします。'
+};
+const helpPop = document.getElementById('helpPop');
+function showHelp(el) {
+  helpPop.textContent = HELP[el.dataset.h] || ''; helpPop.style.display = 'block';
+  const r = el.getBoundingClientRect(), w = helpPop.offsetWidth;
+  helpPop.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - w - 8)) + 'px';
+  helpPop.style.top = (window.scrollY + r.bottom + 6) + 'px';
+}
+document.addEventListener('click', e => { const q = e.target.closest && e.target.closest('.qm'); if (q) { e.preventDefault(); e.stopPropagation(); showHelp(q); } else helpPop.style.display = 'none'; });
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('qm')) { e.preventDefault(); showHelp(e.target); } if (e.key === 'Escape') helpPop.style.display = 'none'; });
+
+window.resetAll = function() {
+  if (!confirm('入力値をすべてリセットしますか？')) return;
+  document.getElementById('construction').value = '○○様邸新築工事';
+  document.getElementById('ceiling').value = 75.34;
+  soffitMode = 'normal';
+  document.getElementById('soffitType').value = 'normal';
+  updateSoffitHint();
+  ventSize = 100; VENT_OPEN = VENTS[100].open; VENT_PRICE = VENTS[100].price;
+  document.getElementById('ventSize').value = 100;
+  document.querySelectorAll('.ventSizeLabel').forEach(el => el.textContent = 'φ100');
+  NOKI = [
+    { name: "軒（棟側・長辺）", w: 0.60, l: 9.20 },
+    { name: "軒（軒先・長辺）", w: 0.60, l: 9.20 },
+    { name: "けらば（短辺①）", w: 0.30, l: 8.19 },
+    { name: "けらば（短辺②）", w: 0.30, l: 8.19 },
+  ];
+  adoptedQty = [0, 0, 7, 4, 0, 5, 3];
+  PRODUCTS.forEach((p,i) => p.price = DEF_PRICES[i]);
+  document.getElementById('priceVentMat').value = 3000;
+  document.getElementById('laborMune').value = 0;
+  document.getElementById('laborVent').value = 3000;
+  document.getElementById('laborSoffit').value = 3000;
+  document.getElementById('laborZero').value = 2000;
+  document.getElementById('adoptSel').value = 6;
+  document.getElementById('kataLen').value = 0; document.getElementById('kataRate').value = 4000;
+  document.getElementById('roofFilter').value = 'all'; [100,150,200].forEach(sz => VENTS[sz].price = VENT_DEF[sz]); VENT_PRICE = VENTS[100].price; setConfirmed(false);
+  document.getElementById('adoptQty').value = 3;
+  loadPrices(); renderNoki(); renderProducts(); renderVentCmp(); calc();
+  document.getElementById('pdfContainer').style.display = 'none';
+  document.getElementById('chipsPanel').style.display = 'none';
+  document.getElementById('autoDetect').style.display = 'none';
+  document.getElementById('fileStatus').innerHTML = '';
+  aiReset();
+};
+
+// ===== AI図面読取（v2.4） =====
+// 図面チェッカーと同じAI中継サーバー(checker-api)を利用。画像化した図面ページをAIに読ませ、入力値の「候補」を返す。
+const AI_API_URL = "https://rrfeqnzxhbxntyewgeyj.supabase.co/functions/v1/checker-api";
+const AI_APP_KEY = "pu3u1uBVJFkLXp-8WcuUm8LTGzcOVVF2A7a-LcTXWUU";
+const AI_STAGE1_EDGE = 900;   // 全ページの分類用（軽量）
+const AI_STAGE2_EDGE = 1568;  // 読み取り対象ページ（文字が読める解像度）
+const AI_MAX_PAGES_STAGE1 = 40;
+const AI_MAX_PAGES_STAGE2 = 4;
+let aiSrc = null, aiLast = null;
+
+function aiSetSource(src) {
+  aiSrc = src; aiLast = null;
+  document.getElementById('aiPanel').style.display = 'block';
+  document.getElementById('aiStatus').innerHTML = '';
+  document.getElementById('aiResult').style.display = 'none';
+  document.getElementById('aiResult').innerHTML = '';
+  document.getElementById('aiReadBtn').disabled = false;
+}
+function aiReset() {
+  aiSrc = null; aiLast = null;
+  const p = document.getElementById('aiPanel'); if (p) p.style.display = 'none';
+}
+function aiStatus(kind, msg) {
+  document.getElementById('aiStatus').innerHTML = msg ? `<div class="status ${kind}">${msg}</div>` : '';
+}
+async function aiApi(content, maxTokens) {
+  const r = await fetch(AI_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-app-key': AI_APP_KEY },
+    body: JSON.stringify({ op: 'anthropic', messages: [{ role: 'user', content }], max_tokens: maxTokens })
+  });
+  const text = await r.text();
+  let d; try { d = JSON.parse(text); } catch { throw new Error('サーバー応答を解釈できませんでした (' + r.status + ')'); }
+  if (!r.ok || d.error) {
+    const m = typeof d.error === 'string' ? d.error : (d.error && d.error.message) || ('status ' + r.status);
+    throw new Error(m);
+  }
+  return (d.content || []).map(c => c.text || '').join('');
+}
+function aiParseJSON(t) {
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a < 0 || b <= a) throw new Error('AIの回答からデータを取り出せませんでした');
+  return JSON.parse(t.slice(a, b + 1));
+}
+async function aiRenderPage(n, edge, q) {
+  const canvas = document.createElement('canvas');
+  if (aiSrc.kind === 'pdf') {
+    const page = await aiSrc.pdf.getPage(n);
+    const v1 = page.getViewport({ scale: 1 });
+    const sc = edge / Math.max(v1.width, v1.height);
+    const vp = page.getViewport({ scale: sc });
+    canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  } else {
+    const url = URL.createObjectURL(aiSrc.file);
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('画像を読み込めませんでした')); i.src = url; });
+    const sc = Math.min(1, edge / Math.max(img.naturalWidth, img.naturalHeight));
+    canvas.width = Math.round(img.naturalWidth * sc); canvas.height = Math.round(img.naturalHeight * sc);
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+  }
+  return canvas.toDataURL('image/jpeg', q).split(',')[1];
+}
+function aiImgBlocks(items) {
+  const out = [];
+  items.forEach(it => {
+    out.push({ type: 'text', text: '【ページ' + it.n + '】' });
+    out.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: it.b64 } });
+  });
+  return out;
+}
+
+async function aiRead() {
+  if (!aiSrc) return;
+  const btn = document.getElementById('aiReadBtn');
+  btn.disabled = true;
+  document.getElementById('aiResult').style.display = 'none';
+  try {
+    const total = aiSrc.count;
+    let pages = [];
+    if (total <= AI_MAX_PAGES_STAGE2) {
+      pages = Array.from({ length: total }, (_, i) => i + 1);
+    } else {
+      // 1段階目：全ページを軽量画像にして、必要なページをAIに選ばせる
+      const n1 = Math.min(total, AI_MAX_PAGES_STAGE1);
+      const items = [];
+      for (let n = 1; n <= n1; n++) {
+        aiStatus('loading', `⏳ 図面を画像化しています… ${n}/${n1}ページ`);
+        items.push({ n, b64: await aiRenderPage(n, AI_STAGE1_EDGE, 0.6) });
+      }
+      aiStatus('loading', '⏳ AIが必要なページを探しています…');
+      const p1 = `これは建築図面一式（スキャンの場合あり）の各ページです。各ページの前に【ページN】と示しています。
+小屋裏換気の計算に必要な情報（天井面積＝小屋裏面積、軒・けらばの出の寸法、屋根の形状、工事名）を読み取るために見るべきページを選んでください。
+候補：屋根伏図、天井伏図、小屋伏図、各階平面図（建物外形寸法・床面積）、面積表・求積図、立面図・断面図（軒の出）。工事名は図面右下または左下の表題欄に書かれています。
+JSON形式のみで回答してください。バッククォート不要。
+{"pages":[{"page":ページ番号,"type":"図面の種類","reason":"選んだ理由（20字程度）"}],"key_pages":[見るべきページ番号を重要な順に最大${AI_MAX_PAGES_STAGE2}件]}`;
+      const t1 = await aiApi([...aiImgBlocks(items), { type: 'text', text: p1 }], 1500);
+      const j1 = aiParseJSON(t1);
+      pages = (j1.key_pages || []).map(x => parseInt(x)).filter(x => x >= 1 && x <= total);
+      pages = [...new Set(pages)].slice(0, AI_MAX_PAGES_STAGE2);
+      if (!pages.length) pages = [1];
+    }
+    // 2段階目：選んだページを読める解像度にして値を読み取る
+    const items2 = [];
+    for (let i = 0; i < pages.length; i++) {
+      aiStatus('loading', `⏳ 読み取り対象ページを画像化しています… ${i + 1}/${pages.length}`);
+      items2.push({ n: pages[i], b64: await aiRenderPage(pages[i], AI_STAGE2_EDGE, 0.8) });
+    }
+    aiStatus('loading', '⏳ AIが図面を読み取っています…（30秒〜1分ほどかかります）');
+    const p2 = `一級建築士として、これらの図面から小屋裏換気の計算に使う値を読み取ってください。各ページの前に【ページN】と示しています。
+ルール：
+- 図面に書かれている数値・文字だけを根拠にし、推測で作らない。読めない・書かれていない項目は null または空文字にする。
+- 工事名：表題欄の「工事名」の文字。
+- 天井面積（小屋裏面積, ㎡）：面積表や求積図に「天井面積」「小屋裏面積」の記載があればその値。なければ最上階の床面積（平屋なら1階の床面積）を使い、basisに「床面積で代用」と書く。複数室の合計や外形寸法から計算した場合は、計算式をbasisに書き、confidenceを medium か low にする。
+- 屋根形状：切妻/寄棟/片流れ/陸屋根/その他/不明。
+- 軒裏形式：軒の出がなく破風・軒天がない「軒ゼロ・破風レス」と読み取れる場合のみ "zero"、軒天（有孔板を使うもの）がある通常の軒なら "normal"、判断できなければ "unknown"。
+- 軒の出と長さ（m単位、mmは1000で割る）：次の4部位 1) 軒（棟側・長辺） 2) 軒（軒先・長辺） 3) けらば（短辺①） 4) けらば（短辺②）。w_m=軒の出（水平投影の幅）、l_m=その辺の長さ。
+  ・軒の出は、立面図・断面図・平面図に「軒の出」や寸法線として明示されている場合だけ数値を入れる。寸法が読み取れない部位は w_m/l_m とも null にする（部位に合わないからといって近い部位に入れない・推測しない）。
+  ・パラペット（立ち上がり壁）で屋根が壁の内側に納まっている、軒先が外壁面から出ていない等、軒・けらばの出が無いと読み取れる部位は w_m を 0、l_m は null とし、basis にその根拠（例：パラペットあり）を書く。
+  ・片流れ屋根では「軒（棟側）」は高い側の壁際、「軒（軒先）」は低い側、けらばは妻側。出が図面に無ければ上記のとおり 0 または null とする。
+  ・断面図の屋根勾配の寸法（10:1 など）、高さ寸法、部材寸法（t=12.5 など）は軒の出ではない。
+- confidence は high（図面にそのまま書かれている）/ medium（計算や代用）/ low（読みづらい・不確か）。
+JSON形式のみで回答してください。バッククォート不要。
+{"construction_name":"","ceiling_area":{"value":null,"basis":"","confidence":"low"},"roof_type":"","soffit_type":{"value":"unknown","evidence":""},"noki":[{"name":"軒（棟側・長辺）","w_m":null,"l_m":null,"basis":"","confidence":"low"},{"name":"軒（軒先・長辺）","w_m":null,"l_m":null,"basis":"","confidence":"low"},{"name":"けらば（短辺①）","w_m":null,"l_m":null,"basis":"","confidence":"low"},{"name":"けらば（短辺②）","w_m":null,"l_m":null,"basis":"","confidence":"low"}],"notes":"読み取りで注意すべき点（80字程度）"}`;
+    const t2 = await aiApi([...aiImgBlocks(items2), { type: 'text', text: p2 }], 2500);
+    aiLast = aiParseJSON(t2);
+    aiLast._pages = pages;
+    aiStatus('success', `✅ 読み取りが完了しました（参照ページ：${pages.join('、')}）。内容を確認して「適用」を押してください。`);
+    aiRenderResult();
+    { const rt = String(aiLast.roof_type || ''); const rfEl = document.getElementById('roofFilter'); if (/片流/.test(rt)) rfEl.value = 'kata'; else if (/切妻|寄棟/.test(rt)) rfEl.value = 'kirizuma'; calc(); }
+    { const cur = document.getElementById('construction').value.trim(); if (String(aiLast.construction_name || '').trim() && (!cur || cur === '○○様邸新築工事')) aiApply('name'); }
+    openConfirm(true);
+  } catch (err) {
+    console.error(err);
+    aiStatus('error', '❌ AI読み取りに失敗しました：' + String(err.message || err));
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function aiNum(v) { const n = parseFloat(v); return isFinite(n) ? n : null; }
+function aiConf(c) { const k = ['high', 'medium', 'low'].includes(c) ? c : 'low'; return `<span class="conf ${k}">${{ high: '確度高', medium: '要確認', low: '不確か' }[k]}</span>`; }
+function aiEsc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+function aiRenderResult() {
+  const d = aiLast; if (!d) return;
+  const box = document.getElementById('aiResult');
+  const rows = [];
+  const name = String(d.construction_name || '').trim();
+  if (name) rows.push({ k: '工事名', v: aiEsc(name), b: '', act: 'name' });
+  const ca = d.ceiling_area || {}, area = aiNum(ca.value);
+  if (area != null && area > 0) rows.push({ k: '天井面積', v: fmt(area, 2) + ' ㎡' + aiConf(ca.confidence), b: aiEsc(ca.basis || ''), act: 'area' });
+  const st = (d.soffit_type || {}).value;
+  if (st === 'zero' || st === 'normal') {
+    rows.push({ k: '軒裏形式', v: st === 'zero' ? '軒ゼロ・破風レス' : '通常軒天', b: aiEsc((d.soffit_type || {}).evidence || ''), act: 'soffit' });
+  }
+  (d.noki || []).slice(0, 4).forEach((n, i) => {
+    const w = aiNum(n.w_m), l = aiNum(n.l_m);
+    if (w == null && l == null) return;
+    const txt = [w != null ? '幅 ' + fmt(w, 2) + ' m' : null, l != null ? '長さ ' + fmt(l, 2) + ' m' : null].filter(Boolean).join(' × ');
+    rows.push({ k: aiEsc(n.name || NOKI[i].name), v: txt + aiConf(n.confidence), b: aiEsc(n.basis || ''), act: 'noki' + i });
+  });
+  let html = '<div class="warning-bar" style="margin-top:10px;">⚠️ AIが図面から読み取った<strong>候補</strong>です。数値は必ず図面と照合してから使ってください。特に天井面積と軒の出は、誤読や床面積での代用が含まれる場合があります。</div>';
+  if (d.roof_type) html += `<div class="hint" style="margin:4px 0;">屋根形状（AI判定）：${aiEsc(d.roof_type)}</div>`;
+  if (!rows.length) {
+    html += '<div class="status error">読み取れた項目がありませんでした。図面の種類（屋根伏図・平面図など）が含まれているか確認し、手入力をお使いください。</div>';
+  } else {
+    rows.forEach(r => {
+      html += `<div class="ai-row"><span class="k">${r.k}</span><span class="v">${r.v}${r.b ? `<span class="b">根拠：${r.b}</span>` : ''}</span><button onclick="aiApply('${r.act}')">適用</button></div>`;
+    });
+    html += '<div class="btn-group"><button class="success" onclick="aiApplyAll()">✅ 読み取れた項目をすべて反映</button></div>';
+  }
+  if (d.notes) html += `<div class="hint" style="margin-top:8px;">AIからの注記：${aiEsc(d.notes)}</div>`;
+  box.innerHTML = html; box.style.display = 'block';
+}
+
+function aiApply(act) {
+  const d = aiLast; if (!d) return;
+  if (act === 'name') {
+    const el = document.getElementById('construction'); el.value = String(d.construction_name || '').trim();
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  } else if (act === 'area') {
+    const el = document.getElementById('ceiling'); el.value = aiNum((d.ceiling_area || {}).value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  } else if (act === 'soffit') {
+    const sel = document.getElementById('soffitType'); sel.value = d.soffit_type.value;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+  } else if (act.startsWith('noki')) {
+    const i = parseInt(act.slice(4)), n = (d.noki || [])[i]; if (!n || !NOKI[i]) return;
+    const w = aiNum(n.w_m), l = aiNum(n.l_m);
+    if (w != null) NOKI[i].w = w;
+    if (l != null) NOKI[i].l = l;
+    renderNoki(); calc();
+  }
+}
+function aiApplyAll() {
+  const d = aiLast; if (!d) return;
+  // 軒裏形式を先に切り替えてから軒の寸法を入れる
+  const order = [];
+  if (String(d.construction_name || '').trim()) order.push('name');
+  if (aiNum((d.ceiling_area || {}).value) > 0) order.push('area');
+  const st = (d.soffit_type || {}).value; if (st === 'zero' || st === 'normal') order.push('soffit');
+  let skipped = 0;
+  (d.noki || []).slice(0, 4).forEach((n, i) => {
+    if (aiNum(n.w_m) == null && aiNum(n.l_m) == null) return;
+    if (n.confidence === 'high') order.push('noki' + i); else skipped++;
+  });
+  order.forEach(aiApply);
+  aiStatus('success', '✅ 読み取れた項目を入力欄に反映しました。内容を図面と照合してください。' + (skipped ? `（確度が高くない軒・けらばの寸法 ${skipped} 件は自動反映せず、各行の「適用」で個別に選べます）` : ''));
+}
+
+// ===== 初期化 =====
+loadPrices(); renderNoki(); renderProducts(); renderAdoptSelect(); renderVentCmp(); renderHist(); setConfirmed(false); attachSoffitSelect(); attachVentSelect(); attachInputListeners(); document.getElementById('roofFilter').addEventListener('change', calc); calc(); window._inited = true;
+
+// PDF.js の状態を画面に表示
+window.addEventListener('load', () => {
+  const status = document.getElementById('fileStatus');
+  if (window.pdfjsLib) {
+    status.innerHTML = '<div class="status success">✅ PDF.js 読込完了 (v' + (window.pdfjsLib.version || '3.11.174') + ') — 図面をアップロードできます</div>';
+  } else {
+    status.innerHTML = '<div class="status error">⚠️ PDF.js が読み込めませんでした<br>' +
+      '① インターネット接続を確認してください<br>' +
+      '② ブラウザのコンソール（F12/⌥⌘I）でエラーを確認できます<br>' +
+      '③ PDF読取が使えなくても、下の入力欄への手動入力は可能です</div>';
+  }
+});
+</script>
+
+</body>
+</html>
