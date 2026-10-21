@@ -98,6 +98,25 @@ const DW=[
   {id:"e03",tx:"BEI(≦1.0)",cr:true,law:"省エネ法",hint:"一次エネルギー消費量の基準適合判定"},
   {id:"e04",tx:"断熱仕様の整合性",cr:true,law:"省エネ法",hint:"計算書と矩計図等の断熱仕様が一致しているかの確認"},
 ]},
+{id:"kyuseki",label:"求積図",icon:"📏",color:"#0d9488",checks:[
+  {id:"q01",tx:"敷地面積の算定方法（三斜求積等）",cr:true,law:"法92条",hint:"三斜求積法・座標法等による正確な面積算定が示されているか"},
+  {id:"q02",tx:"建築面積の算出",cr:true,law:"令2条",hint:"建蔽率算定の基礎となる建築面積が正しく算出されているか"},
+  {id:"q03",tx:"延床面積の算出",cr:true,law:"法52条",hint:"容積率算定の基礎となる延べ面積が正しく算出されているか"},
+  {id:"q04",tx:"各階床面積の内訳",cr:true,law:"施行規則1条の3",hint:"壁量計算・採光計算の根拠となる各階床面積が明示されているか"},
+]},
+{id:"tenkaizu",label:"展開図",icon:"🖼️",color:"#d946ef",checks:[
+  {id:"tn01",tx:"内装仕上材の表示",cr:true,law:"法35条の2",hint:"内装制限対象の居室では壁・天井の仕上材が記載されている必要がある"},
+  {id:"tn02",tx:"天井高さの表示",cr:true,law:"令21条",hint:"居室の天井高さ2100mm以上の確認"},
+  {id:"tn03",tx:"開口部の位置・高さ",cr:false,law:"法28条",hint:"窓の位置と高さが採光・換気計算との整合を確認するために必要"},
+]},
+{id:"kengu",label:"建具配置図",icon:"🚪",color:"#ea580c",checks:[
+  {id:"kg01",tx:"建具記号と仕様の整合",cr:true,law:"施行規則1条の3",hint:"建具表の記号・仕様が平面図の表示と一致しているか確認"},
+  {id:"kg02",tx:"防火設備の明示",cr:true,law:"法64条",hint:"延焼のおそれのある部分の開口部に防火設備（防火戸・網入りガラス等）が指定されているか"},
+  {id:"kg03",tx:"採光・換気に使う窓の明示",cr:true,law:"法28条",hint:"採光・換気計算に用いた窓が建具表に正しく記載されているか"},
+]},
+{id:"fukin",label:"付近見取図",icon:"📍",color:"#78716c",skip:true,checks:[]},
+{id:"setsubi",label:"設備図",icon:"⚡",color:"#737373",skip:true,checks:[]},
+{id:"houki_lvs",label:"法規チェック表",icon:"📑",color:"#a3a3a3",skip:true,checks:[]},
 ];
 
 const CH=[
@@ -165,8 +184,24 @@ energy:{title:"省エネ計算書のチェック勘所",icon:"🌱",tips:[
   {lv:"◎",tx:"ηAC値が冷房期基準を満たしているか"},
   {lv:"◎",tx:"BEI≦1.0が達成されているか"},
 ]},
+kyuseki:{title:"求積図のチェック勘所",icon:"📏",tips:[
+  {lv:"★",tx:"三斜求積法の三角形の取り方に抜け・重複がないか"},
+  {lv:"★",tx:"敷地面積と配置図の面積表記が一致しているか"},
+  {lv:"◎",tx:"建築面積にバルコニー・ポーチの算入/不算入が正しいか"},
+  {lv:"◎",tx:"容積率算定で除外面積（車庫等）が正しく処理されているか"},
+]},
+tenkaizu:{title:"展開図のチェック勘所",icon:"🖼️",tips:[
+  {lv:"★",tx:"火気使用室（キッチン等）の壁・天井に内装制限の仕上材が記載されているか"},
+  {lv:"★",tx:"天井高さの寸法が記入され、2100mm以上あるか"},
+  {lv:"◎",tx:"窓の位置・高さが採光計算書と整合しているか"},
+]},
+kengu:{title:"建具配置図のチェック勘所",icon:"🚪",tips:[
+  {lv:"★",tx:"延焼ライン内の窓に防火設備の指定があるか"},
+  {lv:"★",tx:"建具記号が平面図・立面図の表示と一致しているか"},
+  {lv:"◎",tx:"採光計算に使われた窓の仕様（有効面積）が正しいか"},
+]},
 };
-const guessT=n=>{const l=n.toLowerCase();if(/配置/.test(l))return"haichi";if(/平面/.test(l)&&!/詳細/.test(l))return"heimen";if(/立面/.test(l))return"ritsumen";if(/断面/.test(l))return"danmen";if(/矩計/.test(l))return"kanazuchi";if(/基礎伏|基礎/.test(l))return"kiso";if(/壁量|耐力壁/.test(l))return"hekiwall";if(/省エネ|外皮|ua/.test(l))return"energy";return"";};
+const guessT=n=>{const l=n.toLowerCase();if(/付近見取|案内図/.test(l))return"fukin";if(/求積/.test(l))return"kyuseki";if(/展開/.test(l))return"tenkaizu";if(/建具/.test(l))return"kengu";if(/弱電|電灯|コンセント|ｺﾝｾﾝﾄ|衛生設備|給排水|設備平面|空調|換気設備|電気設備|機械設備/.test(l))return"setsubi";if(/法規[Ll][Vv][Ss]|法適合|法規チェック|法規ﾁｪｯｸ|LVS/.test(l))return"houki_lvs";if(/配置/.test(l))return"haichi";if(/平面/.test(l)&&!/詳細/.test(l))return"heimen";if(/立面/.test(l))return"ritsumen";if(/断面/.test(l))return"danmen";if(/矩計/.test(l))return"kanazuchi";if(/基礎伏|基礎/.test(l))return"kiso";if(/壁量|耐力壁/.test(l))return"hekiwall";if(/省エネ|外皮|ua/.test(l))return"energy";return"";};
 
 const allChecks=()=>DW.flatMap(d=>d.checks.map(c=>({...c,dwLabel:d.label}))).concat(CH.map(c=>({...c,dwLabel:"長期優良住宅"})));
 const loadLS=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}};
@@ -183,7 +218,7 @@ const KY_VENTS={100:50,150:110,200:200};
 const REQ_TPL=[
 {cat:"採光",label:"採光計算に用いた窓の窓記号・サイズ（居室ごと）",where:["ritsumen","heimen"]},
 {cat:"換気",label:"24時間換気の給気口・排気口（フード・ガラリ）の位置と型番",where:["ritsumen","heimen"]}];
-const REQ_WHERE_OK=["haichi","heimen","ritsumen","danmen","kanazuchi","kiso","hekiwall","energy"];
+const REQ_WHERE_OK=["haichi","heimen","ritsumen","danmen","kanazuchi","kiso","hekiwall","energy","kyuseki","tenkaizu","kengu"];
 const fmtN=(n,d)=>Number(n).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
 const reqFromKoyaura=d=>{
 if(!d||typeof d!=="object")return null;
@@ -533,7 +568,7 @@ return;
 }
 const r=new FileReader();r.onload=ev=>{setDws(p=>p.map(d=>d.id===dwId?{...d,data:ev.target.result}:d));setBp("📎 添付しました");};r.readAsDataURL(file);
 };
-// --- 対象外マーク（表紙・仕様書など8種類に当てはまらないページを分析対象から素早く除外） ---
+// --- 対象外マーク（表紙・仕様書など分析不要なページを分析対象から素早く除外） ---
 const toggleSkip=id=>setDws(p=>p.map(d=>d.id===id?{...d,skip:!d.skip}:d));
 
 // --- 使用者選択・ゲーミフィケーション ---
@@ -676,11 +711,13 @@ if(!w){setBp("❌ ポップアップがブロックされました。ブラウ�
 w.document.write(html);w.document.close();
 };
 
-const detect=async dw=>{const isXl=dw.isExcel||dw.data?.startsWith("excel:");if(isXl){const csv=dw.data.replace(/^excel:/,"");const r=await api([{role:"user",content:[{type:"text",text:"以下は建築図面関連のExcelデータです。この図面・書類の種別を判定してください。以下からIDのみ返してください:\n"+DW.map(t=>t.id+":"+t.label).join(", ")+"\n判定不能ならunknown\n\n【Excelデータ】\n"+csv.slice(0,3000)}]}],100);return DW.find(t=>r.trim().includes(t.id))?.id||"";}
-const b=dw.data.split(",")[1];const mt=dw.data.slice(0,30).includes("pdf")?"application/pdf":dw.data.slice(0,30).includes("png")?"image/png":"image/jpeg";const r=await api([{role:"user",content:[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b}},{type:"text",text:"この図面の種別を判定。以下からIDのみ返して:\n"+DW.map(t=>t.id+":"+t.label).join(", ")+"\n判定不能ならunknown"}]}],100);return DW.find(t=>r.trim().includes(t.id))?.id||"";};
+const DETECT_HINT="\n\n【判別のヒント】\n- 求積図(kyuseki): 三角形分割や座標で面積を計算する図。配置図と混同しないこと\n- 展開図(tenkaizu): 室内の壁面を展開して見せる図。建物外観の立面図とは異なる\n- 建具配置図(kengu): 窓・ドアの記号と仕様一覧がメイン。間取りの平面図とは異なる\n- 設備図(setsubi): 弱電・電灯コンセント・衛生設備・空調・給排水など配管配線がメインの図\n- 付近見取図(fukin): 敷地周辺の道路・建物を示す周辺地図。配置図とは異なる\n- 法規チェック表(houki_lvs): 法規LVS・法適合検討書・法規チェックシートなどの法規計算書類\n- 上記に該当せず8種類のどれにも当てはまらない場合は必ずunknownと返すこと";
+const detect=async dw=>{const isXl=dw.isExcel||dw.data?.startsWith("excel:");const typeList=DW.map(t=>t.id+":"+t.label).join(", ");if(isXl){const csv=dw.data.replace(/^excel:/,"");const r=await api([{role:"user",content:[{type:"text",text:"以下は建築図面関連のExcelデータです。この図面・書類の種別を判定してください。以下からIDのみ返してください:\n"+typeList+"\n判定不能ならunknown"+DETECT_HINT+"\n\n【Excelデータ】\n"+csv.slice(0,3000)}]}],100);return DW.find(t=>r.trim().includes(t.id))?.id||"";}
+const b=dw.data.split(",")[1];const mt=dw.data.slice(0,30).includes("pdf")?"application/pdf":dw.data.slice(0,30).includes("png")?"image/png":"image/jpeg";const r=await api([{role:"user",content:[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b}},{type:"text",text:"この図面の種別を判定。以下からIDのみ返して:\n"+typeList+"\n判定不能ならunknown"+DETECT_HINT}]}],100);return DW.find(t=>r.trim().includes(t.id))?.id||"";};
 const analyze=async dw=>{if(!ok)return;let tid=dw.type;setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:true}:d));
-if(!tid){setBp("🔍 "+dw.name+" の種別を判別中...");try{tid=await detect(dw);if(tid)setDws(p=>p.map(d=>d.id===dw.id?{...d,type:tid,auto:true}:d));else{setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("⚠️ "+dw.name+" 種別不明。手動選択してください");return{ok:false,reason:"種別不明"};}}catch(e){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("❌ "+e.message);return{ok:false,reason:e.message};}}
-const dt=DW.find(t=>t.id===tid);if(!dt){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));return{ok:false,reason:"種別データ不整合"};}
+if(!tid){setBp("🔍 "+dw.name+" の種別を判別中...");try{tid=await detect(dw);if(tid){const detected=DW.find(t=>t.id===tid);if(detected?.skip){setDws(p=>p.map(d=>d.id===dw.id?{...d,type:tid,auto:true,skip:true,ld:false}:d));setBp("📎 "+dw.name+"→「"+detected.label+"」（チェック対象外）として自動分類");return{ok:true,skipped:true};}setDws(p=>p.map(d=>d.id===dw.id?{...d,type:tid,auto:true}:d));}else{setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("⚠️ "+dw.name+" 種別不明。手動選択してください");return{ok:false,reason:"種別不明"};}}catch(e){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));setBp("❌ "+e.message);return{ok:false,reason:e.message};}}
+const dt=DW.find(t=>t.id===tid);if(dt?.skip){setDws(p=>p.map(d=>d.id===dw.id?{...d,skip:true,ld:false}:d));setBp("📎 "+dw.name+"→「"+dt.label+"」（チェック対象外）として分類");return{ok:true,skipped:true};}
+if(!dt){setDws(p=>p.map(d=>d.id===dw.id?{...d,ld:false}:d));return{ok:false,reason:"種別データ不整合"};}
 setBp("📋 "+dw.name+"（"+dt.label+"）を分析中...");
 const cp=dt.checks.map(c=>"- ["+c.id+"] "+(c.loc?"【条例】":"")+c.tx+"（"+(c.cr?"必須":"推奨")+"）"+(c.law||"")).join("\n");
 const chP=mode==="chouki"?"\n\n【長期優良追加】\n"+CH.map(c=>"- ["+c.id+"] "+c.tx+"（"+c.cat+"）").join("\n"):"";
@@ -781,13 +818,13 @@ return(<div>
 </div>
 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:6}}>
 <input className="ip" style={{flex:1,minWidth:160,fontSize:11}} placeholder="その他の要記載事項（例：基礎パッキン 全周 ○○mm）" value={reqForm.label} onChange={e=>setReqForm(f=>({...f,label:e.target.value}))}/>
-<select className="ip" style={{maxWidth:130,fontSize:11}} value={reqForm.where} onChange={e=>setReqForm(f=>({...f,where:e.target.value}))}>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select>
+<select className="ip" style={{maxWidth:130,fontSize:11}} value={reqForm.where} onChange={e=>setReqForm(f=>({...f,where:e.target.value}))}>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select>
 <button className="bt bs" disabled={!reqForm.label.trim()} onClick={addReqManual}>＋ 追加</button>
 </div>
 </div>
 {!dws.length&&<div className="fu" style={{textAlign:"center",padding:"16px 16px 0"}}><h2 style={{fontSize:18,fontWeight:700,marginBottom:6,background:"linear-gradient(135deg,#a5b4fc,#c084fc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>図面を一括アップロード</h2><p style={{fontSize:12,color:"var(--t2)",lineHeight:1.7}}>全図面をまとめてドロップ。ファイル名から種別を自動判別します。</p></div>}
 <div className={"uz"+(dg?" dr":"")} onClick={()=>fR.current?.click()} onDragOver={e=>{e.preventDefault();setDg(true)}} onDragLeave={()=>setDg(false)} onDrop={e=>{e.preventDefault();setDg(false);addF(e.dataTransfer.files)}}><div style={{fontSize:42,marginBottom:6}}>📄</div><div style={{fontSize:14,fontWeight:600,color:"#a5b4fc"}}>図面をまとめてアップロード</div><div style={{fontSize:11,color:"var(--t3)"}}>PNG / JPG / PDF / Excel — 複数ファイル一括・ドラッグ＆ドロップ</div><input ref={fR} type="file" accept="image/*,.pdf,.xlsx,.xls" multiple onChange={e=>{addF(e.target.files);e.target.value=""}} style={{display:"none"}}/></div>
-{dws.length>0&&<div style={{marginTop:10}}>{dws.map(dw=>{const dt=DW.find(t=>t.id===dw.type);const dwTips=dw.type&&TIPS[dw.type];return <div key={dw.id} className="cd di fu" style={dw.skip?{opacity:.5}:{}}><div className="dt" style={dw.data&&!dw.data.startsWith("excel:")?{cursor:"pointer"}:{}} onClick={()=>dw.data&&!dw.data.startsWith("excel:")&&setPreviewImg({data:dw.data,name:dw.name})} title={dw.data&&!dw.data.startsWith("excel:")?"クリックで拡大表示":dw.data?.startsWith("excel:")?"Excelデータ":""}>{dw.data&&dw.data.includes("data:image")?<img src={dw.data} alt=""/>:<span style={{fontSize:22}}>{dw.isExcel||dw.data?.startsWith("excel:")?"📊":"📄"}</span>}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:4}}>{dw.name}</div><div style={{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap"}}><select className="ip" value={dw.type} onChange={e=>setDws(p=>p.map(d=>d.id===dw.id?{...d,type:e.target.value,auto:false}:d))} style={{maxWidth:180,fontSize:11,padding:"3px 8px"}}><option value="">🤖 AI自動判別</option>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select>{dw.data&&!dw.data.startsWith("excel:")&&<button className="bt bs" onClick={()=>setPreviewImg({data:dw.data,name:dw.name})}>🔍拡大して確認</button>}{dw.data?.startsWith("excel:")&&<span style={{fontSize:9,color:"var(--ac)",background:"rgba(99,102,241,.1)",padding:"2px 6px",borderRadius:4}}>📊 Excelデータ</span>}{dw.auto&&dt&&<span style={{fontSize:9,color:"var(--ac)",background:"rgba(99,102,241,.1)",padding:"2px 6px",borderRadius:4}}>自動:{dt.icon}{dt.label}</span>}{!dw.data&&!dw.res&&<span style={{fontSize:9,color:"var(--warn)",background:"rgba(245,158,11,.1)",padding:"2px 6px",borderRadius:4}}>⚠画像未添付</span>}{dw.skip&&<span style={{fontSize:9,color:"var(--t3)",background:"rgba(100,116,139,.15)",padding:"2px 6px",borderRadius:4}}>🚫対象外（分析不要）</span>}{dwTips&&!dw.res&&!dw.skip&&<button className="bt" style={{fontSize:9,padding:"2px 6px",color:"#c084fc",background:"rgba(192,132,252,.1)",borderColor:"rgba(192,132,252,.25)"}} onClick={()=>setTipsOpen(p=>({...p,[dw.id]:!p[dw.id]}))}>💡{tipsOpen[dw.id]?"勘所を閉じる":"勘所を見る"}</button>}</div>{dwTips&&tipsOpen[dw.id]&&!dw.skip&&<div style={{marginTop:6,padding:"8px 10px",borderRadius:8,border:"1px solid rgba(192,132,252,.2)",background:"rgba(192,132,252,.04)",fontSize:10.5,lineHeight:1.7}}><div style={{fontWeight:700,color:"#c084fc",marginBottom:4}}>💡 {dwTips.title}</div>{dwTips.tips.map((t,i)=><div key={i} style={{display:"flex",gap:4,alignItems:"flex-start"}}><span style={{flexShrink:0,width:16,textAlign:"center",color:t.lv==="★"?"#f59e0b":t.lv==="◎"?"#3b82f6":"#94a3b8",fontWeight:700,fontSize:10}}>{t.lv}</span><span style={{color:"var(--t2)"}}>{t.tx}</span></div>)}<div style={{fontSize:9,color:"var(--t3)",marginTop:4}}>★=最重要 ◎=重要 △=条件付き</div></div>}</div><div style={{display:"flex",gap:4,flexShrink:0,alignItems:"center"}}>{dw.res&&<span style={{fontSize:9,color:"var(--ok)",background:"rgba(16,185,129,.1)",padding:"2px 6px",borderRadius:4}}>✓済</span>}{dw.ld?<div className="sp"/>:!dw.res&&(dw.skip?<button className="bt bs" onClick={()=>toggleSkip(dw.id)}>↩解除</button>:<>{!dw.data?<label className="bt bs bp" style={{cursor:"pointer"}}>📎再添付<input type="file" accept="image/*,.pdf,.xlsx,.xls" style={{display:"none"}} onChange={e=>{if(e.target.files[0])reattachFile(dw.id,e.target.files[0]);e.target.value=""}}/></label>:<button className="bt bs bp" onClick={()=>analyze(dw)}>🔍</button>}<button className="bt bs" onClick={()=>toggleSkip(dw.id)} title="表紙・仕様書など8種類に当てはまらない図面を分析対象から外す">🚫対象外</button></>)}<button className="bi" onClick={()=>setDws(p=>p.filter(d=>d.id!==dw.id))}>✕</button></div></div>})}
+{dws.length>0&&<div style={{marginTop:10}}>{dws.map(dw=>{const dt=DW.find(t=>t.id===dw.type);const dwTips=dw.type&&TIPS[dw.type];return <div key={dw.id} className="cd di fu" style={dw.skip?{opacity:.5}:{}}><div className="dt" style={dw.data&&!dw.data.startsWith("excel:")?{cursor:"pointer"}:{}} onClick={()=>dw.data&&!dw.data.startsWith("excel:")&&setPreviewImg({data:dw.data,name:dw.name})} title={dw.data&&!dw.data.startsWith("excel:")?"クリックで拡大表示":dw.data?.startsWith("excel:")?"Excelデータ":""}>{dw.data&&dw.data.includes("data:image")?<img src={dw.data} alt=""/>:<span style={{fontSize:22}}>{dw.isExcel||dw.data?.startsWith("excel:")?"📊":"📄"}</span>}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:4}}>{dw.name}</div><div style={{display:"flex",gap:4,alignItems:"center",flexWrap:"wrap"}}><select className="ip" value={dw.type} onChange={e=>{const nid=e.target.value;const nt=DW.find(t=>t.id===nid);setDws(p=>p.map(d=>d.id===dw.id?{...d,type:nid,auto:false,skip:nt?.skip||false}:d));}} style={{maxWidth:180,fontSize:11,padding:"3px 8px"}}><option value="">🤖 AI自動判別</option>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}<option disabled>──対象外──</option>{DW.filter(t=>t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select>{dw.data&&!dw.data.startsWith("excel:")&&<button className="bt bs" onClick={()=>setPreviewImg({data:dw.data,name:dw.name})}>🔍拡大して確認</button>}{dw.data?.startsWith("excel:")&&<span style={{fontSize:9,color:"var(--ac)",background:"rgba(99,102,241,.1)",padding:"2px 6px",borderRadius:4}}>📊 Excelデータ</span>}{dw.auto&&dt&&<span style={{fontSize:9,color:"var(--ac)",background:"rgba(99,102,241,.1)",padding:"2px 6px",borderRadius:4}}>自動:{dt.icon}{dt.label}</span>}{!dw.data&&!dw.res&&<span style={{fontSize:9,color:"var(--warn)",background:"rgba(245,158,11,.1)",padding:"2px 6px",borderRadius:4}}>⚠画像未添付</span>}{dw.skip&&<span style={{fontSize:9,color:"var(--t3)",background:"rgba(100,116,139,.15)",padding:"2px 6px",borderRadius:4}}>🚫対象外（分析不要）</span>}{dwTips&&!dw.res&&!dw.skip&&<button className="bt" style={{fontSize:9,padding:"2px 6px",color:"#c084fc",background:"rgba(192,132,252,.1)",borderColor:"rgba(192,132,252,.25)"}} onClick={()=>setTipsOpen(p=>({...p,[dw.id]:!p[dw.id]}))}>💡{tipsOpen[dw.id]?"勘所を閉じる":"勘所を見る"}</button>}</div>{dwTips&&tipsOpen[dw.id]&&!dw.skip&&<div style={{marginTop:6,padding:"8px 10px",borderRadius:8,border:"1px solid rgba(192,132,252,.2)",background:"rgba(192,132,252,.04)",fontSize:10.5,lineHeight:1.7}}><div style={{fontWeight:700,color:"#c084fc",marginBottom:4}}>💡 {dwTips.title}</div>{dwTips.tips.map((t,i)=><div key={i} style={{display:"flex",gap:4,alignItems:"flex-start"}}><span style={{flexShrink:0,width:16,textAlign:"center",color:t.lv==="★"?"#f59e0b":t.lv==="◎"?"#3b82f6":"#94a3b8",fontWeight:700,fontSize:10}}>{t.lv}</span><span style={{color:"var(--t2)"}}>{t.tx}</span></div>)}<div style={{fontSize:9,color:"var(--t3)",marginTop:4}}>★=最重要 ◎=重要 △=条件付き</div></div>}</div><div style={{display:"flex",gap:4,flexShrink:0,alignItems:"center"}}>{dw.res&&<span style={{fontSize:9,color:"var(--ok)",background:"rgba(16,185,129,.1)",padding:"2px 6px",borderRadius:4}}>✓済</span>}{dw.ld?<div className="sp"/>:!dw.res&&(dw.skip?<button className="bt bs" onClick={()=>toggleSkip(dw.id)}>↩解除</button>:<>{!dw.data?<label className="bt bs bp" style={{cursor:"pointer"}}>📎再添付<input type="file" accept="image/*,.pdf,.xlsx,.xls" style={{display:"none"}} onChange={e=>{if(e.target.files[0])reattachFile(dw.id,e.target.files[0]);e.target.value=""}}/></label>:<button className="bt bs bp" onClick={()=>analyze(dw)}>🔍</button>}<button className="bt bs" onClick={()=>toggleSkip(dw.id)} title="表紙・仕様書など分析不要な図面を対象から外す">🚫対象外</button></>)}<button className="bi" onClick={()=>setDws(p=>p.filter(d=>d.id!==dw.id))}>✕</button></div></div>})}
 {dws.some(d=>!d.res&&!d.ld&&!d.skip)&&<button className="bg" disabled={br} style={{width:"100%",padding:12,marginTop:8,fontSize:14,borderRadius:8}} onClick={batchAll}>{br?"分析中...":"🚀 全図面を一括分析（"+dws.filter(d=>!d.res&&!d.skip).length+"件）"}</button>}
 {done>0&&done===activeCount&&<div className="cd co fu" style={{textAlign:"center",padding:16,marginTop:8}}><div style={{fontSize:20,marginBottom:4}}>✅</div><div style={{fontSize:13,fontWeight:600,color:"var(--ok)"}}>全{activeCount}図面の分析完了{skippedCount>0&&"（対象外"+skippedCount+"件を除く）"}</div><button className="bt bs" style={{marginTop:8}} onClick={()=>setTab("summary")}>📊 総合判定を見る</button></div>}
 </div>}</>}
@@ -823,7 +860,7 @@ return(<div>
 {(()=>{
 const doneTypes=new Set(dws.filter(d=>d.res).map(d=>d.type));
 const uploadedTypes=new Set(dws.filter(d=>!d.skip).map(d=>d.type).filter(Boolean));
-const notUploaded=DW.filter(t=>!uploadedTypes.has(t.id));
+const notUploaded=DW.filter(t=>!t.skip&&!uploadedTypes.has(t.id));
 const uploadedNotAnalyzed=DW.filter(t=>uploadedTypes.has(t.id)&&!doneTypes.has(t.id));
 const noData=dws.filter(d=>!d.data&&!d.res&&!d.ld&&!d.skip);
 const unclassified=dws.filter(d=>!d.type&&!d.res&&!d.ld&&d.data&&!d.skip);
@@ -837,7 +874,7 @@ return <div className="cd">
 {retryTarget>0&&<button className="bt bs bp" onClick={()=>{setTab("upload");batchAll();}}>🚀 今すぐ分析する（{retryTarget}件）</button>}
 </div>}
 {noData.length>0&&<div style={{marginBottom:10,fontSize:11,color:"var(--warn)",lineHeight:1.7}}>⚠️ 画像が添付されていない図面が{noData.length}件あります（下書き復元時など）。図面タブの各項目にある「📎再添付」ボタンから画像を選び直してください。</div>}
-{unclassified.length>0&&<div style={{marginBottom:10,fontSize:11,color:"var(--t2)",lineHeight:1.7}}>🔍 種別未定の図面が{unclassified.length}件あります。図面タブの🔍ボタンでAIが自動判別するか、表紙・仕様書など8種類に当てはまらない場合は「🚫対象外」ボタンで分析対象から外せます</div>}
+{unclassified.length>0&&<div style={{marginBottom:10,fontSize:11,color:"var(--t2)",lineHeight:1.7}}>🔍 種別未定の図面が{unclassified.length}件あります。図面タブの🔍ボタンでAIが自動判別するか、種別一覧に当てはまらない場合は「🚫対象外」ボタンで分析対象から外せます</div>}
 {skipped.length>0&&<div style={{marginBottom:notUploaded.length?10:0,fontSize:11,color:"var(--t3)"}}>🚫 対象外にした図面が{skipped.length}件あります（図面タブから「↩解除」でいつでも戻せます）</div>}
 {notUploaded.length>0&&<div style={{marginBottom:10}}>
 <h3 style={{fontSize:12,fontWeight:600,marginBottom:6,color:"var(--t2)"}}>📎 未提出の図面</h3>
@@ -914,7 +951,7 @@ return <div className="cd">
 
 {studySub==="glossary"&&<div className="cd fu">
 <div style={{fontSize:11,color:"var(--t2)",marginBottom:10,lineHeight:1.7}}>図面種別ごとのチェック項目と、その意味をやさしく解説します。「AI解説」を押すと、趣旨・実務でのよくある間違い・対応ポイントをより詳しく説明します。</div>
-<select className="ip" value={studyType} onChange={e=>setStudyType(e.target.value)} style={{marginBottom:12}}>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}<option value="chouki">🏅 長期優良住宅（追加項目）</option></select>
+<select className="ip" value={studyType} onChange={e=>setStudyType(e.target.value)} style={{marginBottom:12}}>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}<option value="chouki">🏅 長期優良住宅（追加項目）</option></select>
 {(studyType==="chouki"?CH:(DW.find(t=>t.id===studyType)?.checks||[])).map(ck=><div key={ck.id} className="gi"><div style={{display:"flex",alignItems:"flex-start",gap:8}}><div style={{flex:1}}>{ck.cr&&<span style={{fontSize:8,background:"rgba(239,68,68,.15)",color:"var(--ng)",padding:"1px 4px",borderRadius:2,marginRight:4}}>必須</span>}<span style={{fontSize:12,fontWeight:600}}>{ck.tx}</span>{ck.law&&<span style={{fontSize:10,color:"var(--t3)",marginLeft:6}}>{ck.law}</span>}<div style={{fontSize:11,color:"var(--t2)",marginTop:3,lineHeight:1.6}}>{ck.hint}</div>{expl[ck.id]&&<div className="fu" style={{fontSize:11,color:"#a5b4fc",marginTop:6,lineHeight:1.7,whiteSpace:"pre-wrap",background:"rgba(99,102,241,.06)",padding:8,borderRadius:6}}>{expl[ck.id]}</div>}</div><button className="bt bs" disabled={explLd[ck.id]} onClick={()=>explainItem(ck,null)}>{explLd[ck.id]?<div className="sp" style={{width:12,height:12,borderWidth:2}}/>:(expl[ck.id]?"再取得":"🤖 AI解説")}</button></div></div>)}
 </div>}
 
@@ -944,7 +981,7 @@ return <div className="cd">
 <textarea className="ip" placeholder="指摘の内容（例：シックハウス24時間換気の計算書が添付されていなかった）" value={stForm.content} onChange={e=>setStForm(p=>({...p,content:e.target.value}))} style={{width:"100%",minHeight:56,marginBottom:6,fontFamily:"inherit",resize:"vertical"}}/>
 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
 <input className="ip" style={{flex:1,minWidth:150,fontSize:11}} placeholder="審査機関名・案件名（任意）" value={stForm.source} onChange={e=>setStForm(p=>({...p,source:e.target.value}))}/>
-<select className="ip" style={{maxWidth:180,fontSize:11}} value={stForm.dw} onChange={e=>setStForm(p=>({...p,dw:e.target.value}))}><option value="">📄 全図面でチェック</option>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}のみ</option>)}</select>
+<select className="ip" style={{maxWidth:180,fontSize:11}} value={stForm.dw} onChange={e=>setStForm(p=>({...p,dw:e.target.value}))}><option value="">📄 全図面でチェック</option>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}のみ</option>)}</select>
 <button className="bt bp" disabled={!stForm.content.trim()} onClick={addShiteki}>＋ 登録</button>
 </div>
 {stList.filter(s=>!s.source?.startsWith("[kn]")).length===0?<div style={{textAlign:"center",padding:12,color:"var(--t3)",fontSize:11}}>まだ登録がありません</div>:<div style={{marginTop:10}}>{stList.filter(s=>!s.source?.startsWith("[kn]")).map(s=><div key={s.id} className="wk" style={{alignItems:"flex-start"}}><div style={{flex:1}}><div style={{fontSize:11.5,lineHeight:1.6}}>{s.content}</div><div style={{fontSize:9.5,color:"var(--t3)",marginTop:2}}>{s.source&&s.source+"／"}{s.dw_type?(DW.find(t=>t.id===s.dw_type)?.label||s.dw_type):"全図面"}{s.staff&&"／"+s.staff}・{new Date(s.created_at).toLocaleDateString("ja-JP")}</div></div><button className="bi" onClick={()=>delKnowledge("st_delete",s.id)}>🗑</button></div>)}</div>}
@@ -955,7 +992,7 @@ return <div className="cd">
 <textarea className="ip" placeholder="ノウハウの内容（例：軒ゼロの場合、外壁通気の出口処理が図面に記載漏れしやすい。棟換気だけでなく壁通気出口も確認すること）" value={knForm.content} onChange={e=>setKnForm(p=>({...p,content:e.target.value}))} style={{width:"100%",minHeight:56,marginBottom:6,fontFamily:"inherit",resize:"vertical"}}/>
 <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
 <input className="ip" style={{flex:1,minWidth:120,fontSize:11}} placeholder="出典・根拠（任意：経験則/社内基準等）" value={knForm.source} onChange={e=>setKnForm(p=>({...p,source:e.target.value}))}/>
-<select className="ip" style={{maxWidth:140,fontSize:11}} value={knForm.dw} onChange={e=>setKnForm(p=>({...p,dw:e.target.value}))}><option value="">📄 全図面で参照</option>{DW.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}のみ</option>)}</select>
+<select className="ip" style={{maxWidth:140,fontSize:11}} value={knForm.dw} onChange={e=>setKnForm(p=>({...p,dw:e.target.value}))}><option value="">📄 全図面で参照</option>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}のみ</option>)}</select>
 <select className="ip" style={{maxWidth:110,fontSize:11}} value={knForm.priority} onChange={e=>setKnForm(p=>({...p,priority:e.target.value}))}><option value="normal">普通</option><option value="high">⚠️ 重要</option><option value="critical">🔴 最重要</option></select>
 <button className="bt bp" disabled={!knForm.content.trim()} onClick={addKnowhow}>＋ 登録</button>
 </div>
