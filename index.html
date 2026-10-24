@@ -22,6 +22,7 @@ const DW=[
   {id:"h10",tx:"斜線検討距離",cr:true,law:"法56条",hint:"道路・隣地・北側斜線制限の検討に必要な離隔距離"},
   {id:"h11",tx:"敷地面積・建蔽率・容積率",cr:true,law:"法52条,53条",hint:"建築可能な規模の上限を決める最重要数値"},
   {id:"h12",tx:"擁壁・外壁後退",cr:false,law:"法19条,54条",hint:"造成地の安全性や外壁後退距離の規制確認"},
+  {id:"h13",tx:"隣地ブロック塀・擁壁の記載と安全性",cr:true,law:"法19条・建築物の安全性確保",hint:"隣地との境界にあるブロック塀（高さ2.2m超は建築基準法違反の疑い）や擁壁の位置・高さ・安全性の記載。検査済証のない擁壁は要注意。近年の検査で隣地ブロック塀の安全性確認が厳格化しており、倒壊リスクのある塀の近接は指摘対象"},
   {id:"L01",tx:"がけ・擁壁の近接（がけ条例）",cr:false,loc:true,law:"福岡県建築基準法施行条例5条",hint:"高さ3m超（傾斜30度超）のがけ・擁壁が敷地内や隣接地にある場合、がけの高さの2倍の範囲で建築制限がかかる（擁壁の設置等で緩和可）。北九州市でも県条例が適用される"},
   {id:"L02",tx:"中高層建築物の事前手続き",cr:false,loc:true,law:"北九州市中高層指導要綱",hint:"住居系地域で高さ10m超（近商・準工12.5m超、商業15m超）は標識設置・近隣説明が必要（確認申請の20日前まで）。2階建住宅は通常対象外"},
   {id:"L03",tx:"土砂災害警戒区域の確認",cr:false,loc:true,law:"土砂災害防止法・北九州市指定",hint:"斜面地・がけの近くでは土砂災害（特別）警戒区域かどうかを北九州市の防災情報マップで確認する。特別警戒区域内は構造規制・許可が必要"},
@@ -125,6 +126,11 @@ const DW=[
   {id:"lv06",tx:"換気計算の充足（床面積の1/20以上）",cr:true,law:"法28条2項",hint:"居室の換気に必要な開口面積（床面積の1/20以上）が確保されているか"},
   {id:"lv07",tx:"水平距離Dの測定起点が正確",cr:true,law:"令20条",hint:"隣地境界線からの水平距離。道路面は道路反対側境界線から測定可能（Dが大幅増）"},
   {id:"lv08",tx:"排煙の検討",cr:false,law:"法35条",hint:"排煙設備の要否が検討されているか（住宅の居室は通常免除）"},
+  {id:"lv09",tx:"北側斜線制限の検討",cr:true,law:"法56条1項三号",hint:"低層・中高層住居専用地域では北側斜線制限（5m+1.25勾配等）が適用される。採光に影響する北側の窓配置と高さ制限の整合を確認"},
+  {id:"lv10",tx:"道路斜線と採光の整合",cr:true,law:"法56条",hint:"前面道路幅員から道路斜線の検討。道路面の窓は道路反対側境界線からDを測定でき採光に有利"},
+  {id:"lv11",tx:"外壁後退距離の確認",cr:false,law:"法54条",hint:"第一種・第二種低層住居専用地域では外壁後退（1.0m又は1.5m）が適用される場合がある。窓の位置と外壁後退ラインの関係を確認"},
+  {id:"lv12",tx:"隣地ブロック塀・擁壁の影響確認",cr:true,law:"令20条（採光）・がけ条例",hint:"隣地のブロック塀や擁壁の高さが採光補正係数のH（建物各部の高さ）に影響する場合がある。近年の検査では隣地ブロック塀の安全性確認が厳格化。高さ2.2m超のブロック塀や検査済証のない擁壁は要注意"},
+  {id:"lv13",tx:"採光補正係数の用途地域係数の検証",cr:true,law:"令20条",hint:"住居系(α=6,β=1.4)と商業系(α=10,β=1.0)で大幅に異なる。用途境界にかかる敷地は要注意"},
 ]},
 ];
 
@@ -145,6 +151,7 @@ haichi:{title:"配置図のチェック勘所",icon:"🗺️",tips:[
   {lv:"★",tx:"建蔽率・容積率の数値が計算書と一致するか"},
   {lv:"◎",tx:"北側斜線・道路斜線の検討距離が正しく記入されているか"},
   {lv:"◎",tx:"排水経路が公共下水/浄化槽のどちらか明示されているか"},
+  {lv:"★",tx:"隣地のブロック塀や擁壁の位置・高さ・安全性が記載されているか（近年厳格化）"},
   {lv:"△",tx:"擁壁がある場合、がけ条例の検討距離が図示されているか"},
 ]},
 heimen:{title:"平面図のチェック勘所",icon:"📐",tips:[
@@ -213,10 +220,12 @@ houki_lvs:{title:"法規LVS(採光・換気)のチェック勘所",icon:"📑",t
   {lv:"★",tx:"全居室の採光計算がOKか。NGの居室がないか最初にチェック"},
   {lv:"★",tx:"用途地域の係数(α,β)が正しいか。住居系6-1.4／商業系10-1.0／工業系8-1.0"},
   {lv:"★",tx:"水平距離Dの測定起点が正しいか。道路面は反対側境界線から測れるため有利"},
-  {lv:"◎",tx:"採光補正係数の上限3.0超えや負値→0の処理がされているか"},
+  {lv:"★",tx:"隣地ブロック塀・擁壁の高さがH（建物高さ）に影響していないか。近年検査が厳格化"},
+  {lv:"◎",tx:"北側斜線制限（低層住居系5m+1.25勾配）が北側の窓に影響していないか"},
+  {lv:"◎",tx:"外壁後退（低層住居専用地域で1.0m/1.5m）がある場合、窓位置との整合"},
   {lv:"◎",tx:"1Fキッチン等を独立居室として1/3にしていないか（LDK一体なら1/7）"},
   {lv:"◎",tx:"二室一室（一室採光）の適用余地がある居室はないか"},
-  {lv:"△",tx:"換気計算（1/20以上）は採光と別に充足しているか"},
+  {lv:"△",tx:"前面道路幅員が狭い場合、道路斜線が採光に影響していないか"},
 ]},
 };
 const guessT=n=>{const l=n.toLowerCase();if(/付近見取|案内図/.test(l))return"fukin";if(/求積/.test(l))return"kyuseki";if(/展開/.test(l))return"tenkaizu";if(/建具/.test(l))return"kengu";if(/弱電|電灯|コンセント|ｺﾝｾﾝﾄ|衛生設備|給排水|設備平面|空調|換気設備|電気設備|機械設備/.test(l))return"setsubi";if(/法規[Ll][Vv][Ss]|法適合|法規チェック|法規ﾁｪｯｸ|LVS/.test(l))return"houki_lvs";if(/配置/.test(l))return"haichi";if(/平面/.test(l)&&!/詳細/.test(l))return"heimen";if(/立面/.test(l))return"ritsumen";if(/断面/.test(l))return"danmen";if(/矩計/.test(l))return"kanazuchi";if(/基礎伏|基礎/.test(l))return"kiso";if(/壁量|耐力壁/.test(l))return"hekiwall";if(/省エネ|外皮|ua/.test(l))return"energy";return"";};
@@ -309,7 +318,7 @@ const[finalNote,setFinalNote]=useState("");
 // --- コスト可視化（API呼出回数のセッションカウンタ） ---
 const[apiCallCount,setApiCallCount]=useState(0);
 // --- 案件条件（防火指定・用途地域等。「該当なし」判定の前提としてAIに渡す） ---
-const[siteCond,setSiteCond]=useState(()=>loadLS("ck_sitecond",{fire:"",youto:"",note:""}));
+const[siteCond,setSiteCond]=useState(()=>loadLS("ck_sitecond",{fire:"",youto:"",note:"",road:"",setback:"",block:""}));
 const siteCondRef=useRef(siteCond);
 useEffect(()=>{siteCondRef.current=siteCond;saveLS("ck_sitecond",siteCond);},[siteCond]);
 // --- 要記載事項（計算結果との連動チェック） ---
@@ -746,7 +755,7 @@ const stP=stRel.length?"\n\n【審査機関から過去に受けた指摘（再�
 const knRel=stRef.current.filter(s=>s.source?.startsWith("[kn]")&&(!s.dw_type||s.dw_type===tid)).slice(0,10);
 const knP=knRel.length?"\n\n【ベテランスタッフの実務ノウハウ（現場経験に基づく確認ポイント。該当箇所を見落とさず確認し、疑いがあればdetailに言及すること）】\n"+knRel.map(s=>{const sp=s.source.replace(/^\[kn\]/,"").split("|");const pr=sp[1]||"normal";return"- "+(pr==="high"?"【重要】":pr==="critical"?"【最重要】":"")+s.content+(sp[0]?"（"+sp[0]+"）":"");}).join("\n"):"";
 const sc=siteCondRef.current;
-const condP=(sc.fire||sc.youto||sc.note.trim())?"\n\n【案件条件（この前提で各項目の適用有無を必ず判定すること）】\n"+(sc.fire?"防火規制:"+sc.fire+"\n":"")+(sc.youto?"用途地域:"+sc.youto+"\n":"")+(sc.note.trim()?"その他条件:"+sc.note.trim()+"\n":""):"";
+const condP=(sc.fire||sc.youto||sc.note.trim()||sc.road||sc.setback||sc.block)?"\n\n【案件条件（この前提で各項目の適用有無を必ず判定すること）】\n"+(sc.fire?"防火規制:"+sc.fire+"\n":"")+(sc.youto?"用途地域:"+sc.youto+"\n":"")+(sc.road?"前面道路幅員:"+sc.road+"m（道路斜線・採光補正係数のD算定に影響）\n":"")+(sc.setback&&sc.setback!=="指定なし"?"外壁後退距離:"+sc.setback+"（低層住居専用地域等で適用。法54条）\n":"")+(sc.block?"隣地ブロック・擁壁:"+sc.block+"（採光補正係数のH算定・がけ条例・安全性に影響。近年の検査で厳格化しており、ブロック塀の安全性・擁壁の検査済証・既存不適格の確認を重点チェックすること）\n":"")+(sc.note.trim()?"その他条件:"+sc.note.trim()+"\n":""):"";
 const rqL=(reqRef.current.items||[]).filter(q=>(q.where||[]).includes(tid));
 const reqP=rqL.length?"\n\n【この図面に記載が必須の事項（計算書との連動チェック）】\n計算結果で必要とされた部材・数量が、この図面に実際に明記されているかを照合すること。\n"+rqL.map(q=>"- ["+q.id+"] "+q.label+(q.qty!==""&&q.qty!=null?"：計"+q.qty+(q.unit||""):"")+(q.spec?"（"+q.spec+"）":"")).join("\n"):"";
 const lvsP=tid==="houki_lvs"?'\n\n【法規LVS専用：採光計算データの抽出と対処案の提示】\n以下の追加データをJSON出力のトップレベルに含めること。\n\n"saikou_data":{\n  "youto_chiiki":"用途地域名","alpha":係数α(数値),"beta":係数β(数値),"d_value":"水平距離D",\n  "rooms":[{"floor":"階","name":"居室名","area":床面積(数値),"ratio":"必要割合(1/7等)","required":必要面積(数値),"effective":有効面積(数値),"result":"OK又はNG","windows":"窓情報"}],\n  "ng_rooms":[{"floor":"階","name":"居室名","area":床面積,"shortage":不足面積(数値orNull),"proposals":[\n    {"id":"A","name":"対処案名","detail":"具体的な対処内容80字程度","merit":"メリット","demerit":"デメリット","priority":"★★★or★★☆or★☆☆","recommended":true/false}\n  ]}]\n}\n対処案: A=窓の追加拡大 B=用途変更(非居室化・LDK一体化で1/3→1/7) C=一室採光(二室一室) D=採光補正係数の見直し(D測定起点再検証) E=床面積の調整。各居室に最適な案はrecommended:trueに。NGなければng_rooms=[]。採光計算表でなければsaikou_data=null':"";
@@ -820,6 +829,12 @@ return(<div>
 <select className="ip" style={{maxWidth:210,fontSize:11}} value={siteCond.youto} onChange={e=>setSiteCond(p=>({...p,youto:e.target.value}))}><option value="">🏘️ 用途地域（図面から判断）</option><option>第一種低層住居専用地域</option><option>第二種低層住居専用地域</option><option>第一種中高層住居専用地域</option><option>第二種中高層住居専用地域</option><option>第一種住居地域</option><option>第二種住居地域</option><option>準住居地域</option><option>田園住居地域</option><option>近隣商業地域</option><option>商業地域</option><option>準工業地域</option><option>工業地域</option><option>用途地域の指定なし</option></select>
 <input className="ip" style={{flex:1,minWidth:180,fontSize:11}} placeholder="その他の前提条件（例:多雪区域、基準風速34m/s、高度地区）" value={siteCond.note} onChange={e=>setSiteCond(p=>({...p,note:e.target.value}))}/>
 </div>
+<div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:6}}>
+<input className="ip" style={{maxWidth:140,fontSize:11}} placeholder="🛣️ 前面道路幅員（例:6.0）" value={siteCond.road||""} onChange={e=>setSiteCond(p=>({...p,road:e.target.value}))}/>
+<select className="ip" style={{maxWidth:180,fontSize:11}} value={siteCond.setback||""} onChange={e=>setSiteCond(p=>({...p,setback:e.target.value}))}><option value="">📏 外壁後退（図面から判断）</option><option>1.0m</option><option>1.5m</option><option>指定なし</option></select>
+<select className="ip" style={{maxWidth:200,fontSize:11}} value={siteCond.block||""} onChange={e=>setSiteCond(p=>({...p,block:e.target.value}))}><option value="">🧱 隣地ブロック・擁壁</option><option>隣地ブロック塀あり</option><option>隣地擁壁あり（2m以下）</option><option>隣地擁壁あり（2m超）</option><option>自敷地側擁壁あり</option><option>ブロック・擁壁なし</option></select>
+</div>
+<div style={{fontSize:9,color:"var(--t3)",marginTop:4,lineHeight:1.6}}>※ 用途地域が低層住居専用地域の場合、外壁後退の適用を自動で確認します。隣地ブロック・擁壁は近年の検査で厳格化しています。</div>
 </div>
 <div className="cd" style={{padding:"10px 14px"}}>
 <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
