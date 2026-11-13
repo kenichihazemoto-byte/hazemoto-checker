@@ -479,6 +479,87 @@ if(!knForm.content.trim())return;
 try{await apiDb("st_insert",{row:{content:knForm.content.trim(),source:"[kn]"+(knForm.source.trim()||"")+"|"+knForm.priority,dw_type:knForm.dw,staff}});setKnForm({content:"",source:"",dw:"",priority:"normal"});setBp("✅ ベテランノウハウを登録しました。次回の分析からAIが参照します");loadKnowledge();}catch(e){setBp("❌ 登録に失敗: "+e.message);}
 };
 const delKnowledge=async(opName,id)=>{if(!window.confirm("この記録を削除しますか？（今後の分析に反映されなくなります）"))return;try{await apiDb(opName,{id});loadKnowledge();}catch(e){setBp("❌ 削除に失敗: "+e.message);}};
+
+// --- 修正比較モード（指摘→修正後の図面を比較し、修正事例として学習） ---
+const isPlainSt=x=>!x.source?.startsWith("[kn]")&&!x.source?.startsWith("[fix]");
+const[cmpSrc,setCmpSrc]=useState("cur");const[cmpBefore,setCmpBefore]=useState([]);const[cmpAfter,setCmpAfter]=useState([]);
+const[cmpLd,setCmpLd]=useState(false);const[cmpOut,setCmpOut]=useState(null);const[cmpName,setCmpName]=useState("");const[cmpSaving,setCmpSaving]=useState(false);
+const cmpReadFile=async file=>{
+if(/\.(heic|heif)$/i.test(file.name)||file.type==="image/heic"||file.type==="image/heif")throw new Error(file.name+" はHEIC/HEIF形式のため非対応です（JPEGに変換してください）");
+if(/\.(xlsx|xls)$/i.test(file.name))throw new Error(file.name+" はExcelのため比較できません（PDFか画像にしてください）");
+if(file.type==="application/pdf"||/\.pdf$/i.test(file.name)){const pages=await pdfToPages(file);const base=file.name.replace(/\.pdf$/i,"");return pages.map((data,idx)=>{const nm=pages.length>1?base+"（"+(idx+1)+"/"+pages.length+"枚目）":file.name;return{name:nm,data};});}
+return await new Promise((res2,rej)=>{const r=new FileReader();r.onload=ev=>res2([{name:file.name,data:ev.target.result}]);r.onerror=()=>rej(new Error(file.name+" の読込に失敗"));r.readAsDataURL(file);});
+};
+const cmpAddFiles=async(files,kind)=>{
+const setter=kind==="before"?setCmpBefore:setCmpAfter;
+for(const file of Array.from(files||[])){
+try{setBp("📄 "+file.name+" を読み込み中...");const pgs=await cmpReadFile(file);setter(prev=>[...prev,...pgs.map((x,k)=>({id:"c"+Date.now()+Math.random().toString(36).slice(2,5)+k,name:x.name,data:x.data,type:guessT(x.name)||""}))]);setBp("");}
+catch(e){setBp("❌ "+e.message);}
+}
+};
+const cmpFindings=()=>{
+const src=cmpSrc==="cur"?dws.filter(d=>d.res):((projects.find(x=>String(x.id)===cmpSrc)||{}).drawings||[]);
+const out=[];
+src.forEach(d=>{const dt=DW.find(t=>t.id===d.type);(d.res?.items||[]).forEach(it=>{if(it.status!=="ng"&&it.status!=="warn")return;const ck=dt?.checks.find(c=>c.id===it.id)||DW.flatMap(t=>t.checks).find(c=>c.id===it.id);out.push({dwName:d.name,tid:d.type,id:it.id,tx:ck?.tx||it.id,law:ck?.law||"",status:it.status,detail:it.detail||"",action:it.action||""});});});
+return out;
+};
+const cmpPart=d=>{const b64=d.data.split(",")[1];const head=d.data.slice(0,30);const mt=head.includes("pdf")?"application/pdf":head.includes("png")?"image/png":"image/jpeg";return{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b64}};};
+const cmpRun=async()=>{
+if(cmpLd)return;
+const finds=cmpFindings();
+if(!finds.length){setBp("⚠️ 比較元の指摘（不適合・要確認）がありません。分析結果がある状態にするか、物件履歴を選んでください");return;}
+if(!cmpAfter.length){setBp("⚠️ 修正後の図面を追加してください");return;}
+setCmpLd(true);setCmpOut(null);
+try{
+const detectAll=async list=>{const arr=[...list];for(let i=0;i<arr.length;i++){if(!arr[i].type){setBp("🔍 "+arr[i].name+" の種別を判別中...");try{arr[i]={...arr[i],type:await detect(arr[i])||""};}catch{}}}return arr;};
+const aft=await detectAll(cmpAfter);setCmpAfter(aft);
+const bef=await detectAll(cmpBefore);setCmpBefore(bef);
+const types=[...new Set(aft.map(a=>a.type).filter(Boolean))];
+if(!types.length){setBp("⚠️ 修正後の図面の種別が判別できませんでした。種別を手動で選んでください");setCmpLd(false);return;}
+const out=[];
+for(const tid of types){
+const dt=DW.find(t=>t.id===tid);const fs=finds.filter(f=>f.tid===tid);
+if(!fs.length){out.push({tid,label:dt?.label||tid,rows:[],none:true,changes:[],newIssues:[]});continue;}
+setBp("🔄 「"+(dt?.label||tid)+"」の修正前後を比較中...（指摘"+fs.length+"件）");
+const A=aft.filter(a=>a.type===tid).slice(0,3);const B=bef.filter(b=>b.type===tid).slice(0,3);
+const content=[];
+B.forEach((b,k)=>{content.push({type:"text",text:"【修正前の図面 "+(k+1)+"】"});content.push(cmpPart(b));});
+A.forEach((a,k)=>{content.push({type:"text",text:"【修正後の図面 "+(k+1)+"】"});content.push(cmpPart(a));});
+content.push({type:"text",text:"あなたは一級建築士です。確認申請図面のチェックAIが修正前の図面に出した【指摘事項】と、スタッフが修正した後の図面を比較し、AIの学習データを作ります。\n対象図面: "+(dt?.label||tid)+"\n"+(B.length?"修正前の図面と修正後の図面の両方を添付しています。違いを具体的に読み取ってください。":"修正後の図面だけを添付しています（修正前の図面はありません）。")+"\n\n【指摘事項】\n"+fs.map(f=>"- ["+f.id+"] "+f.tx+(f.law?"（"+f.law+"）":"")+"／AI判定:"+(f.status==="ng"?"不適合":"要確認")+"／所見:"+f.detail.slice(0,120)+"／指示:"+f.action.slice(0,120)).join("\n")+"\n\n各指摘について修正後の図面を確認し、verdictを次から1つ付けること。\n- fixed: 修正後の図面で指摘が解消されている（記載の追加・訂正がある）\n- not_fixed: 修正後の図面でも不備が残っている\n- unclear: 画像から判断できない、または他の図面との照合が必要\n- false_positive: 元の図面でも問題がなかった、または該当しないなど、AIの指摘自体が誤りだった（修正前の図面がない場合は、指摘の対象となる記載が元からあったと判断できるときに限る）\n\n出力はJSONのみ:\n{\"changes\":[\"修正前後で変わった点を3〜6個\"],\"results\":[{\"id\":\"項目ID\",\"verdict\":\"fixed|not_fixed|unclear|false_positive\",\"evidence\":\"修正後の図面のどこにどう書かれているか、または残っている不備（60字程度）\",\"fix_pattern\":\"fixedのときだけ。次の案件にも使える一般化した修正方法。案件名・人名・固有の寸法は入れない。90字以内\",\"lesson\":\"fixedのときだけ。最初から図面に書いておくべきこと。命令形で60字以内\"}],\"new_issues\":[{\"tx\":\"修正後の図面で新たに見つけた不備\",\"detail\":\"80字以内\"}]}\n見えないものは推測せず、unclearにすること。"});
+const raw=await api([{role:"user",content}],6000);
+let pj;try{pj=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch{pj=null;}
+if(!pj){out.push({tid,label:dt?.label||tid,rows:fs.map(f=>({...f,verdict:"unclear",evidence:"AIの回答を解析できませんでした。もう一度実行してください",fix_pattern:"",lesson:"",reg:false})),changes:[],newIssues:[],failed:true});continue;}
+const rows=fs.map(f=>{const r=(pj.results||[]).find(x=>x.id===f.id)||{};const v=["fixed","not_fixed","unclear","false_positive"].includes(r.verdict)?r.verdict:"unclear";return{...f,verdict:v,evidence:r.evidence||(r.verdict?"":"AIの回答に含まれませんでした"),fix_pattern:r.fix_pattern||"",lesson:r.lesson||"",reg:v==="fixed"&&!!(r.fix_pattern||"").trim()||v==="false_positive"};});
+out.push({tid,label:dt?.label||tid,rows,changes:(pj.changes||[]).slice(0,8),newIssues:(pj.new_issues||[]).slice(0,6).map(n=>({...n,reg:false}))});
+}
+setCmpOut(out);setBp("✅ 比較が完了しました。内容を確認して「学習に登録」を押してください");
+}catch(e){setBp("❌ 比較に失敗: "+e.message);}
+setCmpLd(false);
+};
+const cmpPatchRow=(ti,ri,patch)=>setCmpOut(o=>o.map((t,a)=>a!==ti?t:{...t,rows:t.rows.map((r,b)=>b!==ri?r:{...r,...patch})}));
+const cmpPatchNew=(ti,ni,patch)=>setCmpOut(o=>o.map((t,a)=>a!==ti?t:{...t,newIssues:t.newIssues.map((n,b)=>b!==ni?n:{...n,...patch})}));
+const cmpRegCount=()=>(cmpOut||[]).reduce((n,t)=>n+t.rows.filter(r=>r.reg&&((r.verdict==="fixed"&&r.fix_pattern.trim())||r.verdict==="false_positive")).length+t.newIssues.filter(x=>x.reg).length,0);
+const cmpSave=async()=>{
+if(cmpSaving||!cmpOut)return;
+const nm=(cmpName.trim()||"修正比較");
+setCmpSaving(true);let okN=0,ngN=0;
+try{
+for(const t of cmpOut){
+for(const r of t.rows){
+if(!r.reg)continue;
+try{
+if(r.verdict==="fixed"&&r.fix_pattern.trim()){await apiDb("st_insert",{row:{content:"【"+r.tx+"】"+r.fix_pattern.trim()+(r.lesson?.trim()?"／最初から:"+r.lesson.trim():""),source:"[fix]"+nm+"|fixed",dw_type:t.tid,staff}});okN++;}
+else if(r.verdict==="false_positive"){await apiDb("fb_insert",{row:{item_id:r.id,item_tx:r.tx,law:r.law||"",dw_type:t.tid,ai_status:r.status||"",ai_detail:(r.detail||"").slice(0,200),note:"修正前後の比較で、元の図面に問題はなかった（指摘が誤り）。"+(r.evidence||""),staff}});okN++;}
+}catch(e){ngN++;}
+}
+for(const n of t.newIssues){if(!n.reg)continue;try{await apiDb("st_insert",{row:{content:"【修正後の図面で新たに見つかった不備】"+(n.tx||"")+"："+(n.detail||""),source:"[fix]"+nm+"|new",dw_type:t.tid,staff}});okN++;}catch(e){ngN++;}}
+}
+setBp(ngN?"⚠️ "+okN+"件を登録、"+ngN+"件は失敗しました":"✅ "+okN+"件を学習データに登録しました。次回の分析から自動で反映されます");
+await loadKnowledge();
+setCmpOut(null);setCmpBefore([]);setCmpAfter([]);
+}catch(e){setBp("❌ 登録に失敗: "+e.message);}
+setCmpSaving(false);
+};
 const api=async(msgs,mt=4000)=>{setApiCallCount(c=>c+1);const r=await fetch(CHECKER_API_URL,{method:"POST",headers:{"Content-Type":"application/json","x-app-key":APP_GATE},body:JSON.stringify({op:"anthropic",messages:msgs,max_tokens:mt})});if(!r.ok){const e=await r.text();throw new Error(r.status+": "+e.slice(0,100));}const d=await r.json();return d.content?.map(c=>c.text||"").join("")||"";};
 // --- 初回利用ガイド（オンボーディング） ---
 const[showOnboard,setShowOnboard]=useState(false);const[obStep,setObStep]=useState(0);
@@ -761,9 +842,11 @@ const cp=dt.checks.map(c=>"- ["+c.id+"] "+(c.loc?"【条例】":"")+c.tx+"（"+(
 const chP=mode==="chouki"?"\n\n【長期優良追加】\n"+CH.map(c=>"- ["+c.id+"] "+c.tx+"（"+c.cat+"）").join("\n"):"";
 const fbRel=fbRef.current.filter(f=>!f.dw_type||f.dw_type===tid).slice(0,12);
 const fbP=fbRel.length?"\n\n【過去の誤判定の記録（スタッフによる訂正。同じ誤りを繰り返さないこと）】\n"+fbRel.map(f=>"- 「"+f.item_tx+"」をAIは"+(f.ai_status||"?")+"と判定したが誤りだった。訂正:"+f.note).join("\n"):"";
-const stRel=stRef.current.filter(s=>!s.source?.startsWith("[kn]")&&(!s.dw_type||s.dw_type===tid)).slice(0,12);
+const stRel=stRef.current.filter(s=>isPlainSt(s)&&(!s.dw_type||s.dw_type===tid)).slice(0,12);
 const stP=stRel.length?"\n\n【審査機関から過去に受けた指摘（再発防止のため該当箇所を重点的に確認し、同様の不備の疑いがあればstatusをwarn以上にしてdetailに「過去に審査指摘あり」と付記すること）】\n"+stRel.map(s=>"- "+s.content+(s.source?"（"+s.source+"）":"")).join("\n"):"";
 const knRel=stRef.current.filter(s=>s.source?.startsWith("[kn]")&&(!s.dw_type||s.dw_type===tid)).slice(0,10);
+const fixRel=stRef.current.filter(s=>s.source?.startsWith("[fix]")&&(!s.dw_type||s.dw_type===tid)).slice(0,10);
+const fixP=fixRel.length?"\n\n【過去の指摘→修正の実例（社内で実際に指摘を受けて図面を直した事例。同じ不備が今回の図面にないか先に確認し、あればdetailで触れ、actionの修正方法はこの実例を具体例として使うこと）】\n"+fixRel.map(s=>"- "+s.content).join("\n"):"";
 const knP=knRel.length?"\n\n【ベテランスタッフの実務ノウハウ（現場経験に基づく確認ポイント。該当箇所を見落とさず確認し、疑いがあればdetailに言及すること）】\n"+knRel.map(s=>{const sp=s.source.replace(/^\[kn\]/,"").split("|");const pr=sp[1]||"normal";return"- "+(pr==="high"?"【重要】":pr==="critical"?"【最重要】":"")+s.content+(sp[0]?"（"+sp[0]+"）":"");}).join("\n"):"";
 const sc=siteCondRef.current;
 const condP=(sc.fire||sc.youto||sc.note.trim()||sc.road||sc.setback||sc.block)?"\n\n【案件条件（この前提で各項目の適用有無を必ず判定すること）】\n"+(sc.fire?"防火規制:"+sc.fire+"\n":"")+(sc.youto?"用途地域:"+sc.youto+"\n":"")+(sc.road?"前面道路幅員:"+sc.road+"m（道路斜線・採光補正係数のD算定に影響）\n":"")+(sc.setback&&sc.setback!=="指定なし"?"外壁後退距離:"+sc.setback+"（低層住居専用地域等で適用。法54条）\n":"")+(sc.block?"隣地ブロック・擁壁:"+sc.block+"（採光補正係数のH算定・がけ条例・安全性に影響。近年の検査で厳格化しており、ブロック塀の安全性・擁壁の検査済証・既存不適格の確認を重点チェックすること）\n":"")+(sc.note.trim()?"その他条件:"+sc.note.trim()+"\n":""):"";
@@ -772,7 +855,7 @@ const reqP=rqL.length?"\n\n【この図面に記載が必須の事項（計算�
 const lvsP=tid==="houki_lvs"?'\n\n【法規LVS専用：採光計算データの抽出と対処案の提示】\n以下の追加データをJSON出力のトップレベルに含めること。\n\n"saikou_data":{\n  "youto_chiiki":"用途地域名","alpha":係数α(数値),"beta":係数β(数値),"d_value":"水平距離D",\n  "rooms":[{"floor":"階","name":"居室名","area":床面積(数値),"ratio":"必要割合(1/7等)","required":必要面積(数値),"effective":有効面積(数値),"result":"OK又はNG","windows":"窓情報"}],\n  "ng_rooms":[{"floor":"階","name":"居室名","area":床面積,"shortage":不足面積(数値orNull),"proposals":[\n    {"id":"A","name":"対処案名","detail":"具体的な対処内容80字程度","merit":"メリット","demerit":"デメリット","priority":"★★★or★★☆or★☆☆","recommended":true/false}\n  ]}]\n}\n対処案: A=窓の追加拡大 B=用途変更(非居室化・LDK一体化で1/3→1/7) C=一室採光(二室一室) D=採光補正係数の見直し(D測定起点再検証) E=床面積の調整。各居室に最適な案はrecommended:trueに。NGなければng_rooms=[]。採光計算表でなければsaikou_data=null':"";
 try{const isXl=dw.isExcel||dw.data?.startsWith("excel:");
 const contentParts=isXl?[{type:"text",text:"【Excelデータ（建築図面・計算書）】\n以下はExcelファイルの内容です。表形式のデータとして読み取り、建築図面・計算書として分析してください。\n\n"+dw.data.replace(/^excel:/,"").slice(0,8000)}]:(()=>{const b64=dw.data.split(",")[1];const mt=dw.data.slice(0,30).includes("pdf")?"application/pdf":dw.data.slice(0,30).includes("png")?"image/png":"image/jpeg";return[{type:mt==="application/pdf"?"document":"image",source:{type:"base64",media_type:mt,data:b64}}];})();
-const raw=await api([{role:"user",content:[...contentParts,{type:"text",text:"一級建築士として2025年4月改正建築基準法に基づき判定。\n【"+dt.label+"】\n"+cp+chP+condP+reqP+lvsP+fbP+stP+knP+"\n\n各項目のdetail（所見）の記述ルール:\n1. 項目末尾に条文番号（法○条・令○条等）が示されている場合は、detailの中に必ずその条文番号を明記すること（例:「令38条」「法28条」）。\n2. この図面の記載内容だけで確認が完結する項目は「（条文）適合を確認」のように記載してよい。\n3. 構造図・仕様書・計算書など、この図面以外の資料と照合しないと最終確認できない項目は「（条文）適合確認には（必要な図面・資料名）との照合が必要」のように明記し、断定を避けてstatusはwarnにすること。\n4. 図面の記載から合理的に推定できるが完全な確証ではない項目は「（条文）概ね充足と判断」のように断定を避けた表現にすること。\n5. detailは条文番号を含めて80字程度まで許容する。\n6. detailに条文番号（法○条・令○条等）を記載した項目は、law_noteフィールドにその条文が何を定めた規定かを、専門用語を避けた平易な日本語で必ず記載すること（例:「法28条＝居室に必要な採光・換気のための窓の大きさを定めた規定」）。条文引用がない項目はlaw_noteは空文字にする。\n7. statusがngまたはwarnの項目は、actionフィールドに担当者が次に行うべき具体的な作業を「〜する」の形で必ず記載すること（例:「矩計図に基礎立上り寸法を追記する」「構造図を入手し、壁量計算書と数値を照合する」）。作業が複数ある場合は「①〜 ②〜」と番号付きで列挙する。statusがokの項目はactionは空文字にする。\n8. まず建物の階数・用途を図面から読み取ること。平屋建て（1階建て）の場合、階段に関する項目（階段の幅・蹴上・踏面、階段の構造等）はstatusをnaにし、detailに「平屋建てのため階段なし・対象外」と記載する（actionは空文字）。\n9. 防火区画（令112条）の項目は、先にこの建物に防火区画が必要かを判定する。2階建以下・延べ面積1000㎡以下の一般的な木造戸建住宅は原則不要のためstatusをnaにし「防火区画が不要な建物のため対象外」と記載する。3階建以上や地階（竪穴区画）、大規模、異種用途がある建物の場合のみ貫通部の処理を判定する。\n10. バリアフリー対応は用途で分けて判定する。戸建住宅は法的義務のない任意項目（住宅性能表示・長期優良住宅の高齢者等配慮対策）として扱う。店舗・診療所・事務所等の非住宅は、規模によりバリアフリー法（特別特定建築物は2000㎡以上で義務）や福岡県福祉のまちづくり条例の対象になり得るため、その旨を指摘してstatusをwarnにする。\n11. 耐力壁は文字表記だけでなく図面上の記号で判定する。三角（△▲）、タスキがけ（×）、丸数字・四角囲み数字（壁倍率・壁種別番号）、ハッチング等は耐力壁の記号である。平面図・壁量計算書・構造図にこれらの記号が入っていれば耐力壁の記載ありとして扱い、凡例があれば凡例と照合する。記号を見落として「記載なし」と判定しないこと。\n12. 外壁・軒裏・屋根の防火仕様は、国土交通大臣認定番号の記載を必ず探す（例：PC030BE-xxxx＝防火構造、QF045BE-xxxx＝準耐火45分、DR-xxxx＝屋根飛び火）。認定番号の記載があれば「防火認定番号の記載を確認（番号を引用）」としてokにしてよい。「防火構造」等の文言のみで番号がない場合に限り「認定番号の記載がなく認定書との照合が必要」とする。\n13. 屋根勾配・軒の出等の寸法は、姿図の脇・寸法線まわり・注記欄・矩計図など目立たない場所に記載されていることが多い。図面の雅々（文字の小さい注記含む）まで探してから「記載なし」と判定すること。\n14. 軒の出がない建物（軒ゼロ・破風レス）は軒裏が存在しないため、軒裏仕様の項目は「軒ゼロのため軒裏なし・対象外」としてnaにし、detailで外壁の防火措置と換気方式（壁通気・軒ゼロ用換気部材）の確認に言及する。\n15. 斜線制限・高さ制限は、図面記載の用途地域から適用値を特定して所見に明記する（低層住居系:絶対高さ10m又は12m・北側斜線5m+1.25勾配／道路斜線:住居系1.25・その他1.5／隣地斜線:住居系20m+1.25・その他31m+2.5等）。用途地域が読み取れない場合は「用途地域の確認が必要」としてstatusをwarnにする。\n16. 案件条件や図面の記載（用途地域・防火指定等）から、その規定自体がこの案件に適用されない項目はstatusをnaとし、detailに理由を「（理由）のため該当なし」の形で必ず記載すること（例:「防火・準防火地域および法22条区域の指定がないため延焼のおそれのある部分の防火措置は不要」）。適用の有無が案件条件からも判断できない場合はnaにせずwarnとし、確認方法をactionに記載する。\n17. key_factsに、この図面に記載されている大臣認定番号・型式認定番号（例:PC030BE-0000）と、図面間整合の確認に重要な数値・仕様（延べ面積、最高高さ、UA値、耐力壁仕様等。最大8件）を抽出して記載すること。記載がなければ空配列にする。\n18. 【条例】と付いた項目（idがLで始まる）は建築基準法ではなく、北九州市・福岡県の条例や要綱の確認項目である。図面から該当の可能性を判定し、該当する記載・兆候がなければstatusをnaにして理由を記載する（例:「敷地及び隣接地に高さ3m超のがけ・擁壁の記載がないため該当なし」「2階建住宅（高さ10m以下）のため中高層の手続きは対象外」）。該当の可能性がある場合はstatusをwarnとし、actionに「北九州市建築審査課に確認する」「北九州市の防災情報マップで区域を確認する」等の具体的な確認先を必ず記載する。条例項目は図面だけで最終判断できないため、安易にok（適合）と断定しないこと。\n19. 配置図の場合はsite_infoに、図面から読み取れる用途地域（第一種低層住居専用地域等の正式名称。読み取れなければ空文字）と防火規制（防火地域/準防火地域/法22条区域/指定なし（無指定）のいずれか。読み取れなければ空文字）、案件条件に関わる特記（高低差・がけ・擁壁等、なければ空文字）を出力すること。配置図以外の図面ではsite_infoの各値は空文字でよい。\n20. 【この図面に記載が必須の事項】が示されている場合は、各項目について、この図面に部材名・数量（本数・個数・面積）・位置が実際に記載（引出線・注記・凡例・図示）されているかを確認し、req_resultsに項目ごとの結果を出力すること。記載があり数量も一致→ok（foundに図面から読み取った記載を転記）／この図面に記載がない→ng（detailに「この図面には記載なし」と書き、actionに「立面図の棟部に【棟換気 ○○ ×○本】と引出線で追記する」のように追記すべき文言と位置を具体的に書く）／記載はあるが本数や仕様が計算結果と異なる→ng（相違内容をdetailに）／文字が小さく判読できない・図示のみで数量が不明→warn。図面は方位別など複数枚に分かれている場合があるため、記載がなくても他の図面にある可能性はdetailで言及してよいが、この図面で確認できないものはngとし、記載を推測で補わないこと。該当項目がなければreq_resultsは空配列にする。\n21. 立面図のr11（小屋裏換気部材の明記）は、小屋裏換気に関する要記載事項のreq_resultsと整合させること（一つでもngがあればng、warnがあればwarn）。要記載事項が示されていない場合は、棟換気・軒裏給気（軒天有孔板や軒ゼロ用換気材）・ベントキャップの記載の有無を図面から判定し、記載がなければ「小屋裏換気の計算結果が未取込のため要否は判定不能。部材の記載なし」としてwarnにする。r12（採光に用いた開口部の明記）は、窓記号とサイズが図面に記載されているかで判定する。\n22. 【延焼のおそれのある部分の判定強化】配置図のh08では以下を総合的に判定すること：①延焼ライン（1階は隣地境界線・道路中心線から3m、2階以上は5m）が図示されているか ②ラインの距離が正しいか（1階3m/2階5mの区別） ③角地など2方向以上から延焼ラインがかかる場合、全方向のラインが描かれているか ④道路の反対側に公園・広場・川・耐火建築物がある場合の緩和が正しく適用されているか。延焼ラインの図示がない場合はstatusをngとし、actionに「配置図に延焼のおそれのある部分の範囲線を追記する（1階=隣地境界線・道路中心線から3m、2階以上=5m）」と記載する。\n23. 【延焼部分の開口部・外壁判定】立面図のr13（延焼部分の開口部の防火設備）では：①延焼のおそれのある部分にかかる開口部（窓・玄関ドア・換気口等）を特定し ②各開口部に防火設備（防火戸・乙種防火戸・網入りガラス・防火ダンパー付換気口等）の記載があるか確認する。防火・準防火地域や法22条区域の指定がない場合でも、延焼のおそれのある部分自体は存在するため、防火設備の要否は防火地域等の指定と併せて判定する（無指定の場合は法64条の適用なしとしてnaにしてよい）。r14（延焼部分の外壁・軒裏の防火仕様）も同様に、防火地域等の指定に応じて判定する。\n24. 【延焼と案件条件の連動】案件条件の防火規制に基づく延焼関連項目の判定基準：防火地域→耐火建築物等の要件（法61条）、延焼部分の外壁は耐火構造又は準耐火構造 ／ 準防火地域→延焼部分の外壁・軒裏は防火構造、開口部は防火設備（法62条・64条） ／ 法22条区域→屋根は不燃材料、延焼部分の外壁は準防火性能（法22条・23条） ／ 無指定→延焼のおそれのある部分の防火規制は原則不要（ただし延焼ラインの図示自体は推奨）。防火規制が不明な場合はwarnとし「案件条件の防火規制を確認してください」とactionに記載する。\n25. 【配置図のブロック塀・擁壁・土留めの判定強化（北九州市概要書作成要領準拠）】配置図のh13では：①道路・隣地境界沿いの土留め（擁壁）・門・塀について「種類」「新設/既設」「高さ」「厚み」が配置図に記載されているか（例：既存CB塀 厚150 H1200）。記載がなければng ②既存CB（コンクリートブロック）土留めは特定行政庁の運用基準に合致する構造で設計者が安全と判断した根拠があるか ③ブロック塀の構造基準（令62条の8：高さ2.2m以下・壁厚15cm以上(高さ2m超)or10cm以上・控え壁3.4m以内(高さ1.2m超)・基礎丈35cm以上）を満たしているか ④案件条件で「隣地ブロック塀あり」「隣地擁壁あり」が選択されている場合は必ずwarn以上で安全性の確認を促す。h14では：敷地と道路に高低差がある場合、擁壁等による高低差の処理方法が明記されているかを確認する。\n26. 【がけ条例の判定強化】L01では：①高さ3m超のがけ・擁壁の有無を確認 ②がけがある場合、配置図にがけの安全状況を記載しているか ③崩壊のおそれがある場合の安全上の措置（傾斜角・地盤種類・崩壊防止措置）が記載されているか ④既存擁壁は検査済証の有無・築年・構造種別を確認し、検査済証がなければ安全性の証明が必要であることを指摘する。\n28. 【配置図の表記方法の確認（北九州市概要書作成要領）】配置図の分析時は、以下の表記基準に照らして記載の有無・正確性を判定すること：①方位は「真北」と明記（真北と磁北の区別）②道路種別は「42条1項1号道路（市道○号線）」等と種別・名称を記載 ③道路幅員が変化する場合は2箇所以上で明示 ④道路境界線に接道長さを記載 ⑤既存ブロック塀は「既存ＣＢ塀 厚150 H1200」のように種類・厚み・高さを明記 ⑥セットバック部分は「セットバック」と明記し、既存門塀等は「（工事完了までに撤去）」と措置を記載、新設しない旨を注記 ⑦北側斜線検討寸法は「軒先高さGL+6.400」のようにGL基準で表記 ⑧設計GLは「設計GL±0」と表記 ⑨がけの安全状況は傾斜角度・地盤の種類・崩壊の有無を記載（例:「既存法面 傾斜角度40°（硬岩盤のため、崩壊のおそれなし。）」）⑩外壁後退の緩和適用時は外壁長さ・軒高・床面積を明示。これらの表記がない又は不十分な場合は、detailにどの表記が不足しているかを具体的に指摘し、ok_exampleに正しい表記例を記載すること。\n27. 【外壁後退と北側斜線の判定】配置図のh12では：①第一種・第二種低層住居専用地域の場合、外壁後退距離（1.0m又は1.5m）が適用されるか確認し、配置図に外壁後退ラインが図示されているか ②セットバック部分に既存の門塀等がある場合「工事完了までに撤去」等の措置が記載されているか ③用途地域が低層住居専用地域の場合はstatusをwarn以上にし、外壁後退の確認を促す。h10の斜線検討距離では、北側斜線（低層住居系5m+1.25勾配、中高層住居系10m+1.25勾配）の検討寸法が配置図に軒先高さ・設計GL基準で記入されているかを確認する。\nJSON形式のみ。バッククォート不要。\n"+'{"drawing_type":"'+dt.label+'","summary":"所見50字","items":[{"id":"ID","status":"ok/ng/warn/na","detail":"所見（該当する場合は根拠条文を含む、80字程度）","law_note":"引用条文の平易な説明（50字程度、条文引用なしの場合は空文字）","action":"具体的な作業指示（ng/warnは必須・100字程度、okは空文字）","confidence":0.0-1.0,"location":"図面上でこの項目に該当する箇所の位置。9分割グリッド（左上/上/右上/左/中央/右/左下/下/右下）または特定エリア（凡例欄/表題欄/注記欄）から最も近いものを1つ選ぶ。図面全体に関わる項目や位置特定が困難な場合は空文字","ok_example":"statusがng又はwarnの項目のみ：正しい図面ではどう記載されているべきかの具体例（40字程度、例：『GL±0基準で最高高さ8,500mm・軒高6,200mmを寸法線で明記』）。okの項目は空文字","ng_example":"statusがng又はwarnの項目のみ：この図面で実際にどうなっていて何が問題かの具体例（40字程度、例：『最高高さの寸法線がなく、高さ制限への適合が確認できない』）。okの項目は空文字"}],"key_facts":{"cert_numbers":["記載されている認定番号（なければ空配列）"],"key_values":["整合確認に重要な数値・仕様（例:延べ面積98.53㎡）最大8件"]},"site_info":{"youto":"図面記載の用途地域（正式名称、なければ空文字）","fire":"防火地域/準防火地域/法22条区域/指定なし（無指定）/空文字","memo":"高低差・がけ等の特記（なければ空文字）"},"req_results":[{"id":"要記載事項のID（【この図面に記載が必須の事項】の[ ]内）","status":"ok/ng/warn","found":"図面上で確認できた記載（部材名・数量。なければ空文字）","detail":"照合結果（40字程度）","action":"追記すべき文言と位置を含む作業指示（ng/warnは必須、okは空文字）"}]}'}]}],8000);
+const raw=await api([{role:"user",content:[...contentParts,{type:"text",text:"一級建築士として2025年4月改正建築基準法に基づき判定。\n【"+dt.label+"】\n"+cp+chP+condP+reqP+lvsP+fbP+stP+knP+fixP+"\n\n各項目のdetail（所見）の記述ルール:\n1. 項目末尾に条文番号（法○条・令○条等）が示されている場合は、detailの中に必ずその条文番号を明記すること（例:「令38条」「法28条」）。\n2. この図面の記載内容だけで確認が完結する項目は「（条文）適合を確認」のように記載してよい。\n3. 構造図・仕様書・計算書など、この図面以外の資料と照合しないと最終確認できない項目は「（条文）適合確認には（必要な図面・資料名）との照合が必要」のように明記し、断定を避けてstatusはwarnにすること。\n4. 図面の記載から合理的に推定できるが完全な確証ではない項目は「（条文）概ね充足と判断」のように断定を避けた表現にすること。\n5. detailは条文番号を含めて80字程度まで許容する。\n6. detailに条文番号（法○条・令○条等）を記載した項目は、law_noteフィールドにその条文が何を定めた規定かを、専門用語を避けた平易な日本語で必ず記載すること（例:「法28条＝居室に必要な採光・換気のための窓の大きさを定めた規定」）。条文引用がない項目はlaw_noteは空文字にする。\n7. statusがngまたはwarnの項目は、actionフィールドに担当者が次に行うべき具体的な作業を「〜する」の形で必ず記載すること（例:「矩計図に基礎立上り寸法を追記する」「構造図を入手し、壁量計算書と数値を照合する」）。作業が複数ある場合は「①〜 ②〜」と番号付きで列挙する。statusがokの項目はactionは空文字にする。\n8. まず建物の階数・用途を図面から読み取ること。平屋建て（1階建て）の場合、階段に関する項目（階段の幅・蹴上・踏面、階段の構造等）はstatusをnaにし、detailに「平屋建てのため階段なし・対象外」と記載する（actionは空文字）。\n9. 防火区画（令112条）の項目は、先にこの建物に防火区画が必要かを判定する。2階建以下・延べ面積1000㎡以下の一般的な木造戸建住宅は原則不要のためstatusをnaにし「防火区画が不要な建物のため対象外」と記載する。3階建以上や地階（竪穴区画）、大規模、異種用途がある建物の場合のみ貫通部の処理を判定する。\n10. バリアフリー対応は用途で分けて判定する。戸建住宅は法的義務のない任意項目（住宅性能表示・長期優良住宅の高齢者等配慮対策）として扱う。店舗・診療所・事務所等の非住宅は、規模によりバリアフリー法（特別特定建築物は2000㎡以上で義務）や福岡県福祉のまちづくり条例の対象になり得るため、その旨を指摘してstatusをwarnにする。\n11. 耐力壁は文字表記だけでなく図面上の記号で判定する。三角（△▲）、タスキがけ（×）、丸数字・四角囲み数字（壁倍率・壁種別番号）、ハッチング等は耐力壁の記号である。平面図・壁量計算書・構造図にこれらの記号が入っていれば耐力壁の記載ありとして扱い、凡例があれば凡例と照合する。記号を見落として「記載なし」と判定しないこと。\n12. 外壁・軒裏・屋根の防火仕様は、国土交通大臣認定番号の記載を必ず探す（例：PC030BE-xxxx＝防火構造、QF045BE-xxxx＝準耐火45分、DR-xxxx＝屋根飛び火）。認定番号の記載があれば「防火認定番号の記載を確認（番号を引用）」としてokにしてよい。「防火構造」等の文言のみで番号がない場合に限り「認定番号の記載がなく認定書との照合が必要」とする。\n13. 屋根勾配・軒の出等の寸法は、姿図の脇・寸法線まわり・注記欄・矩計図など目立たない場所に記載されていることが多い。図面の雅々（文字の小さい注記含む）まで探してから「記載なし」と判定すること。\n14. 軒の出がない建物（軒ゼロ・破風レス）は軒裏が存在しないため、軒裏仕様の項目は「軒ゼロのため軒裏なし・対象外」としてnaにし、detailで外壁の防火措置と換気方式（壁通気・軒ゼロ用換気部材）の確認に言及する。\n15. 斜線制限・高さ制限は、図面記載の用途地域から適用値を特定して所見に明記する（低層住居系:絶対高さ10m又は12m・北側斜線5m+1.25勾配／道路斜線:住居系1.25・その他1.5／隣地斜線:住居系20m+1.25・その他31m+2.5等）。用途地域が読み取れない場合は「用途地域の確認が必要」としてstatusをwarnにする。\n16. 案件条件や図面の記載（用途地域・防火指定等）から、その規定自体がこの案件に適用されない項目はstatusをnaとし、detailに理由を「（理由）のため該当なし」の形で必ず記載すること（例:「防火・準防火地域および法22条区域の指定がないため延焼のおそれのある部分の防火措置は不要」）。適用の有無が案件条件からも判断できない場合はnaにせずwarnとし、確認方法をactionに記載する。\n17. key_factsに、この図面に記載されている大臣認定番号・型式認定番号（例:PC030BE-0000）と、図面間整合の確認に重要な数値・仕様（延べ面積、最高高さ、UA値、耐力壁仕様等。最大8件）を抽出して記載すること。記載がなければ空配列にする。\n18. 【条例】と付いた項目（idがLで始まる）は建築基準法ではなく、北九州市・福岡県の条例や要綱の確認項目である。図面から該当の可能性を判定し、該当する記載・兆候がなければstatusをnaにして理由を記載する（例:「敷地及び隣接地に高さ3m超のがけ・擁壁の記載がないため該当なし」「2階建住宅（高さ10m以下）のため中高層の手続きは対象外」）。該当の可能性がある場合はstatusをwarnとし、actionに「北九州市建築審査課に確認する」「北九州市の防災情報マップで区域を確認する」等の具体的な確認先を必ず記載する。条例項目は図面だけで最終判断できないため、安易にok（適合）と断定しないこと。\n19. 配置図の場合はsite_infoに、図面から読み取れる用途地域（第一種低層住居専用地域等の正式名称。読み取れなければ空文字）と防火規制（防火地域/準防火地域/法22条区域/指定なし（無指定）のいずれか。読み取れなければ空文字）、案件条件に関わる特記（高低差・がけ・擁壁等、なければ空文字）を出力すること。配置図以外の図面ではsite_infoの各値は空文字でよい。\n20. 【この図面に記載が必須の事項】が示されている場合は、各項目について、この図面に部材名・数量（本数・個数・面積）・位置が実際に記載（引出線・注記・凡例・図示）されているかを確認し、req_resultsに項目ごとの結果を出力すること。記載があり数量も一致→ok（foundに図面から読み取った記載を転記）／この図面に記載がない→ng（detailに「この図面には記載なし」と書き、actionに「立面図の棟部に【棟換気 ○○ ×○本】と引出線で追記する」のように追記すべき文言と位置を具体的に書く）／記載はあるが本数や仕様が計算結果と異なる→ng（相違内容をdetailに）／文字が小さく判読できない・図示のみで数量が不明→warn。図面は方位別など複数枚に分かれている場合があるため、記載がなくても他の図面にある可能性はdetailで言及してよいが、この図面で確認できないものはngとし、記載を推測で補わないこと。該当項目がなければreq_resultsは空配列にする。\n21. 立面図のr11（小屋裏換気部材の明記）は、小屋裏換気に関する要記載事項のreq_resultsと整合させること（一つでもngがあればng、warnがあればwarn）。要記載事項が示されていない場合は、棟換気・軒裏給気（軒天有孔板や軒ゼロ用換気材）・ベントキャップの記載の有無を図面から判定し、記載がなければ「小屋裏換気の計算結果が未取込のため要否は判定不能。部材の記載なし」としてwarnにする。r12（採光に用いた開口部の明記）は、窓記号とサイズが図面に記載されているかで判定する。\n22. 【延焼のおそれのある部分の判定強化】配置図のh08では以下を総合的に判定すること：①延焼ライン（1階は隣地境界線・道路中心線から3m、2階以上は5m）が図示されているか ②ラインの距離が正しいか（1階3m/2階5mの区別） ③角地など2方向以上から延焼ラインがかかる場合、全方向のラインが描かれているか ④道路の反対側に公園・広場・川・耐火建築物がある場合の緩和が正しく適用されているか。延焼ラインの図示がない場合はstatusをngとし、actionに「配置図に延焼のおそれのある部分の範囲線を追記する（1階=隣地境界線・道路中心線から3m、2階以上=5m）」と記載する。\n23. 【延焼部分の開口部・外壁判定】立面図のr13（延焼部分の開口部の防火設備）では：①延焼のおそれのある部分にかかる開口部（窓・玄関ドア・換気口等）を特定し ②各開口部に防火設備（防火戸・乙種防火戸・網入りガラス・防火ダンパー付換気口等）の記載があるか確認する。防火・準防火地域や法22条区域の指定がない場合でも、延焼のおそれのある部分自体は存在するため、防火設備の要否は防火地域等の指定と併せて判定する（無指定の場合は法64条の適用なしとしてnaにしてよい）。r14（延焼部分の外壁・軒裏の防火仕様）も同様に、防火地域等の指定に応じて判定する。\n24. 【延焼と案件条件の連動】案件条件の防火規制に基づく延焼関連項目の判定基準：防火地域→耐火建築物等の要件（法61条）、延焼部分の外壁は耐火構造又は準耐火構造 ／ 準防火地域→延焼部分の外壁・軒裏は防火構造、開口部は防火設備（法62条・64条） ／ 法22条区域→屋根は不燃材料、延焼部分の外壁は準防火性能（法22条・23条） ／ 無指定→延焼のおそれのある部分の防火規制は原則不要（ただし延焼ラインの図示自体は推奨）。防火規制が不明な場合はwarnとし「案件条件の防火規制を確認してください」とactionに記載する。\n25. 【配置図のブロック塀・擁壁・土留めの判定強化（北九州市概要書作成要領準拠）】配置図のh13では：①道路・隣地境界沿いの土留め（擁壁）・門・塀について「種類」「新設/既設」「高さ」「厚み」が配置図に記載されているか（例：既存CB塀 厚150 H1200）。記載がなければng ②既存CB（コンクリートブロック）土留めは特定行政庁の運用基準に合致する構造で設計者が安全と判断した根拠があるか ③ブロック塀の構造基準（令62条の8：高さ2.2m以下・壁厚15cm以上(高さ2m超)or10cm以上・控え壁3.4m以内(高さ1.2m超)・基礎丈35cm以上）を満たしているか ④案件条件で「隣地ブロック塀あり」「隣地擁壁あり」が選択されている場合は必ずwarn以上で安全性の確認を促す。h14では：敷地と道路に高低差がある場合、擁壁等による高低差の処理方法が明記されているかを確認する。\n26. 【がけ条例の判定強化】L01では：①高さ3m超のがけ・擁壁の有無を確認 ②がけがある場合、配置図にがけの安全状況を記載しているか ③崩壊のおそれがある場合の安全上の措置（傾斜角・地盤種類・崩壊防止措置）が記載されているか ④既存擁壁は検査済証の有無・築年・構造種別を確認し、検査済証がなければ安全性の証明が必要であることを指摘する。\n28. 【配置図の表記方法の確認（北九州市概要書作成要領）】配置図の分析時は、以下の表記基準に照らして記載の有無・正確性を判定すること：①方位は「真北」と明記（真北と磁北の区別）②道路種別は「42条1項1号道路（市道○号線）」等と種別・名称を記載 ③道路幅員が変化する場合は2箇所以上で明示 ④道路境界線に接道長さを記載 ⑤既存ブロック塀は「既存ＣＢ塀 厚150 H1200」のように種類・厚み・高さを明記 ⑥セットバック部分は「セットバック」と明記し、既存門塀等は「（工事完了までに撤去）」と措置を記載、新設しない旨を注記 ⑦北側斜線検討寸法は「軒先高さGL+6.400」のようにGL基準で表記 ⑧設計GLは「設計GL±0」と表記 ⑨がけの安全状況は傾斜角度・地盤の種類・崩壊の有無を記載（例:「既存法面 傾斜角度40°（硬岩盤のため、崩壊のおそれなし。）」）⑩外壁後退の緩和適用時は外壁長さ・軒高・床面積を明示。これらの表記がない又は不十分な場合は、detailにどの表記が不足しているかを具体的に指摘し、ok_exampleに正しい表記例を記載すること。\n27. 【外壁後退と北側斜線の判定】配置図のh12では：①第一種・第二種低層住居専用地域の場合、外壁後退距離（1.0m又は1.5m）が適用されるか確認し、配置図に外壁後退ラインが図示されているか ②セットバック部分に既存の門塀等がある場合「工事完了までに撤去」等の措置が記載されているか ③用途地域が低層住居専用地域の場合はstatusをwarn以上にし、外壁後退の確認を促す。h10の斜線検討距離では、北側斜線（低層住居系5m+1.25勾配、中高層住居系10m+1.25勾配）の検討寸法が配置図に軒先高さ・設計GL基準で記入されているかを確認する。\nJSON形式のみ。バッククォート不要。\n"+'{"drawing_type":"'+dt.label+'","summary":"所見50字","items":[{"id":"ID","status":"ok/ng/warn/na","detail":"所見（該当する場合は根拠条文を含む、80字程度）","law_note":"引用条文の平易な説明（50字程度、条文引用なしの場合は空文字）","action":"具体的な作業指示（ng/warnは必須・100字程度、okは空文字）","confidence":0.0-1.0,"location":"図面上でこの項目に該当する箇所の位置。9分割グリッド（左上/上/右上/左/中央/右/左下/下/右下）または特定エリア（凡例欄/表題欄/注記欄）から最も近いものを1つ選ぶ。図面全体に関わる項目や位置特定が困難な場合は空文字","ok_example":"statusがng又はwarnの項目のみ：正しい図面ではどう記載されているべきかの具体例（40字程度、例：『GL±0基準で最高高さ8,500mm・軒高6,200mmを寸法線で明記』）。okの項目は空文字","ng_example":"statusがng又はwarnの項目のみ：この図面で実際にどうなっていて何が問題かの具体例（40字程度、例：『最高高さの寸法線がなく、高さ制限への適合が確認できない』）。okの項目は空文字"}],"key_facts":{"cert_numbers":["記載されている認定番号（なければ空配列）"],"key_values":["整合確認に重要な数値・仕様（例:延べ面積98.53㎡）最大8件"]},"site_info":{"youto":"図面記載の用途地域（正式名称、なければ空文字）","fire":"防火地域/準防火地域/法22条区域/指定なし（無指定）/空文字","memo":"高低差・がけ等の特記（なければ空文字）"},"req_results":[{"id":"要記載事項のID（【この図面に記載が必須の事項】の[ ]内）","status":"ok/ng/warn","found":"図面上で確認できた記載（部材名・数量。なければ空文字）","detail":"照合結果（40字程度）","action":"追記すべき文言と位置を含む作業指示（ng/warnは必須、okは空文字）"}]}'}]}],8000);
 let p;try{p=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch{p={summary:"解析失敗",items:[]};}
 p.req_ids=rqL.map(q=>q.id);
 if(p.items){const nr={...res};p.items.forEach(i=>{nr[i.id]={...i,dwId:dw.id,dwN:dw.name};});setRes(nr);if(mode==="chouki"){const nc={...chR};p.items.filter(i=>i.id.startsWith("ch")).forEach(i=>{nc[i.id]={...i};});setChR(nc);}
@@ -1006,7 +1089,7 @@ return <div className="cd">
 </div>
 </div>
 </div>
-<div className="tabs" style={{marginBottom:10}}>{[{k:"glossary",l:"📖 用語解説"},{k:"quiz",l:"🧠 理解度クイズ"},{k:"weak",l:"📌 弱点管理"},{k:"know",l:"🚩 学習データ"}].map(t=><button key={t.k} className={"bt stab "+(studySub===t.k?"ba":"")} onClick={()=>setStudySub(t.k)}>{t.l}</button>)}</div>
+<div className="tabs" style={{marginBottom:10}}>{[{k:"glossary",l:"📖 用語解説"},{k:"quiz",l:"🧠 理解度クイズ"},{k:"weak",l:"📌 弱点管理"},{k:"cmp",l:"🔄 修正比較"},{k:"know",l:"🚩 学習データ"}].map(t=><button key={t.k} className={"bt stab "+(studySub===t.k?"ba":"")} onClick={()=>setStudySub(t.k)}>{t.l}</button>)}</div>
 
 {studySub==="glossary"&&<div className="cd fu">
 <div style={{fontSize:11,color:"var(--t2)",marginBottom:10,lineHeight:1.7}}>図面種別ごとのチェック項目と、その意味をやさしく解説します。「AI解説」を押すと、趣旨・実務でのよくある間違い・対応ポイントをより詳しく説明します。</div>
@@ -1033,6 +1116,59 @@ return <div className="cd">
 {Object.keys(progress.weak||{}).length>0&&<button className="bt bs" style={{marginTop:10}} onClick={clearWeak}>🗑 記録をクリア</button>}
 </div>}
 
+{studySub==="cmp"&&<div className="fu">
+<div className="cd">
+<h3 style={{fontSize:13,fontWeight:700,marginBottom:6}}>🔄 修正比較モード（指摘→修正の実例を学習）</h3>
+<div style={{fontSize:10.5,color:"var(--t2)",marginBottom:10,lineHeight:1.7}}>アプリが出した指摘と、スタッフが直した後の図面を突き合わせ、<b>実際にどう直したか</b>を学習データにします。①比較元の指摘を選ぶ → ②修正後の図面（できれば修正前も）を追加 → ③AIが「解消済み／未解消／誤指摘」を判定 → ④内容を確認して登録。登録した事例は、次回からの分析で<b>「過去の指摘→修正の実例」</b>として自動で参照されます。</div>
+<div style={{fontSize:11,fontWeight:700,marginBottom:4}}>① 比較元の指摘</div>
+<div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:6}}>
+<select className="ip" style={{flex:1,minWidth:200,fontSize:11}} value={cmpSrc} onChange={e=>{setCmpSrc(e.target.value);if(e.target.value!=="cur"){const pr=projects.find(x=>String(x.id)===e.target.value);if(pr&&!cmpName)setCmpName(pr.name);}}}><option value="cur">現在の分析結果（図面タブ）</option>{projects.map(pr=><option key={pr.id} value={String(pr.id)}>🏠 {pr.name}（{new Date(pr.created_at).toLocaleDateString("ja-JP")}保存）</option>)}</select>
+<button className="bt bs" onClick={fetchProjects} disabled={projLd}>{projLd?"取得中...":"🔃 物件履歴を取得"}</button>
+</div>
+<div style={{fontSize:10.5,color:"var(--t3)",marginBottom:10}}>対象の指摘（不適合・要確認）: <b>{cmpFindings().length}件</b></div>
+<div style={{fontSize:11,fontWeight:700,marginBottom:4}}>② 図面を追加</div>
+<div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:8}}>
+{[{k:"after",l:"✅ 修正後の図面（必須）",list:cmpAfter,set:setCmpAfter},{k:"before",l:"📄 修正前の図面（任意・あると精度UP）",list:cmpBefore,set:setCmpBefore}].map(b=><div key={b.k} style={{flex:1,minWidth:240}}>
+<label className="bt bs" style={{display:"inline-block",cursor:"pointer",marginBottom:6}}>{b.l}<input type="file" multiple accept="image/*,application/pdf" style={{display:"none"}} onChange={e=>{cmpAddFiles(e.target.files,b.k);e.target.value="";}}/></label>
+{b.list.map(f=><div key={f.id} className="wk" style={{alignItems:"center",gap:6}}><div style={{flex:1,fontSize:10.5,wordBreak:"break-all"}}>{f.name}</div>
+<select className="ip" style={{maxWidth:120,fontSize:10}} value={f.type} onChange={e=>b.set(prev=>prev.map(x=>x.id===f.id?{...x,type:e.target.value}:x))}><option value="">自動判別</option>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select>
+<button className="bi" onClick={()=>b.set(prev=>prev.filter(x=>x.id!==f.id))}>✕</button></div>)}
+</div>)}
+</div>
+<div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+<input className="ip" style={{flex:1,minWidth:160,fontSize:11}} placeholder="案件名（登録時の出典に使います。例：松本様邸）" value={cmpName} onChange={e=>setCmpName(e.target.value)}/>
+<button className="bt bp" disabled={cmpLd||!cmpAfter.length||!cmpFindings().length} onClick={cmpRun}>{cmpLd?"比較中...":"🔄 修正前後を比較する"}</button>
+</div>
+<div style={{fontSize:9.5,color:"var(--t3)",marginTop:6}}>※1種別につき最大3枚まで比較します。AIの利用料が発生します（種別ごとに1回）。</div>
+</div>
+{cmpOut&&cmpOut.map((t,ti)=><div className="cd" key={t.tid}>
+<h3 style={{fontSize:13,fontWeight:700,marginBottom:6}}>③ 比較結果：{t.label}</h3>
+{t.none&&<div style={{fontSize:11,color:"var(--t3)"}}>この図面種別には比較元の指摘がありませんでした。</div>}
+{t.failed&&<div style={{fontSize:11,color:"var(--ng)",marginBottom:6}}>AIの回答を解析できませんでした。もう一度「比較する」を押してください。</div>}
+{t.changes.length>0&&<div style={{background:"var(--bg2)",borderRadius:8,padding:"8px 10px",marginBottom:8}}><div style={{fontSize:11,fontWeight:700,marginBottom:3}}>📝 修正前後で変わった点</div>{t.changes.map((c,k)=><div key={k} style={{fontSize:10.5,lineHeight:1.6}}>・{c}</div>)}</div>}
+{t.rows.map((r,ri)=>{const vc=r.verdict==="fixed"?"#10b981":r.verdict==="not_fixed"?"#ef4444":r.verdict==="false_positive"?"#a78bfa":"#f59e0b";return <div key={r.id+ri} className="wk" style={{alignItems:"flex-start",flexDirection:"column",gap:4,borderLeft:"3px solid "+vc,paddingLeft:8}}>
+<div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",width:"100%"}}>
+<span style={{fontSize:11.5,fontWeight:700,flex:1,minWidth:140}}>{r.tx}{r.law&&<span style={{fontSize:9.5,color:"var(--t3)",marginLeft:4}}>{r.law}</span>}</span>
+<span style={{fontSize:9.5,color:"var(--t3)"}}>元の判定:{r.status==="ng"?"不適合":"要確認"}</span>
+<select className="ip" style={{maxWidth:130,fontSize:10.5,color:vc,fontWeight:700}} value={r.verdict} onChange={e=>cmpPatchRow(ti,ri,{verdict:e.target.value,reg:(e.target.value==="fixed"&&!!r.fix_pattern.trim())||e.target.value==="false_positive"})}><option value="fixed">✅ 解消済み</option><option value="not_fixed">❌ 未解消</option><option value="unclear">❓ 判断不能</option><option value="false_positive">🚩 誤指摘だった</option></select>
+</div>
+<div style={{fontSize:10,color:"var(--t3)",lineHeight:1.5}}>元の指摘: {r.detail}</div>
+{r.evidence&&<div style={{fontSize:10.5,lineHeight:1.5}}>🔎 {r.evidence}</div>}
+{r.verdict==="fixed"&&<div style={{width:"100%"}}>
+<input className="ip" style={{width:"100%",fontSize:10.5,marginBottom:3}} placeholder="修正方法（次の案件にも使える形で。編集できます）" value={r.fix_pattern} onChange={e=>cmpPatchRow(ti,ri,{fix_pattern:e.target.value})}/>
+<input className="ip" style={{width:"100%",fontSize:10.5}} placeholder="最初から図面に書いておくべきこと（任意）" value={r.lesson} onChange={e=>cmpPatchRow(ti,ri,{lesson:e.target.value})}/>
+</div>}
+{(r.verdict==="fixed"||r.verdict==="false_positive")&&<label style={{fontSize:10.5,display:"flex",gap:5,alignItems:"center"}}><input type="checkbox" checked={!!r.reg&&(r.verdict==="false_positive"||!!r.fix_pattern.trim())} onChange={e=>cmpPatchRow(ti,ri,{reg:e.target.checked})}/>{r.verdict==="fixed"?"この修正事例を学習に登録する":"誤判定として学習に登録する（次回から同じ誤りを避ける）"}</label>}
+{r.verdict==="not_fixed"&&<div style={{fontSize:10.5,color:"var(--ng)"}}>⚠️ 修正が必要なままです。図面を直してから再度比較してください（学習には登録されません）。</div>}
+</div>;})}
+{t.newIssues.length>0&&<div style={{marginTop:8}}><div style={{fontSize:11,fontWeight:700,marginBottom:3}}>🆕 修正後の図面で新たに見つかった点（登録すると今後の重点チェック項目になります）</div>{t.newIssues.map((n,ni)=><label key={ni} style={{fontSize:10.5,display:"flex",gap:5,alignItems:"flex-start",marginBottom:3}}><input type="checkbox" checked={!!n.reg} onChange={e=>cmpPatchNew(ti,ni,{reg:e.target.checked})}/><span>{n.tx}：{n.detail}</span></label>)}</div>}
+</div>)}
+{cmpOut&&<div className="cd" style={{textAlign:"center"}}><button className="bt bp" disabled={cmpSaving||cmpRegCount()===0} onClick={cmpSave}>{cmpSaving?"登録中...":"💾 学習に登録（"+cmpRegCount()+"件）"}</button><div style={{fontSize:9.5,color:"var(--t3)",marginTop:6}}>登録は全スタッフ共有です。内容は「🚩 学習データ」で確認・削除できます。</div></div>}
+<div className="cd">
+<h3 style={{fontSize:13,fontWeight:700,marginBottom:6}}>📚 登録済みの修正事例（{stList.filter(x=>x.source?.startsWith("[fix]")).length}件）</h3>
+{stList.filter(x=>x.source?.startsWith("[fix]")).length===0?<div style={{textAlign:"center",padding:12,color:"var(--t3)",fontSize:11}}>まだ登録がありません</div>:stList.filter(x=>x.source?.startsWith("[fix]")).map(x=>{const sp=x.source.replace(/^\[fix\]/,"").split("|");return <div key={x.id} className="wk" style={{alignItems:"flex-start"}}><div style={{flex:1}}><div style={{fontSize:11.5,lineHeight:1.6}}>{sp[1]==="new"&&<span style={{color:"#f59e0b",fontWeight:700,fontSize:10,marginRight:4}}>🆕新規指摘</span>}{x.content}</div><div style={{fontSize:9.5,color:"var(--t3)",marginTop:2}}>{sp[0]&&sp[0]+"／"}{x.dw_type?(DW.find(t=>t.id===x.dw_type)?.label||x.dw_type):"全図面"}{x.staff&&"／"+x.staff}・{new Date(x.created_at).toLocaleDateString("ja-JP")}</div></div><button className="bi" title="削除" onClick={()=>delKnowledge("st_delete",x.id)}>🗑</button></div>;})}
+</div>
+</div>}
 {studySub==="know"&&<div className="fu">
 <div className="cd">
 <h3 style={{fontSize:13,fontWeight:700,marginBottom:6}}>🏛 審査機関からの指摘事項</h3>
@@ -1043,7 +1179,7 @@ return <div className="cd">
 <select className="ip" style={{maxWidth:180,fontSize:11}} value={stForm.dw} onChange={e=>setStForm(p=>({...p,dw:e.target.value}))}><option value="">📄 全図面でチェック</option>{DW.filter(t=>!t.skip).map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}のみ</option>)}</select>
 <button className="bt bp" disabled={!stForm.content.trim()} onClick={addShiteki}>＋ 登録</button>
 </div>
-{stList.filter(s=>!s.source?.startsWith("[kn]")).length===0?<div style={{textAlign:"center",padding:12,color:"var(--t3)",fontSize:11}}>まだ登録がありません</div>:<div style={{marginTop:10}}>{stList.filter(s=>!s.source?.startsWith("[kn]")).map(s=><div key={s.id} className="wk" style={{alignItems:"flex-start"}}><div style={{flex:1}}><div style={{fontSize:11.5,lineHeight:1.6}}>{s.content}</div><div style={{fontSize:9.5,color:"var(--t3)",marginTop:2}}>{s.source&&s.source+"／"}{s.dw_type?(DW.find(t=>t.id===s.dw_type)?.label||s.dw_type):"全図面"}{s.staff&&"／"+s.staff}・{new Date(s.created_at).toLocaleDateString("ja-JP")}</div></div><button className="bi" onClick={()=>delKnowledge("st_delete",s.id)}>🗑</button></div>)}</div>}
+{stList.filter(s=>isPlainSt(s)).length===0?<div style={{textAlign:"center",padding:12,color:"var(--t3)",fontSize:11}}>まだ登録がありません</div>:<div style={{marginTop:10}}>{stList.filter(s=>isPlainSt(s)).map(s=><div key={s.id} className="wk" style={{alignItems:"flex-start"}}><div style={{flex:1}}><div style={{fontSize:11.5,lineHeight:1.6}}>{s.content}</div><div style={{fontSize:9.5,color:"var(--t3)",marginTop:2}}>{s.source&&s.source+"／"}{s.dw_type?(DW.find(t=>t.id===s.dw_type)?.label||s.dw_type):"全図面"}{s.staff&&"／"+s.staff}・{new Date(s.created_at).toLocaleDateString("ja-JP")}</div></div><button className="bi" onClick={()=>delKnowledge("st_delete",s.id)}>🗑</button></div>)}</div>}
 </div>
 <div className="cd">
 <h3 style={{fontSize:13,fontWeight:700,marginBottom:6}}>🧑‍🔧 ベテランの実務ノウハウ</h3>
